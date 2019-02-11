@@ -1,0 +1,9 @@
+# System
+.DS_Store
+
+# Swift
+.build
+.cache
+/Packages
+/*.xcodeproj
+xcuserdata
