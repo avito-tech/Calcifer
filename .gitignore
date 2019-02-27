@@ -7,3 +7,7 @@
 /Packages
 /*.xcodeproj
 xcuserdata
+
+# Lint
+Lint/*.txt
+Lint/*.html
