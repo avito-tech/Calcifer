@@ -21,7 +21,7 @@ public final class BuildCommand: Command {
     private let architectureArgument: OptionArgument<String>
     private let sdkArgument: OptionArgument<String>
     
-    required public init(parser: ArgumentParser) {
+    public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         projectPathArgument = subparser.add(
             option: "--\(Arguments.projectPath.rawValue)",

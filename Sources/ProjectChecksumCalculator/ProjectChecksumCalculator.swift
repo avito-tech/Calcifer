@@ -35,7 +35,7 @@ public final class ProjectChecksumCalculator {
         let targets = NSArray(array: project.targets)
         let lock = NSRecursiveLock()
         var targetsChecksums = [TargetChecksum]()
-        targets.enumerateObjects(options: .concurrent) { (obj, key, stop) in
+        targets.enumerateObjects(options: .concurrent) { obj, key, stop in
             if let target = obj as? PBXTarget {
                 if let targetChecksum = try? calculateChecksum(for: target, sourceRoot: sourceRoot) {
                     lock.lock()
@@ -55,7 +55,7 @@ public final class ProjectChecksumCalculator {
         for target: PBXTarget,
         sourceRoot: Path) throws -> TargetChecksum
     {
-        let filesChecksums = try target.fileElement().map { file in
+        let filesChecksums = try target.fileElements().map { file in
             try calculateChecksum(for: file, sourceRoot: sourceRoot)
         }
         let checksum = try filesChecksums.checksum()
@@ -90,14 +90,14 @@ public final class ProjectChecksumCalculator {
 }
 
 extension PBXTarget {
-    func fileElement() -> [PBXFileElement] {
+    func fileElements() -> [PBXFileElement] {
         var files = [PBXFileElement]()
         if let sourcesBuildPhase = try? sourcesBuildPhase(),
-            let sourcesFileElement = sourcesBuildPhase?.fileElement() {
+            let sourcesFileElement = sourcesBuildPhase?.fileElements() {
             files.append(contentsOf: sourcesFileElement)
         }
         if let resourcesBuildPhase = try? resourcesBuildPhase(),
-            let resourcesFileElement = resourcesBuildPhase?.fileElement()  {
+            let resourcesFileElement = resourcesBuildPhase?.fileElements()  {
             files.append(contentsOf: resourcesFileElement)
         }
         return files
@@ -105,7 +105,7 @@ extension PBXTarget {
 }
 
 extension PBXBuildPhase {
-    func fileElement() -> [PBXFileElement] {
+    func fileElements() -> [PBXFileElement] {
         return files.compactMap { $0.file }
     }
 }

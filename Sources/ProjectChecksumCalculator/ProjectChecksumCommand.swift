@@ -16,7 +16,7 @@ public final class ProjectChecksumCommand: Command {
     
     private let projectPathArgument: OptionArgument<String>
     
-    required public init(parser: ArgumentParser) {
+    public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         projectPathArgument = subparser.add(
             option: "--\(Arguments.projectPath.rawValue)",
