@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Check if swiftlint is installed
+echo "Autocorrection started"
+
+# Get path to a folder containing the script
+SCRIPT_ROOT=`cd $(dirname $0) && pwd`
+
+LINTER_WORKING_DIRECTORY="$SCRIPT_ROOT/.."
+LINTER_CONFIGURATION_PATH="$SCRIPT_ROOT/Avito.swiftlint.yml"
+
+# Launch `swiftlint autocorrect`
+SWIFTLINT_EXECUTABLE_PATH="$SCRIPT_ROOT/swiftlint"
+
+( # Create a subshell via `()`. This makes `set -x` work only for one command
+    set -x
+    "$SWIFTLINT_EXECUTABLE_PATH/swiftlint" autocorrect --quiet \
+                                                       --no-cache \
+                                                       --path "$LINTER_WORKING_DIRECTORY" \
+                                                       --config "$LINTER_CONFIGURATION_PATH"
+)
+
+echo "Autocorrection finished"

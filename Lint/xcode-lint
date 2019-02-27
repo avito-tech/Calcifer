@@ -1,0 +1,18 @@
+#!/bin/sh
+
+echo "Linting started"
+
+# Get path to a folder containing the script
+SCRIPT_ROOT=`cd $(dirname $0) && pwd`
+
+LINTER_WORKING_DIRECTORY="$SCRIPT_ROOT/.."
+LINTER_CONFIGURATION_PATH="$SCRIPT_ROOT/Calcifer.swiftlint.yml"
+
+# Launch `swiftlint lint`
+SWIFTLINT_EXECUTABLE_PATH="$SCRIPT_ROOT/swiftlint"
+
+"$SWIFTLINT_EXECUTABLE_PATH/swiftlint" lint --path "$LINTER_WORKING_DIRECTORY" \
+                                            --no-cache \
+                                            --config "$LINTER_CONFIGURATION_PATH"
+
+echo "Linting finished"

@@ -1,0 +1,59 @@
+#!/bin/sh
+
+echo "Linting started"
+
+# Get path to a folder containing the script
+SCRIPT_ROOT=`cd $(dirname $0) && pwd`
+
+# Go to a folder containing the script. This step is required to ensure benchmark reports location
+cd "$SCRIPT_ROOT"
+
+LINTER_WORKING_DIRECTORY="$SCRIPT_ROOT/.."
+LINTER_REPORTS_NAME="reports.html"
+LINTER_REPORTS_PATH="$SCRIPT_ROOT/$LINTER_REPORTS_NAME"
+LINTER_CONFIGURATION_PATH="$SCRIPT_ROOT/Calcifer.swiftlint.yml"
+LINTER_DERIVED_SUMMARY_NAME="derived-reports.txt"
+LINTER_DERIVED_SUMMARY_PATH="$SCRIPT_ROOT/$LINTER_DERIVED_SUMMARY_NAME"
+
+# Remove previous reports and benchmarks
+find . -maxdepth 1 -type f -name "$LINTER_REPORTS_NAME" -delete
+find . -maxdepth 1 -type f -name "$LINTER_DERIVED_SUMMARY_NAME" -delete
+find . -maxdepth 1 -type f -name "benchmark_files_*.txt" -delete
+find . -maxdepth 1 -type f -name "benchmark_rules_*.txt" -delete
+
+# Launch `swiftlint lint`
+# linter report will be written to `LINTER_REPORTS_PATH`
+# linter benchmarks will be written to `benchmark_files.txt` and `benchmark_rules.txt`
+SWIFTLINT_EXECUTABLE_PATH="$SCRIPT_ROOT/swiftlint"
+
+( # Create a subshell via `()`. This makes `set -x` work only for one command
+set -x
+    "$SWIFTLINT_EXECUTABLE_PATH/swiftlint" lint --quiet \
+                                                --path "$LINTER_WORKING_DIRECTORY" \
+                                                --benchmark \
+                                                --no-cache \
+                                                --config "$LINTER_CONFIGURATION_PATH" \
+                                                --reporter html > "$LINTER_REPORTS_PATH"
+)
+
+echo "Linter reports are available at $LINTER_REPORTS_PATH"
+
+# Compute total linting duration
+NUMBER_IN_REPORT_PATTERN="([^:]*):[[:space:]].*" # matches `0,030` in `0,030: leading_whitespace`
+TOTAL_LINTING_DURATION=`cat benchmark_rules_*.txt | sed -E "s/$NUMBER_IN_REPORT_PATTERN/\1/" | sed -E "s/,/\./" | awk '{ SUM += $1 } END { print "Total linting duration: " SUM }'`
+echo "$TOTAL_LINTING_DURATION" > "$LINTER_DERIVED_SUMMARY_PATH"
+
+# Parse linter results to compute errors count
+ERROR_REPORT_PATTERN="<td[[:space:]]class=\"error\">Error</td>" # matches `<td class="error">Error</td>`
+LINTER_ERRORS_COUNT=`cat "$LINTER_REPORTS_PATH" | grep -oE "$ERROR_REPORT_PATTERN" | wc -l`
+echo "Total linter errors: $LINTER_ERRORS_COUNT" >> "$LINTER_DERIVED_SUMMARY_PATH"
+
+# Log derived linter reports
+cat "$LINTER_DERIVED_SUMMARY_PATH"
+
+if [ $LINTER_ERRORS_COUNT -eq 0 ]; then
+	echo "Linting succeeded"
+else 
+	echo "Linting failed"
+	exit 1
+fi

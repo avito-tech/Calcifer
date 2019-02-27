@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+# Get path to a folder containing the script
+SCRIPT_ROOT=`cd $(dirname $0) && pwd`
+
+LINTER_WORKING_DIRECTORY="$SCRIPT_ROOT/.."
+LINTER_CONFIGURATION_PATH="$SCRIPT_ROOT/../Avito.swiftlint.yml"
+GENERATED_DOC_PATH_ENABLED="$SCRIPT_ROOT/enabled-rule-descriptions.md"
+GENERATED_DOC_PATH_ALL="$SCRIPT_ROOT/all-rule-descriptions.md"
+
+SWIFTLINT_EXECUTABLE_PATH="$SCRIPT_ROOT/../swiftlint"
+
+( # Create a subshell via `()`. This makes `set -x` work only for one command
+    set -x
+
+    # Launch `swiftlint avito-generate-docs`
+    "$SWIFTLINT_EXECUTABLE_PATH/swiftlint" avito-generate-docs --config "$LINTER_CONFIGURATION_PATH" \
+                                                        	   --output "$GENERATED_DOC_PATH_ENABLED"
+
+    # Launch `swiftlint rules_docs`
+    "$SWIFTLINT_EXECUTABLE_PATH/swiftlint" generate-docs    --path "$GENERATED_DOC_PATH_ALL"
+)
+
+echo "Docs generation finished"
