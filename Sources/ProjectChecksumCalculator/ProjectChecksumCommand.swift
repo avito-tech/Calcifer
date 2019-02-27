@@ -12,7 +12,7 @@ public final class ProjectChecksumCommand: Command {
         case productName
     }
     
-    private let сalculator = ProjectChecksumCalculator()
+    private let calculator = ProjectChecksumCalculator()
     
     private let projectPathArgument: OptionArgument<String>
     
@@ -30,7 +30,7 @@ public final class ProjectChecksumCommand: Command {
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
         )
-        let checksum = try сalculator.calculate(
+        let checksum = try calculator.calculate(
             projectPath: projectPath
         )
         print(checksum ?? "-")
