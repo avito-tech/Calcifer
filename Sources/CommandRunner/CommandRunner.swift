@@ -1,6 +1,6 @@
 import ArgumentsParser
 import FrameworkBuilder
-import TargetHashCalculator
+import ProjectChecksumCalculator
 
 public final class CommandRunner {
     
@@ -14,7 +14,7 @@ public final class CommandRunner {
         )
         
         registry.register(command: BuildCommand.self)
-        registry.register(command: TargetHashCommand.self)
+        registry.register(command: ProjectChecksumCommand.self)
         
         let exitCode: Int32
         do {
@@ -22,6 +22,7 @@ public final class CommandRunner {
             exitCode = 0
         } catch {
             exitCode = 1
+            print("\(error)")
         }
 
         return exitCode

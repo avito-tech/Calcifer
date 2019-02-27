@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:4.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -11,23 +11,25 @@ let package = Package(
             url: "https://github.com/apple/swift-package-manager.git",
             .exact("0.3.0")
         ),
+
+//        .package(
+//            url: "https://github.com/tuist/xcodeproj.git",
+//            .upToNextMajor(from: "6.4.0")
+//        ),
         .package(
-            url: "https://github.com/tuist/xcodeproj.git",
-            .upToNextMajor(from: "6.4.0")
+            path: "/Users/vvsmal/Rep/xcodeproj"
         ),
         .package(
             url: "https://github.com/httpswift/swifter.git",
             .branch("stable")
-        ),
-        .package(
-            url: "https://github.com/krzyzanowskim/CryptoSwift.git",
-            .exact("0.9.0")
         )
     ],
     targets: [
         .target(
+            // MARK: Calcifer
             name: "Calcifer",
             dependencies: [
+                "Toolkit",
                 "CommandRunner"
             ]
         ),
@@ -35,16 +37,17 @@ let package = Package(
             // MARK: CommandRunner
             name: "CommandRunner",
             dependencies: [
+                "Toolkit",
                 "FrameworkBuilder",
-                "TargetHashCalculator",
-                "ArgumentsParser",
-                "Utility"
+                "ProjectChecksumCalculator",
+                "ArgumentsParser"
             ]
         ),
         .target(
             // MARK: ArgumentsParser
             name: "ArgumentsParser",
             dependencies: [
+                "Toolkit",
                 "Utility"
             ]
         ),
@@ -52,19 +55,25 @@ let package = Package(
             // MARK: FrameworkBuilder
             name: "FrameworkBuilder",
             dependencies: [
-                "Utility",
-                "ArgumentsParser"
+                "ArgumentsParser",
+                "Toolkit",
+                "Utility"
             ]
         ),
         .target(
-            // MARK: FrameworkBuilder
-            name: "TargetHashCalculator",
+            // MARK: ProjectChecksumCalculator
+            name: "ProjectChecksumCalculator",
             dependencies: [
-                "Utility",
                 "ArgumentsParser",
                 "xcodeproj",
-                "CryptoSwift",
+                "Toolkit",
+                "Utility"
             ]
+        ),
+        .target(
+            // MARK: Toolkit
+            name: "Toolkit",
+            dependencies: []
         ),
     ]
 )
