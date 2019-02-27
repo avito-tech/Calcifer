@@ -18,12 +18,12 @@ public final class ProjectChecksumCalculator {
     }
     
     private func calculateChecksum(for pbxproj: PBXProj, sourceRoot: Path) throws -> ProjChecksum {
-        let projectsCecksums = try pbxproj.projects.map { project in
+        let projectsChecksums = try pbxproj.projects.map { project in
             try calculateChecksum(for: project, sourceRoot: sourceRoot)
         }
-        let checksum = try projectsCecksums.checksum()
+        let checksum = try projectsChecksums.checksum()
         return ProjChecksum(
-            projects: projectsCecksums,
+            projects: projectsChecksums,
             checksum: checksum
         )
     }
