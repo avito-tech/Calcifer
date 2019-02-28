@@ -14,7 +14,7 @@ final class FileChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
         let filePath = try obtainPath(for: file, sourceRoot: sourceRoot)
         return FileChecksumHolder(
             objectDescription: filePath.string,
-            checksum: try checksumProducer.checksum(for: filePath.url)
+            checksum: try checksumProducer.checksum(input: filePath.url)
         )
     }
     

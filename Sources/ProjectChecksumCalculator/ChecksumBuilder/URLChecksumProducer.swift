@@ -1,6 +1,7 @@
 import Foundation
 
-public protocol URLChecksumProducer {
+public protocol ChecksumProducer {
+    associatedtype Input
     associatedtype C: Checksum
-    func checksum(for fileURL: URL) throws -> C
+    func checksum(input: Input) throws -> C
 }
