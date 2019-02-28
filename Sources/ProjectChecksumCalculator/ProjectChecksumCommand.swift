@@ -1,6 +1,7 @@
 import ArgumentsParser
 import Foundation
 import Utility
+import Toolkit
 
 public final class ProjectChecksumCommand: Command {
     
@@ -11,8 +12,6 @@ public final class ProjectChecksumCommand: Command {
         case projectPath
         case productName
     }
-    
-    private let calculator = ProjectChecksumCalculator()
     
     private let projectPathArgument: OptionArgument<String>
     
@@ -30,9 +29,11 @@ public final class ProjectChecksumCommand: Command {
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
         )
-        let checksum = try calculator.calculate(
-            projectPath: projectPath
+        let builder = XcodeProjChecksumHolderBuilderFactory().projChecksumHolderBuilder(
+            checksumProducer: BaseURLChecksumProducer()
         )
-        print(checksum ?? "-")
+        let checksumHolder = try builder.build(projectPath: projectPath)
+        let checksum = checksumHolder.checksum
+        print(checksum.description)
     }
 }
