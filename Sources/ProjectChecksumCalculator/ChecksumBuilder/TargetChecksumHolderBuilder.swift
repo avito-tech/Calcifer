@@ -33,9 +33,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         let filesChecksum = try filesChecksums.checksum()
         summarizedChecksums.append(filesChecksum)
         
-        guard let summarizedChecksum = try summarizedChecksums.aggregate() else {
-            throw ProjectChecksumError.emptyChecksum
-        }
+        let summarizedChecksum = try summarizedChecksums.aggregate()
         
         return TargetChecksumHolder<Builder.C>(
             files: filesChecksums,
