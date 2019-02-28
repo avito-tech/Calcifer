@@ -3,7 +3,7 @@ import Foundation
 extension Array where Element: ChecksumHolder {
     func checksum<T: Checksum>() throws -> T where Element.ChecksumType == T {
         guard let checksum: T = try compactMap({ $0.checksum }).aggregate() else {
-            throw ProjectChecksumCalculatorError.emptyChecksum
+            throw ProjectChecksumError.emptyChecksum
         }
         return checksum
     }

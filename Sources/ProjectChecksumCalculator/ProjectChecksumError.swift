@@ -1,6 +1,6 @@
 import Foundation
 
-public enum ProjectChecksumCalculatorError: Error, CustomStringConvertible {
+public enum ProjectChecksumError: Error, CustomStringConvertible {
     case unableEncodeDataFromString(string: String)
     case emptyFullFilePath(name: String?, path: String?)
     case emptyRootGroup

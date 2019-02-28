@@ -10,15 +10,38 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    func build(target: PBXTarget, sourceRoot: Path) throws -> TargetChecksumHolder<Builder.C> {
+    func build(
+        target: PBXTarget,
+        sourceRoot: Path,
+        cached: inout [PBXTarget: TargetChecksumHolder<Builder.C>])
+        throws -> TargetChecksumHolder<Builder.C>
+    {
+        var summarizedChecksums = [Builder.C]()
+        let dependenciesTargets = target.dependencies.compactMap({ $0.target })
+        let dependenciesChecksums = try dependenciesTargets.map { dependency -> TargetChecksumHolder<Builder.C> in
+            if let dependencyChecksum = cached[dependency] {
+                return dependencyChecksum
+            }
+            return try build(target: dependency, sourceRoot: sourceRoot, cached: &cached)
+        }
+        let dependenciesChecksum = try dependenciesChecksums.checksum()
+        summarizedChecksums.append(dependenciesChecksum)
+        
         let filesChecksums = try target.fileElements().map { file in
             try builder.build(file: file, sourceRoot: sourceRoot)
         }
-        let checksum = try filesChecksums.checksum()
+        let filesChecksum = try filesChecksums.checksum()
+        summarizedChecksums.append(filesChecksum)
+        
+        guard let summarizedChecksum = try summarizedChecksums.aggregate() else {
+            throw ProjectChecksumError.emptyChecksum
+        }
+        
         return TargetChecksumHolder<Builder.C>(
             files: filesChecksums,
+            dependencies: dependenciesChecksums,
             objectDescription: target.name,
-            checksum: checksum
+            checksum: summarizedChecksum
         )
     }
 }

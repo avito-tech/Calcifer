@@ -13,24 +13,26 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
     func build(project: PBXProject, sourceRoot: Path) throws -> ProjectChecksumHolder<Builder.C> {
         let targets = NSArray(array: project.targets)
         let lock = NSRecursiveLock()
-        var targetsChecksums = [TargetChecksumHolder<Builder.C>]()
+        var targetsChecksums = [PBXTarget: TargetChecksumHolder<Builder.C>]()
         targets.enumerateObjects(options: .concurrent) { obj, key, stop in
             if let target = obj as? PBXTarget {
                 if let targetChecksum = try? builder.build(
                     target: target,
-                    sourceRoot: sourceRoot)
+                    sourceRoot: sourceRoot,
+                    cached: &targetsChecksums)
                 {
                     lock.lock()
-                    targetsChecksums.append(targetChecksum)
+                    targetsChecksums[target] = targetChecksum
                     lock.unlock()
                 }
             }
         }
-        let checksum = try targetsChecksums.checksum()
+        let summarizedChecksums = Array(targetsChecksums.values)
+        let summarizedChecksum = try summarizedChecksums.checksum()
         return ProjectChecksumHolder<Builder.C>(
-            targets: targetsChecksums,
+            targets: summarizedChecksums,
             objectDescription: project.name,
-            checksum: checksum
+            checksum: summarizedChecksum
         )
     }
 }

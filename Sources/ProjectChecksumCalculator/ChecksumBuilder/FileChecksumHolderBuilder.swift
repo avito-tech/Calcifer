@@ -20,7 +20,7 @@ final class FileChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
     
     private func obtainPath(for file: PBXFileElement, sourceRoot: Path) throws -> Path {
         guard let filePath = try file.fullPath(sourceRoot: sourceRoot) else {
-            throw ProjectChecksumCalculatorError.emptyFullFilePath(
+            throw ProjectChecksumError.emptyFullFilePath(
                 name: file.name,
                 path: file.path
             )
