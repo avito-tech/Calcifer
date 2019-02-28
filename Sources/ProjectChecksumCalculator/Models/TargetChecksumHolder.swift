@@ -3,6 +3,6 @@ import Foundation
 struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     let files: [FileChecksumHolder<C>]
     let dependencies: [TargetChecksumHolder<C>]
-    let objectDescription: String
+    let description: String
     let checksum: C
 }

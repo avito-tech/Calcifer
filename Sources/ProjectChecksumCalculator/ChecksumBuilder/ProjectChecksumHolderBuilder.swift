@@ -31,7 +31,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
         let summarizedChecksum = try summarizedChecksums.checksum()
         return ProjectChecksumHolder<Builder.C>(
             targets: summarizedChecksums,
-            objectDescription: project.name,
+            description: project.name,
             checksum: summarizedChecksum
         )
     }

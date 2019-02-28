@@ -2,6 +2,6 @@ import Foundation
 
 struct ProjectChecksumHolder<C: Checksum>: ChecksumHolder {
     let targets: [TargetChecksumHolder<C>]
-    let objectDescription: String
+    let description: String
     let checksum: C
 }

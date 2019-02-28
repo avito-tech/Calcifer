@@ -1,7 +1,6 @@
 import Foundation
 
-protocol ChecksumHolder: Hashable {
+protocol ChecksumHolder: Hashable, CustomStringConvertible {
     associatedtype ChecksumType: Checksum
     var checksum: ChecksumType { get }
-    var objectDescription: String { get }
 }

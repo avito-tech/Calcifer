@@ -38,7 +38,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         return TargetChecksumHolder<Builder.C>(
             files: filesChecksums,
             dependencies: dependenciesChecksums,
-            objectDescription: target.name,
+            description: target.name,
             checksum: summarizedChecksum
         )
     }

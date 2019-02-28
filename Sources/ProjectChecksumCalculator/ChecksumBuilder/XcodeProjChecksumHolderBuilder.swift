@@ -18,7 +18,7 @@ final class XcodeProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
         let projChecksum = try builder.build(pbxproj: pbxproj, sourceRoot: sourceRoot)
         return XcodeProjChecksumHolder(
             proj: projChecksum,
-            objectDescription: projectPath,
+            description: projectPath,
             checksum: projChecksum.checksum
         )
     }

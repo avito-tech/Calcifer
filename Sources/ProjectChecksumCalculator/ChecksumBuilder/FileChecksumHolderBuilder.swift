@@ -13,7 +13,7 @@ final class FileChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
     func build(file: PBXFileElement, sourceRoot: Path) throws -> FileChecksumHolder<ChecksumProducer.C> {
         let filePath = try obtainPath(for: file, sourceRoot: sourceRoot)
         return FileChecksumHolder(
-            objectDescription: filePath.string,
+            description: filePath.string,
             checksum: try checksumProducer.checksum(input: filePath.url)
         )
     }
