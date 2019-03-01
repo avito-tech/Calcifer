@@ -70,6 +70,13 @@ let package = Package(
                 "Utility"
             ]
         ),
+        .testTarget(
+            name: "ProjectChecksumCalculatorTests",
+            dependencies: [
+                "ProjectChecksumCalculator",
+                "xcodeproj"
+            ]
+        ),
         .target(
             // MARK: Toolkit
             name: "Toolkit",
