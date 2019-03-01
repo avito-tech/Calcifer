@@ -1,0 +1,373 @@
+#################### EXCLUDED PATHS ####################
+
+excluded:
+  - '.build'
+  - 'Lint' 
+
+#################### RULES ####################
+
+whitelist_rules:
+  - accessibility_purpose # AccessibilityPurposeRule                                              # AvitoRule
+  - array_init # ArrayInitRule
+  - assertion # AssertionRule                                                                     # AvitoRule
+  - block_based_kvo # BlockBasedKVORule
+  - bool_type_inference # BoolTypeInferenceRule                                                   # AvitoRule
+  - contains_over_first_not_nil # ContainsOverFirstNotNilRule
+  - cyrillic_avito # CyrillicAvitoRule                                                            # AvitoRule
+  - cyrillic_letters # CyrillicLettersRule                                                        # AvitoRule
+  - class_delegate_protocol # ClassDelegateProtocolRule
+  - closing_brace # ClosingBraceRule                                                              # Autocorrectable
+  - closure_end_indentation # ClosureEndIndentationRule                                           # CausesManyWarnings
+  - closure_spacing # ClosureSpacingRule                                                          # Autocorrectable
+  - comma # CommaRule                                                                             # Autocorrectable
+  - compiler_protocol_init # CompilerProtocolInitRule
+  - control_statement # ControlStatementRule                                                                   # AvitoRule
+  - discarded_notification_center_observer # DiscardedNotificationCenterObserverRule
+  - discouraged_object_literal # DiscouragedObjectLiteral
+  - discouraged_direct_init # DiscouragedDirectInitRule
+  - empty_count # EmptyCountRule
+  - empty_enum_arguments # EmptyEnumArgumentsRule                                                 # Autocorrectable
+  - empty_parameters # EmptyParametersRule
+  - empty_parentheses_with_trailing_closure # EmptyParenthesesWithTrailingClosureRule             # Autocorrectable
+  - empty_string # EmptyString
+  - empty_tuple_return # EmptyTupleReturnRule                                                     # AvitoRule # Autocorrectable
+  - empty_xctest_method # EmptyXCTestMethod
+  - excessive_spaces_after_colon # ExcessiveSpacesAfterColonRule                                  # AvitoRule # Autocorrectable
+  - explicit_init # ExplicitInitRule                                                              # Autocorrectable
+  - feature_toggle_import # FeatureToggleImportRule                                               # AvitoRule
+  - first_where # FirstWhereRule
+  - force_cast # ForceCastRule
+  - force_try # ForceTryRule
+  - force_unwrapping # ForceUnwrappingRule
+  - generic_type_name # GenericTypeNameRule
+  - fatal_error_message # FatalErrorMessageRule
+  - implicit_getter # ImplicitGetterRule
+  - implicit_return # ImplicitReturnRule                                                          # Autocorrectable
+  - implicitly_unwrapped_optional # ImplicitlyUnwrappedOptionalRule
+  - internal_access_modifier # InternalAccessModifierRule                                         # AvitoRule # Autocorrectable
+  - inset_by # InsetByRule                                                                        # AvitoRule # Autocorrectable
+  - keyed_converter # KeyedConverterRule                                                          # AvitoRule
+  - leading_whitespace # LeadingWhitespaceRule                                                    # Autocorrectable
+  - legacy_cggeometry_functions # LegacyCGGeometryFunctionsRule                                   # Autocorrectable
+  - legacy_constant # LegacyConstantRule                                                          # Autocorrectable
+  - legacy_constructor # LegacyConstructorRule                                                    # Autocorrectable
+  - line_length # LineLengthRule                                                                  # CausesManyWarnings
+  - lower_acl_than_parent # Lower ACL than parent
+  - mark # MarkRule                                                                               # Autocorrectable
+  - missing_spaces_after_colon # MissingSpacesAfterColonRule                                      # AvitoRule # Autocorrectable
+  - modifier_order # ModifierOrder
+  - multiline_arguments # MultilineArgumentsRule
+  - multiline_parameters # MultilineParametersRule
+  - multiple_closures_with_trailing_closure # MultipleClosuresWithTrailingClosureRule
+  - operator_usage_whitespace # OperatorUsageWhitespaceRule                                       # Autocorrectable
+  - overridden_super_call # OverriddenSuperCallRule
+  - pattern_matching_keywords # PatternMatchingKeywordsRule
+  - precondition # PreconditionRule                                                               # AvitoRule
+  - private_outlet # PrivateOutletRule                                                                             # AvitoRule # Autocorrectable
+  - prohibited_super_call # ProhibitedSuperRule
+  - protocol_property_accessors_order # ProtocolPropertyAccessorsOrderRule                        # Autocorrectable
+  - redundant_discardable_let # RedundantDiscardableLetRule                                       # Autocorrectable
+  - redundant_nil_coalescing # RedundantNilCoalescingRule                                         # Autocorrectable
+  - redundant_optional_initialization # RedundantOptionalInitializationRule                       # Autocorrectable # TODO: `: Bool = false`
+  - redundant_set_access_control # RedundantSetAccessControlRule
+  - redundant_spaces_before_colon # RedundantSpacesBeforeColonRule                                # AvitoRule # Autocorrectable
+  - redundant_void_return # RedundantVoidReturnRule
+  - return_arrow_whitespace # ReturnArrowWhitespaceRule                                           # Autocorrectable
+  - self_in_backticks # SelfInBackticksRule                                                       # AvitoRule
+  - setup_function_name # SetupFunctionNameRule                                                   # AvitoRule # Autocorrectable
+  - statement_position # StatementPositionRule aka IfElseRule                                     # Autocorrectable
+  - string_type_inference # StringTypeInferenceRule                                               # AvitoRule
+  - switch_case_alignment # SwitchCaseAlignmentRule
+  - switch_case_on_newline # SwitchCaseOnNewlineRule
+  - syntactic_sugar # SyntacticSugarRule
+  - sync #SyncRule                                                                                # AvitoRule
+  - tabs # TabsRule                                                                               # AvitoRule # Autocorrectable
+  - trailing_newline # TrailingNewlineRule                                                        # Autocorrectable
+  - trailing_semicolon # TrailingSemicolonRule                                                    # Autocorrectable
+  - uicolor # UIColorRule                                                                         # AvitoRule
+  - unneeded_break_in_switch # UnneededBreakInSwitchRule
+  - unneeded_parentheses_in_closure_argument # UnneededParenthesesInClosureArgumentRule
+  - unused_closure_parameter # UnusedClosureParameterRule                                         # Autocorrectable
+  - unused_enumerated # UnusedEnumeratedRule
+  - unused_optional_binding # UnusedOptionalBindingRule
+  - vertical_parameter_alignment # VerticalParameterAlignmentRule
+  - vertical_parameter_alignment_on_call # VerticalParameterAlignmentOnCallRule
+  - vertical_whitespace # VerticalWhitespaceRule                                                  # Autocorrectable
+  - weak_delegate # WeakDelegateRule
+
+#################### RULE CONFIGURATIONS ####################
+
+accessibility_purpose: # AccessibilityPurposeRule
+  severity: warning
+
+array_init: # ArrayInitRule
+  severity: error
+
+assertion: # AssertionRule
+  severity: error
+
+block_based_kvo: # BlockBasedKVORule
+  severity: error
+
+bool_type_inference: # BoolTypeInferenceRule
+  severity: error
+
+contains_over_first_not_nil: # ContainsOverFirstNotNilRule
+  severity: error
+
+cyrillic_avito: # CyrillicAvitoRule
+  severity: error
+
+cyrillic_letters: # CyrillicLettersRule
+  severity: error
+
+class_delegate_protocol: # ClassDelegateProtocolRule
+  severity: error
+
+closing_brace: # ClosingBraceRule
+  severity: error
+
+closure_end_indentation: # ClosureEndIndentationRule
+  severity: error
+
+closure_spacing: # ClosureSpacingRule
+  severity: error
+
+comma: # CommaRule
+  severity: error
+
+compiler_protocol_init: # CompilerProtocolInitRule
+  severity: error
+
+discouraged_direct_init: # DiscouragedDirectInitRule
+  severity: error
+
+discouraged_object_literal: # DiscouragedObjectLiteral
+  severity: error
+
+control_statement: # ControlStatementRule
+  severity: error
+
+di_resolve: # DIResolveRule
+  severity: error
+
+discarded_notification_center_observer: # DiscardedNotificationCenterObserverRule
+  severity: error
+
+empty_count: # EmptyCountRule
+  severity: warning
+
+empty_enum_arguments: # EmptyEnumArgumentsRule
+  severity: error
+
+empty_parameters: # EmptyParametersRule
+  severity: error
+
+empty_parentheses_with_trailing_closure: # EmptyParenthesesWithTrailingClosureRule
+  severity: warning
+
+empty_string: # EmptyString
+  severity: error
+
+empty_tuple_return: # EmptyTupleReturnRule
+  severity: error
+
+empty_xctest_method: # EmptyXCTestMethod
+  severity: error
+
+excessive_spaces_after_colon: # ExcessiveSpacesAfterColonRule
+  severity: error
+
+feature_toggle_import: # FeatureToggleImportRule
+  severity: error
+
+first_where: # FirstWhereRule
+  severity: error
+
+explicit_init: # ExplicitInitRule
+  severity: error
+
+force_cast: # ForceCastRule
+  severity: error
+
+force_try: # ForceTryRule
+  severity: error
+
+force_unwrapping: # ForceUnwrappingRule
+  severity: error
+
+generic_type_name: # GenericTypeNameRule
+  min_length:
+    warning: 1
+    error: 0
+  max_length:
+    warning: 50
+    error: 70
+
+fatal_error_message: # FatalErrorMessageRule
+  severity: error
+
+implicit_getter: # ImplicitGetterRule
+  severity: error
+
+implicit_return: # ImplicitReturnRule
+  severity: error
+
+implicitly_unwrapped_optional: # ImplicitlyUnwrappedOptionalRule
+  severity: error
+
+internal_access_modifier: # InternalAccessModifierRule
+  severity: error
+
+inset_by: # InsetByRule
+  severity: error
+
+keyed_converter: # KeyedConverterRule
+  severity: error
+  
+leading_whitespace: # LeadingWhitespaceRule
+  severity: error
+
+legacy_cggeometry_functions: # LegacyCGGeometryFunctionsRule
+  severity: error
+
+legacy_constant: # LegacyConstantRule
+  severity: error
+
+legacy_constructor: # LegacyConstructorRule
+  severity: error
+
+line_length: # LineLengthRule
+  warning: 120
+  error: 230
+  ignores_comments: true
+
+lower_acl_than_parent: # Lower ACL than parent
+  severity: error
+
+mark: # MarkRule
+  severity: error
+
+missing_spaces_after_colon: # MissingSpacesAfterColonRule
+  severity: error
+
+modifier_order: # ModifierOrder
+  severity: error
+
+multiline_arguments: # MultilineArgumentsRule
+  severity: warning
+
+multiline_parameters: # MultilineParametersRule
+  severity: error
+
+multiple_closures_with_trailing_closure: # MultipleClosuresWithTrailingClosureRule
+  severity: error
+
+operator_usage_whitespace: # OperatorUsageWhitespaceRule
+  severity: error
+
+overridden_super_call: # OverriddenSuperCallRule
+  severity: error
+
+pattern_matching_keywords: # PatternMatchingKeywordsRule
+  severity: warning
+
+precondition: # PreconditionRule
+  severity: error
+
+private_outlet: # PrivateOutletRule
+  severity: error
+
+prohibited_super_call: # ProhibitedSuperRule
+  severity: error
+
+protocol_property_accessors_order: # ProtocolPropertyAccessorsOrderRule
+  severity: error
+
+redundant_discardable_let: # RedundantDiscardableLetRule
+  severity: error
+
+redundant_nil_coalescing: # RedundantNilCoalescingRule
+  severity: error
+
+redundant_optional_initialization: # RedundantOptionalInitializationRule
+  severity: error
+
+redundant_set_access_control: # RedundantSetAccessControlRule
+  severity: error
+
+redundant_spaces_before_colon: # RedundantSpacesBeforeColonRule
+  severity: error
+
+redundant_void_return: # RedundantVoidReturnRule
+  severity: error
+
+return_arrow_whitespace: # ReturnArrowWhitespaceRule
+  severity: error
+
+self_in_backticks: # SelfInBackticksRule
+  severity: error
+
+setup_function_name: # SetupFunctionNameRule
+  severity: error
+
+statement_position: # StatementPositionRule aka IfElseRule
+  severity: error
+
+string_type_inference: # StringTypeInferenceRule
+  severity: error
+
+switch_case_alignment: # SwitchCaseAlignmentRule
+  severity: warning
+
+switch_case_on_newline: # SwitchCaseOnNewlineRule
+  severity: error
+
+syntactic_sugar: # SyntacticSugarRule
+  severity: error
+
+sync: # SyncRule
+  severity: error
+
+print: # PrintRule
+  severity: error
+
+tabs: # TabsRule
+  severity: error
+  whitespaces_instead_of_tab_count: 4
+
+trailing_newline: # TrailingNewlineRule
+  severity: warning
+
+trailing_semicolon: # TrailingSemicolonRule
+  severity: error
+
+uicolor: # UIColorRule
+  severity: error
+
+unneeded_break_in_switch: # UnneededBreakInSwitchRule
+  severity: error
+
+unneeded_parentheses_in_closure_argument: # UnneededParenthesesInClosureArgumentRule
+  severity: error
+
+unused_closure_parameter: # UnusedClosureParameterRule
+  severity: error
+
+unused_enumerated: # UnusedEnumeratedRule
+  severity: error
+
+unused_optional_binding: # UnusedOptionalBindingRule
+  severity: error
+
+vertical_parameter_alignment: # VerticalParameterAlignmentRule
+  severity: error
+
+vertical_parameter_alignment_on_call: # VerticalParameterAlignmentOnCallRule
+  severity: error
+
+vertical_whitespace: # VerticalWhitespaceRule
+  severity: error
+
+weak_delegate: # WeakDelegateRule
+  severity: error

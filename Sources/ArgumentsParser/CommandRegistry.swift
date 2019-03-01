@@ -3,16 +3,6 @@ import Utility
 import Basic
 
 public struct CommandRegistry {
-    public enum CommandExecutionError: Error, CustomStringConvertible {
-        case incorrectUsage(usageDescription: String)
-        
-        public var description: String {
-            switch self {
-            case .incorrectUsage(let usageDescription):
-                return "Incorrect arguments. Usage:\n\(usageDescription)"
-            }
-        }
-    }
     
     private let parser: ArgumentParser
     private var commands: [Command] = []
@@ -41,7 +31,7 @@ public struct CommandRegistry {
                 let stream = BufferedOutputByteStream()
                 parser.printUsage(on: stream)
                 guard let description = stream.bytes.asString else {
-                    fatalError("Unable to generate description of usage")
+                    throw CommandExecutionError.unableGenerateDescription
                 }
                 throw CommandExecutionError.incorrectUsage(usageDescription: description)
         }
