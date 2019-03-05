@@ -63,6 +63,8 @@ extension PBXTarget {
             let sourcesFileElement = sourcesBuildPhase?.fileElements() {
             files.append(contentsOf: sourcesFileElement)
         }
+        // TODO: Fix after MVP
+        
 //        if let resourcesBuildPhase = try? resourcesBuildPhase(),
 //            let resourcesFileElement = resourcesBuildPhase?.fileElements() {
 //            files.append(contentsOf: resourcesFileElement)
