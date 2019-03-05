@@ -3,9 +3,9 @@ import Foundation
 public struct NodeDiff {
     let was: Node?
     let became: Node?
-    let children: [NodeDiff]?
+    let children: [NodeDiff]
     
-    init(was: Node?, became: Node?, children: [NodeDiff]?) {
+    init(was: Node?, became: Node?, children: [NodeDiff]) {
         self.was = was
         self.became = became
         self.children = children
@@ -15,10 +15,8 @@ public struct NodeDiff {
         let offset = String(repeating: " ", count: level)
         print("\(offset)was: \(was?.description ?? "-") became: \(became?.description ?? "-")")
         
-        if let children = children {
-            for child in children {
-                child.printTree(level: level + 4)
-            }
+        for child in children {
+            child.printTree(level: level + 4)
         }
     }
 }
