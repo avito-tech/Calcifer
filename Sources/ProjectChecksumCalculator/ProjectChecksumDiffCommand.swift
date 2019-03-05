@@ -19,12 +19,12 @@ public final class ProjectChecksumDiffCommand: Command {
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         firstChecksumPathArgument = subparser.add(
-            option: "--\(Arguments.firstChecksumPath.rawValue)",
+            option: Arguments.firstChecksumPath.optionString,
             kind: String.self,
             usage: "Specify first checksum path"
         )
         secondChecksumPathArgument = subparser.add(
-            option: "--\(Arguments.secondChecksumPath.rawValue)",
+            option: Arguments.secondChecksumPath.optionString,
             kind: String.self,
             usage: "Specify second checksum path"
         )
