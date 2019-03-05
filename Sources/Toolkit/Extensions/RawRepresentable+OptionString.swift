@@ -1,6 +1,8 @@
 import Foundation
 
-public extension RawRepresentable where RawValue == String {
+public protocol CommandArgument {}
+
+public extension RawRepresentable where RawValue == String, Self: CommandArgument {
     public var optionString: String {
         return "--\(rawValue)"
     }

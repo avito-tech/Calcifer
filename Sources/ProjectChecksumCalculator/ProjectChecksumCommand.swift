@@ -8,7 +8,7 @@ public final class ProjectChecksumCommand: Command {
     public let command = "checksum"
     public let overview = "Calculate checksum for project"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case projectPath
     }
     

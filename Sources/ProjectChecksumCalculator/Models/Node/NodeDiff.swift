@@ -1,29 +1,45 @@
 import Foundation
 
-struct NodeDiff {
-    let was: TreeNode?
-    let became: TreeNode?
-    let children: [NodeDiff]
+enum NodeDiff {
+    case noChanged
+    case changed(was: TreeNode, became: TreeNode, children: [NodeDiff])
+    case appear(became: TreeNode, children: [NodeDiff])
+    case disappear(was: TreeNode, children: [NodeDiff])
     
-    init(was: TreeNode?, became: TreeNode?, children: [NodeDiff]) {
-        self.was = was
-        self.became = became
-        self.children = children
+    var children: [NodeDiff] {
+        switch self {
+        case .noChanged:
+            return [NodeDiff]()
+        case let .changed(_, _, children):
+            return children
+        case let .appear(_, children):
+            return children
+        case let .disappear(_, children):
+            return children
+        }
     }
+    
+//    let was: TreeNode?
+//    let became: TreeNode?
+//    let children: [NodeDiff]
+//
+//    init(was: TreeNode?, became: TreeNode?, children: [NodeDiff]) {
+//        self.was = was
+//        self.became = became
+//        self.children = children
+//    }
     
     func printTree(level: Int = 0) {
         let offset = String(repeating: " ", count: level)
-        print("\(offset)was: \(was?.description ?? "-") became: \(became?.description ?? "-")")
+        print("\(offset)\(self)")
+//        print("\(offset)was: \(was?.description ?? "-") became: \(became?.description ?? "-")")
         
         for child in children {
             child.printTree(level: level + 4)
         }
     }
     
-    static func diff(was: TreeNode?, became: TreeNode?) -> NodeDiff? {
-        if was == became {
-            return nil
-        }
+    static func diff(was: TreeNode?, became: TreeNode?) -> NodeDiff {
         var allChildren = [String]()
         var wasChildren = [String : TreeNode]()
         if let was = was {
@@ -50,6 +66,15 @@ struct NodeDiff {
         let childrenDiff = allChildren.compactMap({
             diff(was: wasChildren[$0], became: becameChildren[$0])
         })
-        return NodeDiff(was: was, became: became, children: childrenDiff)
+        
+        if let was = was, let became = became {
+            return .changed(was: was, became: became, children: childrenDiff)
+        } else if let became = became {
+            return appear(became: became, children: childrenDiff)
+        } else if let was = was {
+            return disappear(was: was, children: childrenDiff)
+        } else {
+            return .noChanged
+        }
     }
 }

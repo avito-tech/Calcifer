@@ -8,7 +8,7 @@ public final class BuildCommand: Command {
     public let command = "build"
     public let overview = "Builds the necessary frameworks"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case projectPath
         case configuration
         case architecture

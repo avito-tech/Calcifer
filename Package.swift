@@ -48,8 +48,7 @@ let package = Package(
         .target(
             name: "ArgumentsParser",
             dependencies: [
-                "Toolkit",
-                "Utility"
+                "Toolkit"
             ]
         ),
         // MARK: FrameworkBuilder
@@ -57,8 +56,7 @@ let package = Package(
             name: "FrameworkBuilder",
             dependencies: [
                 "ArgumentsParser",
-                "Toolkit",
-                "Utility"
+                "Toolkit"
             ]
         ),
         // MARK: ProjectChecksumCalculator
@@ -67,8 +65,7 @@ let package = Package(
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
-                "Toolkit",
-                "Utility"
+                "Toolkit"
             ]
         ),
         .testTarget(
@@ -84,14 +81,15 @@ let package = Package(
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
-                "Toolkit",
-                "Utility"
+                "Toolkit"
             ]
         ),
         // MARK: Toolkit
         .target(
             name: "Toolkit",
-            dependencies: []
+            dependencies: [
+                "Utility"
+            ]
         ),
     ]
 )

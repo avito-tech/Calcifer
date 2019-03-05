@@ -8,7 +8,7 @@ public final class ProjectChecksumDiffCommand: Command {
     public let command = "diff"
     public let overview = "Calculate diff for checksums"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case firstChecksumPath
         case secondChecksumPath
     }
@@ -41,12 +41,8 @@ public final class ProjectChecksumDiffCommand: Command {
         )
         let firstChecksumHolder = try projectChecksumHolder(path: firstChecksumPath)
         let secondChecksumHolder = try projectChecksumHolder(path: secondChecksumPath)
-        
-        if let diff = NodeDiff.diff(was: firstChecksumHolder.node(), became: secondChecksumHolder.node()) {
-            diff.printTree()
-        } else {
-            print("Empty diff")
-        }
+        let diff = NodeDiff.diff(was: firstChecksumHolder.node(), became: secondChecksumHolder.node())
+        diff.printTree()
     }
     
     private func projectChecksumHolder(path: String) throws -> XcodeProjChecksumHolder<BaseChecksum> {
