@@ -49,32 +49,6 @@ public final class ProjectChecksumDiffCommand: Command {
         }
     }
     
-//    private func calculateTargetsDiff(diff: Diff<XcodeProjChecksumHolder<BaseChecksum>>) -> [Diff<TargetChecksumHolder<BaseChecksum>>] {
-//        var allTarget = [String]()
-//        let wasTargets = Dictionary(uniqueKeysWithValues:
-//            diff.was?.proj.projects.flatMap({ $0.targets }).map({ ($0.name, $0) }) ?? []
-//        )
-//        wasTargets.keys.forEach {
-//            if !allTarget.contains($0) {
-//                allTarget.append($0)
-//            }
-//        }
-//        let becameTargets = Dictionary(uniqueKeysWithValues:
-//            diff.became?.proj.projects.flatMap({ $0.targets }).map({ ($0.name, $0) }) ?? []
-//        )
-//        becameTargets.keys.forEach {
-//            if !allTarget.contains($0) {
-//                allTarget.append($0)
-//            }
-//        }
-//        return allTarget.compactMap({
-//            Diff(
-//                was: wasTargets[$0],
-//                became: becameTargets[$0]
-//            )
-//        })
-//    }
-    
     private func projectChecksumHolder(path: String) throws -> XcodeProjChecksumHolder<BaseChecksum> {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         return try JSONDecoder().decode(
