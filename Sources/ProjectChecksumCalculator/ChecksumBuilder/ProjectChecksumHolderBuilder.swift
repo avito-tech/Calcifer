@@ -1,6 +1,7 @@
 import Foundation
 import xcodeproj
 import PathKit
+import Toolkit
 
 final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
     
