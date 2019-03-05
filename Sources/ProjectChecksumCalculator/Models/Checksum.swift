@@ -1,3 +1,3 @@
 import Foundation
 
-public protocol Checksum: CustomStringConvertible, Hashable, Combinable {}
+public protocol Checksum: CustomStringConvertible, Hashable, Combinable, Codable {}

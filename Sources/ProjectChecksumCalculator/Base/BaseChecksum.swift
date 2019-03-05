@@ -31,4 +31,5 @@ final class BaseChecksum: Checksum {
     static func == (lhs: BaseChecksum, rhs: BaseChecksum) -> Bool {
         return lhs.stringValue == rhs.stringValue
     }
+    
 }

@@ -10,7 +10,6 @@ public final class ProjectChecksumCommand: Command {
     
     enum Arguments: String {
         case projectPath
-        case productName
     }
     
     private let projectPathArgument: OptionArgument<String>
@@ -33,7 +32,10 @@ public final class ProjectChecksumCommand: Command {
             checksumProducer: BaseURLChecksumProducer()
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
-        let checksum = checksumHolder.checksum
-        print(checksum.description)
+        let data = try checksumHolder.encode()
+        let outputFilePath = FileManager.default.file(name: "checkum.json")
+        try data.write(to: outputFilePath)
+        print(checksumHolder.checksum.description)
+        print(outputFilePath)
     }
 }

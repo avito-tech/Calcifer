@@ -6,3 +6,14 @@ struct ProjChecksumHolder<C: Checksum>: ChecksumHolder {
     let checksum: C
 }
 
+extension ProjChecksumHolder: NodeConvertable {
+    
+    func node() -> Node {
+        return Node(
+            name: description,
+            value: checksum.description,
+            children: projects.nodeList()
+        )
+    }
+    
+}

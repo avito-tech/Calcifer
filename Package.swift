@@ -25,34 +25,35 @@ let package = Package(
         )
     ],
     targets: [
+        // MARK: Calcifer
         .target(
-            // MARK: Calcifer
             name: "Calcifer",
             dependencies: [
                 "Toolkit",
                 "CommandRunner"
             ]
         ),
+        // MARK: CommandRunner
         .target(
-            // MARK: CommandRunner
             name: "CommandRunner",
             dependencies: [
                 "Toolkit",
                 "FrameworkBuilder",
                 "ProjectChecksumCalculator",
+                "ProjectPatcher",
                 "ArgumentsParser"
             ]
         ),
+        // MARK: ArgumentsParser
         .target(
-            // MARK: ArgumentsParser
             name: "ArgumentsParser",
             dependencies: [
                 "Toolkit",
                 "Utility"
             ]
         ),
+        // MARK: FrameworkBuilder
         .target(
-            // MARK: FrameworkBuilder
             name: "FrameworkBuilder",
             dependencies: [
                 "ArgumentsParser",
@@ -60,8 +61,8 @@ let package = Package(
                 "Utility"
             ]
         ),
+        // MARK: ProjectChecksumCalculator
         .target(
-            // MARK: ProjectChecksumCalculator
             name: "ProjectChecksumCalculator",
             dependencies: [
                 "ArgumentsParser",
@@ -77,8 +78,18 @@ let package = Package(
                 "xcodeproj"
             ]
         ),
+        // MARK: ProjectPatcher
         .target(
-            // MARK: Toolkit
+            name: "ProjectPatcher",
+            dependencies: [
+                "ArgumentsParser",
+                "xcodeproj",
+                "Toolkit",
+                "Utility"
+            ]
+        ),
+        // MARK: Toolkit
+        .target(
             name: "Toolkit",
             dependencies: []
         ),

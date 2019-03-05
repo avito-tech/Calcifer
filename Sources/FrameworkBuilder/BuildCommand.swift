@@ -36,12 +36,12 @@ public final class BuildCommand: Command {
         architectureArgument = subparser.add(
             option: "--\(Arguments.architecture.rawValue)",
             kind: String.self,
-            usage: "Specify build configuration"
+            usage: "Specify architecture"
         )
         sdkArgument = subparser.add(
             option: "--\(Arguments.SDK.rawValue)",
             kind: String.self,
-            usage: "Specify build configuration"
+            usage: "Specify sdk"
         )
     }
     
@@ -77,7 +77,7 @@ public final class BuildCommand: Command {
             SDK: sdk,
             architecture: architecture,
             projectPath: projectPath,
-            targetName: "Specs",
+            targetName: "Aggregate",
             configurationName: configuration,
             onlyActiveArchitecture: true
         )

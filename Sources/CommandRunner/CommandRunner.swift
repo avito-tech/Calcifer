@@ -1,6 +1,7 @@
 import ArgumentsParser
 import FrameworkBuilder
 import ProjectChecksumCalculator
+import ProjectPatcher
 
 public final class CommandRunner {
     
@@ -15,6 +16,8 @@ public final class CommandRunner {
         
         registry.register(command: BuildCommand.self)
         registry.register(command: ProjectChecksumCommand.self)
+        registry.register(command: ProjectChecksumDiffCommand.self)
+        registry.register(command: ProjectPatcherCommand.self)
         
         let exitCode: Int32
         do {
