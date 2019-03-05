@@ -8,8 +8,8 @@ struct XcodeProjChecksumHolder<C: Checksum>: ChecksumHolder {
 
 extension XcodeProjChecksumHolder: NodeConvertable {
     
-    func node() -> Node {
-        return Node(
+    func node() -> TreeNode {
+        return TreeNode(
             name: description,
             value: checksum.description,
             children: [proj.node()]

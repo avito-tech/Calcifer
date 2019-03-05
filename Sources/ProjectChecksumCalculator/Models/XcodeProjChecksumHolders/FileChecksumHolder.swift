@@ -7,8 +7,8 @@ struct FileChecksumHolder<C: Checksum>: ChecksumHolder {
 
 extension FileChecksumHolder: NodeConvertable {
     
-    func node() -> Node {
-        return Node(
+    func node() -> TreeNode {
+        return TreeNode(
             name: description,
             value: checksum.description,
             children: nil

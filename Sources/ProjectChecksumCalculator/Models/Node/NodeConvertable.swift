@@ -1,12 +1,12 @@
 import Foundation
 
 protocol NodeConvertable {
-    func node() -> Node
+    func node() -> TreeNode
 }
 
 extension Array where Element: NodeConvertable {
     
-    func nodeList() -> [Node] {
+    func nodeList() -> [TreeNode] {
         return map({ $0.node() })
     }
     

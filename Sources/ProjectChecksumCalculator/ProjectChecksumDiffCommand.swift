@@ -42,7 +42,7 @@ public final class ProjectChecksumDiffCommand: Command {
         let firstChecksumHolder = try projectChecksumHolder(path: firstChecksumPath)
         let secondChecksumHolder = try projectChecksumHolder(path: secondChecksumPath)
         
-        if let diff = firstChecksumHolder.node().diff(became: secondChecksumHolder.node()) {
+        if let diff = NodeDiff.diff(was: firstChecksumHolder.node(), became: secondChecksumHolder.node()) {
             diff.printTree()
         } else {
             print("Empty diff")

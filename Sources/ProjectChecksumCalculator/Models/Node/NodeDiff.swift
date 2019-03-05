@@ -1,11 +1,11 @@
 import Foundation
 
-public struct NodeDiff {
-    let was: Node?
-    let became: Node?
+struct NodeDiff {
+    let was: TreeNode?
+    let became: TreeNode?
     let children: [NodeDiff]
     
-    init(was: Node?, became: Node?, children: [NodeDiff]) {
+    init(was: TreeNode?, became: TreeNode?, children: [NodeDiff]) {
         self.was = was
         self.became = became
         self.children = children
@@ -19,23 +19,24 @@ public struct NodeDiff {
             child.printTree(level: level + 4)
         }
     }
-}
-
-extension Node {
-    func diff(became: Node?) -> NodeDiff? {
-        if self == became {
+    
+    static func diff(was: TreeNode?, became: TreeNode?) -> NodeDiff? {
+        if was == became {
             return nil
         }
         var allChildren = [String]()
-        let wasChildren = Dictionary(uniqueKeysWithValues:
-            children?.compactMap({ ($0.name, $0) }) ?? []
-        )
+        var wasChildren = [String : TreeNode]()
+        if let was = was {
+            wasChildren = Dictionary(uniqueKeysWithValues:
+                was.children?.compactMap({ ($0.name, $0) }) ?? []
+            )
+        }
         wasChildren.keys.forEach {
             if !allChildren.contains($0) {
                 allChildren.append($0)
             }
         }
-        var becameChildren = [String : Node]()
+        var becameChildren = [String : TreeNode]()
         if let became = became {
             becameChildren = Dictionary(uniqueKeysWithValues:
                 became.children?.compactMap({ ($0.name, $0) }) ?? []
@@ -47,8 +48,8 @@ extension Node {
             }
         }
         let childrenDiff = allChildren.compactMap({
-            wasChildren[$0]?.diff(became: becameChildren[$0])
+            diff(was: wasChildren[$0], became: becameChildren[$0])
         })
-        return NodeDiff(was: self, became: became, children: childrenDiff)
+        return NodeDiff(was: was, became: became, children: childrenDiff)
     }
 }
