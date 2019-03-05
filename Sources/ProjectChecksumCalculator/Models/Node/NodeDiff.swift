@@ -1,45 +1,11 @@
 import Foundation
 
-class Node: Equatable, CustomStringConvertible {
-    
-    public let name: String
-    public let value: String
-    public let children: [Node]?
-    
-    init(name: String, value: String, children: [Node]?) {
-        self.name = name
-        self.value = value
-        self.children = children
-    }
-    
-    static func == (lhs: Node, rhs: Node) -> Bool {
-        return lhs.name == rhs.name && lhs.value == rhs.value && lhs.children == rhs.children
-    }
-    
-    var description: String {
-        return "\(name) \(value)"
-    }
-    
-}
-
-protocol NodeConvertable {
-    func node() -> Node
-}
-
-extension Array where Element: NodeConvertable {
-    
-    func nodeList() -> [Node] {
-        return map({ $0.node() })
-    }
-    
-}
-
-public struct Diff {
+public struct NodeDiff {
     let was: Node?
     let became: Node?
-    let children: [Diff]?
+    let children: [NodeDiff]?
     
-    init(was: Node?, became: Node?, children: [Diff]?) {
+    init(was: Node?, became: Node?, children: [NodeDiff]?) {
         self.was = was
         self.became = became
         self.children = children
@@ -55,11 +21,10 @@ public struct Diff {
             }
         }
     }
-    
 }
 
 extension Node {
-    func diff(became: Node?) -> Diff? {
+    func diff(became: Node?) -> NodeDiff? {
         if self == became {
             return nil
         }
@@ -86,6 +51,6 @@ extension Node {
         let childrenDiff = allChildren.compactMap({
             wasChildren[$0]?.diff(became: becameChildren[$0])
         })
-        return Diff(was: self, became: became, children: childrenDiff)
+        return NodeDiff(was: self, became: became, children: childrenDiff)
     }
 }
