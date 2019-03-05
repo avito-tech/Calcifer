@@ -1,30 +1,29 @@
 import Foundation
+import Basic
 
 public final class ThreadSafeDictionary<Key: Hashable, Value> {
     
-    private let lock = NSRecursiveLock()
+    private let lock = Lock()
     private var dictionary = Dictionary<Key, Value>()
     
     public private(set) lazy var read: (Key) -> (Value?) = { [weak self] key in
-        self?.dictionary[key]
+        self?.lock.withLock({
+            return self?.dictionary[key]
+        })
     }
     
     public private(set) lazy var write: (Key, Value) -> () = { [weak self] key, value in
         guard let strongSelf = self else { return }
-        // In this situation, it is more correct to use the DispatchQueue, not the lock,
-        // because the queue guarantees the absence of a double write, but it works twice as long.
-        // Performance is more important than this warranty, so I left the lock.
-        strongSelf.lock.lock()
-        strongSelf.dictionary[key] = value
-        strongSelf.lock.unlock()
+        // In this situation, it is more correct to use the DispatchQueue, not the lock, but DispatchQueue works twice as long.
+        strongSelf.lock.withLock {
+            strongSelf.dictionary[key] = value
+        }
     }
     
     public var values: Array<Value> {
-        let currentValues: Array<Value>
-        lock.lock()
-        currentValues = Array(dictionary.values)
-        lock.unlock()
-        return currentValues
+        return lock.withLock {
+            Array(dictionary.values)
+        }
     }
     
     public init() {}
