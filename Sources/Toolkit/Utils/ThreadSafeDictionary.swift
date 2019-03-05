@@ -20,7 +20,11 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     }
     
     public var values: Array<Value> {
-        return Array(dictionary.values)
+        let currentValues: Array<Value>
+        lock.lock()
+        currentValues = Array(dictionary.values)
+        lock.unlock()
+        return currentValues
     }
     
     init() {}
