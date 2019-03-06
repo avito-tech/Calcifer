@@ -1,13 +1,14 @@
 import ArgumentsParser
 import Foundation
 import Utility
+import Toolkit
 
 public final class BuildCommand: Command {
     
     public let command = "build"
     public let overview = "Builds the necessary frameworks"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case projectPath
         case configuration
         case architecture
@@ -24,24 +25,24 @@ public final class BuildCommand: Command {
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         projectPathArgument = subparser.add(
-            option: "--\(Arguments.projectPath.rawValue)",
+            option: Arguments.projectPath.optionString,
             kind: String.self,
             usage: "Specify Pods project path"
         )
         configurationArgument = subparser.add(
-            option: "--\(Arguments.configuration.rawValue)",
+            option: Arguments.configuration.optionString,
             kind: String.self,
             usage: "Specify build configuration"
         )
         architectureArgument = subparser.add(
-            option: "--\(Arguments.architecture.rawValue)",
+            option: Arguments.architecture.optionString,
             kind: String.self,
-            usage: "Specify build configuration"
+            usage: "Specify architecture"
         )
         sdkArgument = subparser.add(
-            option: "--\(Arguments.SDK.rawValue)",
+            option: Arguments.SDK.optionString,
             kind: String.self,
-            usage: "Specify build configuration"
+            usage: "Specify sdk"
         )
     }
     
@@ -77,7 +78,7 @@ public final class BuildCommand: Command {
             SDK: sdk,
             architecture: architecture,
             projectPath: projectPath,
-            targetName: "Specs",
+            targetName: "Aggregate",
             configurationName: configuration,
             onlyActiveArchitecture: true
         )

@@ -28,7 +28,7 @@ public final class FrameworkBuilder {
     @discardableResult
     func build(config: BuildConfig) -> Int32 {
         return shell(
-            launchPath: "xcodebuild",
+            launchPath: "/usr/bin/xcodebuild",
             arguments: [
                 "ARCHS=\(config.architecture.rawValue)",
                 "ONLY_ACTIVE_ARCH=\(config.onlyActiveArchitecture ? "YES" : "NO")",

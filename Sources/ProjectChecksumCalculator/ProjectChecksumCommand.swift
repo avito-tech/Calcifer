@@ -8,9 +8,8 @@ public final class ProjectChecksumCommand: Command {
     public let command = "checksum"
     public let overview = "Calculate checksum for project"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case projectPath
-        case productName
     }
     
     private let projectPathArgument: OptionArgument<String>
@@ -18,7 +17,7 @@ public final class ProjectChecksumCommand: Command {
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         projectPathArgument = subparser.add(
-            option: "--\(Arguments.projectPath.rawValue)",
+            option: Arguments.projectPath.optionString,
             kind: String.self,
             usage: "Specify Pods project path"
         )
@@ -33,7 +32,10 @@ public final class ProjectChecksumCommand: Command {
             checksumProducer: BaseURLChecksumProducer()
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
-        let checksum = checksumHolder.checksum
-        print(checksum.description)
+        let data = try checksumHolder.encode()
+        let outputFilePath = FileManager.default.file(name: "checkum.json")
+        try data.write(to: outputFilePath)
+        print(checksumHolder.checksum.description)
+        print(outputFilePath)
     }
 }

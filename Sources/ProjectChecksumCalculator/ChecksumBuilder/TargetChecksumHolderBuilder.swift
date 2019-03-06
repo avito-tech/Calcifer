@@ -10,19 +10,29 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
+    typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.C>) -> ())
+    typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.C>?))
+    
+    @discardableResult
     func build(
         target: PBXTarget,
         sourceRoot: Path,
-        cached: inout [PBXTarget: TargetChecksumHolder<Builder.C>])
+        cacheReader: CacheReader,
+        cacheWriter: CacheWriter)
         throws -> TargetChecksumHolder<Builder.C>
     {
+        if let cachedChecksum = cacheReader(target) {
+            return cachedChecksum
+        }
         var summarizedChecksums = [Builder.C]()
         let dependenciesTargets = target.dependencies.compactMap({ $0.target })
         let dependenciesChecksums = try dependenciesTargets.map { dependency -> TargetChecksumHolder<Builder.C> in
-            if let dependencyChecksum = cached[dependency] {
-                return dependencyChecksum
-            }
-            return try build(target: dependency, sourceRoot: sourceRoot, cached: &cached)
+            return try build(
+                target: dependency,
+                sourceRoot: sourceRoot,
+                cacheReader: cacheReader,
+                cacheWriter: cacheWriter
+            )
         }
         let dependenciesChecksum = try dependenciesChecksums.checksum()
         summarizedChecksums.append(dependenciesChecksum)
@@ -35,12 +45,14 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
-        return TargetChecksumHolder<Builder.C>(
+        let targetChecksumHolder = TargetChecksumHolder<Builder.C>(
+            name: target.name,
+            checksum: summarizedChecksum,
             files: filesChecksums,
-            dependencies: dependenciesChecksums,
-            description: target.name,
-            checksum: summarizedChecksum
+            dependencies: dependenciesChecksums
         )
+        cacheWriter(target, targetChecksumHolder)
+        return targetChecksumHolder
     }
 }
 
@@ -51,10 +63,12 @@ extension PBXTarget {
             let sourcesFileElement = sourcesBuildPhase?.fileElements() {
             files.append(contentsOf: sourcesFileElement)
         }
-        if let resourcesBuildPhase = try? resourcesBuildPhase(),
-            let resourcesFileElement = resourcesBuildPhase?.fileElements()  {
-            files.append(contentsOf: resourcesFileElement)
-        }
+        // TODO: Fix after MVP
+        
+//        if let resourcesBuildPhase = try? resourcesBuildPhase(),
+//            let resourcesFileElement = resourcesBuildPhase?.fileElements() {
+//            files.append(contentsOf: resourcesFileElement)
+//        }
         return files
     }
 }

@@ -3,11 +3,12 @@ import XCTest
 @testable import ProjectChecksumCalculator
 @testable import xcodeproj
 import PathKit
+import Toolkit
 
 public final class TargetChecksumHolderBuilderTests: XCTestCase {
     
     let builder = TargetChecksumHolderBuilder(
-        builder:FileChecksumHolderBuilder(
+        builder: FileChecksumHolderBuilder(
             checksumProducer: TestURLChecksumProducer(),
             fullPathProvider: TestFileElementFullPathProvider()
         )
@@ -27,26 +28,26 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
     
     func test_build_correctly() {
         let target = PBXObjectFactory.target()
-        var cached = [PBXTarget: TargetChecksumHolder<TestChecksum>]()
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
         let expectedChecksum = target.filesPathes(sourceRoot: sourceRoot)
         let checksumHolder = try? builder.build(
             target: target,
             sourceRoot: sourceRoot,
-            cached: &cached
+            cacheReader: cache.read,
+            cacheWriter: cache.write
         )
         
         XCTAssertEqual(checksumHolder?.checksum.stringValue, expectedChecksum)
         XCTAssertEqual(checksumHolder?.description, target.name)
     }
     
-    
     func test_build_correctly_withDependency() {
         let target = PBXObjectFactory.target()
         let targetWithDependencies = PBXObjectFactory.target(
             dependencies: [target]
         )
-        var cached = [PBXTarget: TargetChecksumHolder<TestChecksum>]()
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
         let filesPathes = targetWithDependencies.filesPathes(sourceRoot: sourceRoot)
         let expectedChecksum = target.filesPathes(sourceRoot: sourceRoot) + filesPathes
@@ -54,7 +55,8 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         let checksumHolder = try? builder.build(
             target: targetWithDependencies,
             sourceRoot: sourceRoot,
-            cached: &cached
+            cacheReader: cache.read,
+            cacheWriter: cache.write
         )
 
         XCTAssertEqual(checksumHolder?.checksum.stringValue, expectedChecksum)
