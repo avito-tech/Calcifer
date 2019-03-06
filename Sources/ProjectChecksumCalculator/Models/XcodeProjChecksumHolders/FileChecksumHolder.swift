@@ -7,11 +7,12 @@ struct FileChecksumHolder<C: Checksum>: ChecksumHolder {
 
 extension FileChecksumHolder: NodeConvertable {
     
-    func node() -> TreeNode {
-        return TreeNode(
+    func node() -> TreeNode<C> {
+        let children = [TreeNode<C>]()
+        return TreeNode<C>(
             name: description,
-            value: checksum.description,
-            children: nil
+            value: checksum,
+            children: children
         )
     }
     

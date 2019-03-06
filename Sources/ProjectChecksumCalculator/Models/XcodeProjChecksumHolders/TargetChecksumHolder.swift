@@ -53,11 +53,12 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
 
 extension TargetChecksumHolder: NodeConvertable {
     
-    func node() -> TreeNode {
-        return TreeNode(
+    func node() -> TreeNode<C> {
+        let children = files.nodeList() + dependencies.nodeList()
+        return TreeNode<C>(
             name: name,
-            value: checksum.description,
-            children: files.nodeList() + dependencies.nodeList()
+            value: checksum,
+            children: children
         )
     }
     

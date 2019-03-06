@@ -1,10 +1,10 @@
 import Foundation
 
-enum NodeDiff {
+enum NodeDiff<Value: Checksum>: CustomStringConvertible {
     case noChanged
-    case changed(was: TreeNode, became: TreeNode, children: [NodeDiff])
-    case appear(became: TreeNode, children: [NodeDiff])
-    case disappear(was: TreeNode, children: [NodeDiff])
+    case changed(was: TreeNode<Value>, became: TreeNode<Value>, children: [NodeDiff])
+    case appear(became: TreeNode<Value>, children: [NodeDiff])
+    case disappear(was: TreeNode<Value>, children: [NodeDiff])
     
     var children: [NodeDiff] {
         switch self {
@@ -19,6 +19,21 @@ enum NodeDiff {
         }
     }
     
+    var description: String {
+        switch self {
+        case .noChanged:
+            return "noChanged"
+        case let .changed(was, became, _):
+            return "changed was: \(was) became: \(became)"
+        case let .appear(became, _):
+            return "appear: \(became)"
+        case let .disappear(was, _):
+            return "disappear: \(was)"
+        }
+    }
+    
+    
+    
 //    let was: TreeNode?
 //    let became: TreeNode?
 //    let children: [NodeDiff]
@@ -30,8 +45,11 @@ enum NodeDiff {
 //    }
     
     func printTree(level: Int = 0) {
+        if case .noChanged = self {
+            return
+        }
         let offset = String(repeating: " ", count: level)
-        print("\(offset)\(self)")
+        print("\(offset)\(self.description)")
 //        print("\(offset)was: \(was?.description ?? "-") became: \(became?.description ?? "-")")
         
         for child in children {
@@ -39,9 +57,14 @@ enum NodeDiff {
         }
     }
     
-    static func diff(was: TreeNode?, became: TreeNode?) -> NodeDiff {
+    static func diff(was: TreeNode<Value>?, became: TreeNode<Value>?) -> NodeDiff {
+        
+        if was == became {
+            return .noChanged
+        }
+        
         var allChildren = [String]()
-        var wasChildren = [String : TreeNode]()
+        var wasChildren = [String : TreeNode<Value>]()
         if let was = was {
             wasChildren = Dictionary(uniqueKeysWithValues:
                 was.children?.compactMap({ ($0.name, $0) }) ?? []
@@ -52,7 +75,7 @@ enum NodeDiff {
                 allChildren.append($0)
             }
         }
-        var becameChildren = [String : TreeNode]()
+        var becameChildren = [String : TreeNode<Value>]()
         if let became = became {
             becameChildren = Dictionary(uniqueKeysWithValues:
                 became.children?.compactMap({ ($0.name, $0) }) ?? []

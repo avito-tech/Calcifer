@@ -8,10 +8,10 @@ struct ProjectChecksumHolder<C: Checksum>: ChecksumHolder {
 
 extension ProjectChecksumHolder: NodeConvertable {
     
-    func node() -> TreeNode {
-        return TreeNode(
+    func node() -> TreeNode<C> {
+        return TreeNode<C>(
             name: description,
-            value: checksum.description,
+            value: checksum,
             children: targets.nodeList()
         )
     }
