@@ -2,9 +2,9 @@ import Foundation
 
 final class TreeNode<Value: Checksum>: Equatable, CustomStringConvertible {
     
-    public let name: String
-    public let value: Value
-    public let children: [TreeNode<Value>]?
+    let name: String
+    let value: Value
+    let children: [TreeNode<Value>]?
     
     init(name: String, value: Value, children: [TreeNode<Value>]?) {
         self.name = name

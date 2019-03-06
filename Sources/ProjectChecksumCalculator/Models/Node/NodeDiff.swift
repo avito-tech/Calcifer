@@ -32,25 +32,12 @@ enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         }
     }
     
-    
-    
-//    let was: TreeNode?
-//    let became: TreeNode?
-//    let children: [NodeDiff]
-//
-//    init(was: TreeNode?, became: TreeNode?, children: [NodeDiff]) {
-//        self.was = was
-//        self.became = became
-//        self.children = children
-//    }
-    
     func printTree(level: Int = 0) {
         if case .noChanged = self {
             return
         }
         let offset = String(repeating: " ", count: level)
         print("\(offset)\(self.description)")
-//        print("\(offset)was: \(was?.description ?? "-") became: \(became?.description ?? "-")")
         
         for child in children {
             child.printTree(level: level + 4)
@@ -64,7 +51,7 @@ enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         }
         
         var allChildren = [String]()
-        var wasChildren = [String : TreeNode<Value>]()
+        var wasChildren = [String: TreeNode<Value>]()
         if let was = was {
             wasChildren = Dictionary(uniqueKeysWithValues:
                 was.children?.compactMap({ ($0.name, $0) }) ?? []
@@ -75,7 +62,7 @@ enum NodeDiff<Value: Checksum>: CustomStringConvertible {
                 allChildren.append($0)
             }
         }
-        var becameChildren = [String : TreeNode<Value>]()
+        var becameChildren = [String: TreeNode<Value>]()
         if let became = became {
             becameChildren = Dictionary(uniqueKeysWithValues:
                 became.children?.compactMap({ ($0.name, $0) }) ?? []

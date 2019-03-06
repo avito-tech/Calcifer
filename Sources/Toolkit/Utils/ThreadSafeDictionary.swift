@@ -4,7 +4,7 @@ import Basic
 public final class ThreadSafeDictionary<Key: Hashable, Value> {
     
     private let lock = Lock()
-    private var dictionary = Dictionary<Key, Value>()
+    private var dictionary = [Key: Value]()
     
     public private(set) lazy var read: (Key) -> (Value?) = { [weak self] key in
         self?.lock.withLock({
@@ -20,7 +20,7 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
         }
     }
     
-    public var values: Array<Value> {
+    public var values: [Value] {
         return lock.withLock {
             Array(dictionary.values)
         }

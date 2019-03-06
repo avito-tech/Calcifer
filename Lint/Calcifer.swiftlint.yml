@@ -8,8 +8,7 @@ excluded:
 
 whitelist_rules:
   - accessibility_purpose # AccessibilityPurposeRule                                              # AvitoRule
-  - array_init # ArrayInitRule
-  - assertion # AssertionRule                                                                     # AvitoRule
+  - array_init # ArrayInitRule                                                                    # AvitoRule
   - block_based_kvo # BlockBasedKVORule
   - bool_type_inference # BoolTypeInferenceRule                                                   # AvitoRule
   - contains_over_first_not_nil # ContainsOverFirstNotNilRule
@@ -101,9 +100,6 @@ accessibility_purpose: # AccessibilityPurposeRule
   severity: warning
 
 array_init: # ArrayInitRule
-  severity: error
-
-assertion: # AssertionRule
   severity: error
 
 block_based_kvo: # BlockBasedKVORule

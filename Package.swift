@@ -72,7 +72,8 @@ let package = Package(
             name: "ProjectChecksumCalculatorTests",
             dependencies: [
                 "ProjectChecksumCalculator",
-                "xcodeproj"
+                "xcodeproj",
+                "Toolkit"
             ]
         ),
         // MARK: ProjectPatcher

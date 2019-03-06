@@ -3,6 +3,7 @@ import XCTest
 @testable import ProjectChecksumCalculator
 @testable import xcodeproj
 import PathKit
+import Toolkit
 
 public final class TargetChecksumHolderBuilderTests: XCTestCase {
     
@@ -40,7 +41,6 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         XCTAssertEqual(checksumHolder?.checksum.stringValue, expectedChecksum)
         XCTAssertEqual(checksumHolder?.description, target.name)
     }
-    
     
     func test_build_correctly_withDependency() {
         let target = PBXObjectFactory.target()

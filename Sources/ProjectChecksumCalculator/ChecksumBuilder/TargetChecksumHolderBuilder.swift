@@ -10,8 +10,8 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    public typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.C>) -> ())
-    public typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.C>?))
+    typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.C>) -> ())
+    typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.C>?))
     
     @discardableResult
     func build(

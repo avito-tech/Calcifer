@@ -15,7 +15,7 @@ final class XcodeProjChecksumHolderBuilderFactory {
         )
         let targetChecksumBuilder = TargetChecksumHolderBuilder(builder: fileChecksumBuilder)
         let projectChecksumBuilder = ProjectChecksumHolderBuilder(builder: targetChecksumBuilder)
-        let projChecksumBuilder  = ProjChecksumHolderBuilder(builder: projectChecksumBuilder)
+        let projChecksumBuilder = ProjChecksumHolderBuilder(builder: projectChecksumBuilder)
         return XcodeProjChecksumHolderBuilder(builder: projChecksumBuilder)
     }
 }
