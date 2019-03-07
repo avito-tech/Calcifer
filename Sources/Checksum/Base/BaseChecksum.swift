@@ -1,22 +1,23 @@
 import Foundation
+import Toolkit
 
-final class BaseChecksum: Checksum {
+public final class BaseChecksum: Checksum {
     
     let stringValue: String
     
-    init(_ stringValue: String) {
+    public init(_ stringValue: String) {
         self.stringValue = stringValue
     }
     
-    var description: String {
+    public var description: String {
         return stringValue
     }
     
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(stringValue)
     }
     
-    static func + (left: BaseChecksum, right: BaseChecksum) throws -> BaseChecksum {
+    public static func + (left: BaseChecksum, right: BaseChecksum) throws -> BaseChecksum {
         guard let string = try (left.stringValue + right.stringValue).md5() else {
             assertionFailure("Empty md5 result")
             return .zero
@@ -24,11 +25,11 @@ final class BaseChecksum: Checksum {
         return BaseChecksum(string)
     }
     
-    static var zero: BaseChecksum {
+    public static var zero: BaseChecksum {
         return BaseChecksum("")
     }
     
-    static func == (lhs: BaseChecksum, rhs: BaseChecksum) -> Bool {
+    public static func == (lhs: BaseChecksum, rhs: BaseChecksum) -> Bool {
         return lhs.stringValue == rhs.stringValue
     }
     

@@ -1,4 +1,5 @@
 import Foundation
+import Checksum
 @testable import ProjectChecksumCalculator
 
 final class TestChecksum: Checksum {

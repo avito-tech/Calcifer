@@ -1,12 +1,12 @@
 import Foundation
 
-enum NodeDiff<Value: Checksum>: CustomStringConvertible {
+public enum NodeDiff<Value: Checksum>: CustomStringConvertible {
     case noChanged
     case changed(was: TreeNode<Value>, became: TreeNode<Value>, children: [NodeDiff])
     case appear(became: TreeNode<Value>, children: [NodeDiff])
     case disappear(was: TreeNode<Value>, children: [NodeDiff])
     
-    var children: [NodeDiff] {
+    public var children: [NodeDiff] {
         switch self {
         case .noChanged:
             return [NodeDiff]()
@@ -19,7 +19,7 @@ enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         }
     }
     
-    var description: String {
+    public var description: String {
         switch self {
         case .noChanged:
             return "noChanged"
@@ -32,7 +32,7 @@ enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         }
     }
     
-    func printTree(level: Int = 0) {
+    public func printTree(level: Int = 0) {
         if case .noChanged = self {
             return
         }
@@ -44,7 +44,7 @@ enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         }
     }
     
-    static func diff(was: TreeNode<Value>?, became: TreeNode<Value>?) -> NodeDiff {
+    public static func diff(was: TreeNode<Value>?, became: TreeNode<Value>?) -> NodeDiff {
         
         if was == became {
             return .noChanged

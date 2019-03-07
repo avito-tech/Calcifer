@@ -2,11 +2,11 @@ import Foundation
 import PathKit
 import xcodeproj
 
-final class ProjectPatcher {
+public final class ProjectPatcher {
     
-    init() {}
+    public init() {}
     
-    func patch(projectPath: String, outputPath: String, targets: [String]) throws {
+    public func patch(projectPath: String, outputPath: String, targets: [String]) throws {
         let path = Path(projectPath)
         let xcodeproject = try XcodeProj(path: path)
         let pbxproj = xcodeproject.pbxproj

@@ -1,5 +1,6 @@
 import Foundation
 import xcodeproj
+import Checksum
 import PathKit
 
 final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
@@ -47,6 +48,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let targetChecksumHolder = TargetChecksumHolder<Builder.C>(
             name: target.name,
+            productName: target.productName,
             checksum: summarizedChecksum,
             files: filesChecksums,
             dependencies: dependenciesChecksums

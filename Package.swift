@@ -22,7 +22,7 @@ let package = Package(
         .package(
             url: "https://github.com/httpswift/swifter.git",
             .branch("stable")
-        )
+        ),
     ],
     targets: [
         // MARK: Calcifer
@@ -41,6 +41,8 @@ let package = Package(
                 "FrameworkBuilder",
                 "ProjectChecksumCalculator",
                 "ProjectPatcher",
+                "BuildParametersParser",
+                "BuildRunner",
                 "ArgumentsParser"
             ]
         ),
@@ -48,6 +50,18 @@ let package = Package(
         .target(
             name: "ArgumentsParser",
             dependencies: [
+                "Toolkit"
+            ]
+        ),
+        // MARK: BuildRunner
+        .target(
+            name: "BuildRunner",
+            dependencies: [
+                "BuildParametersParser",
+                "ProjectChecksumCalculator",
+                "ProjectPatcher",
+                "FrameworkBuilder",
+                "Checksum",
                 "Toolkit"
             ]
         ),
@@ -65,7 +79,7 @@ let package = Package(
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
-                "Toolkit"
+                "Checksum"
             ]
         ),
         .testTarget(
@@ -82,6 +96,29 @@ let package = Package(
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
+                "Toolkit"
+            ]
+        ),
+        // MARK: BuildParametersParser
+        .target(
+            name: "BuildParametersParser",
+            dependencies: [
+                "ArgumentsParser",
+                "Checksum",
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "BuildParametersParserTests",
+            dependencies: [
+                "BuildParametersParser",
+                "Toolkit"
+            ]
+        ),
+        // MARK: Checksum
+        .target(
+            name: "Checksum",
+            dependencies: [
                 "Toolkit"
             ]
         ),

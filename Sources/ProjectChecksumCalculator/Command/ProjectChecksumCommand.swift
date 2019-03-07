@@ -1,6 +1,7 @@
 import ArgumentsParser
 import Foundation
 import Utility
+import Checksum
 import Toolkit
 
 public final class ProjectChecksumCommand: Command {
@@ -33,9 +34,9 @@ public final class ProjectChecksumCommand: Command {
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
         let data = try checksumHolder.encode()
-        let outputFilePath = FileManager.default.file(name: "checkum.json")
-        try data.write(to: outputFilePath)
+        let outputFileURL = FileManager.default.file(name: "checkum.json")
+        try data.write(to: outputFileURL)
         print(checksumHolder.checksum.description)
-        print(outputFilePath)
+        print(outputFileURL)
     }
 }

@@ -1,6 +1,7 @@
 import ArgumentsParser
 import Foundation
 import Utility
+import Checksum
 import Toolkit
 
 public final class ProjectChecksumDiffCommand: Command {

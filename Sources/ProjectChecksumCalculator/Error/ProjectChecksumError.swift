@@ -5,7 +5,8 @@ public enum ProjectChecksumError: Error, CustomStringConvertible {
     case emptyFullFilePath(name: String?, path: String?)
     case emptyRootGroup
     case emptyChecksum
-    case fileDoesntExist(path: String)
+    case emptyProductChecksum(productName: String)
+    case emptyTargetChecksum(targetName: String)
     case unableObtainSourceRoot(projectPath: String)
     
     public var description: String {
@@ -18,8 +19,10 @@ public enum ProjectChecksumError: Error, CustomStringConvertible {
             return "Unable to obtain root group"
         case .emptyChecksum:
             return "Unable calculate checksum"
-        case let .fileDoesntExist(path):
-            return "File doesn't exist at path \(path)"
+        case let .emptyProductChecksum(productName):
+            return "Empty checksum for productName \(productName)"
+        case let .emptyTargetChecksum(targetName):
+            return "Empty checksum for targetName \(targetName)"
         case let .unableObtainSourceRoot(projectPath):
             return "Unable to obtain source root for project path \(projectPath)"
         }

@@ -12,7 +12,7 @@ public final class BuildCommand: Command {
         case projectPath
         case configuration
         case architecture
-        case SDK
+        case platform
     }
     
     private let builder = FrameworkBuilder()
@@ -20,7 +20,7 @@ public final class BuildCommand: Command {
     private let projectPathArgument: OptionArgument<String>
     private let configurationArgument: OptionArgument<String>
     private let architectureArgument: OptionArgument<String>
-    private let sdkArgument: OptionArgument<String>
+    private let platformArgument: OptionArgument<String>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
@@ -39,8 +39,8 @@ public final class BuildCommand: Command {
             kind: String.self,
             usage: "Specify architecture"
         )
-        sdkArgument = subparser.add(
-            option: Arguments.SDK.optionString,
+        platformArgument = subparser.add(
+            option: Arguments.platform.optionString,
             kind: String.self,
             usage: "Specify sdk"
         )
@@ -59,23 +59,23 @@ public final class BuildCommand: Command {
             arguments.get(self.architectureArgument),
             name: Arguments.architecture.rawValue
         )
-        let sdkName = try ArgumentsReader.validateNotNil(
-            arguments.get(self.sdkArgument),
-            name: Arguments.SDK.rawValue
+        let platformName = try ArgumentsReader.validateNotNil(
+            arguments.get(self.platformArgument),
+            name: Arguments.platform.rawValue
         )
         
-        guard let architecture = BuildConfig.Architecture(rawValue: architectureName) else {
+        guard let architecture = TargetBuildConfig.Architecture(rawValue: architectureName) else {
             throw ArgumentsError.argumentValueCannotBeUsed(Arguments.architecture.rawValue)
         }
         
-        guard let sdk = BuildConfig.SDK(rawValue: sdkName) else {
+        guard let platform = TargetBuildConfig.Platform(rawValue: platformName) else {
             throw ArgumentsError.argumentValueCannotBeUsed(
-                Arguments.SDK.rawValue
+                Arguments.platform.rawValue
             )
         }
         
-        let config = BuildConfig(
-            SDK: sdk,
+        let config = TargetBuildConfig(
+            platform: platform,
             architecture: architecture,
             projectPath: projectPath,
             targetName: "Aggregate",

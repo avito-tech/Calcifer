@@ -1,13 +1,17 @@
 import Foundation
 import PathKit
 
-protocol URLChecksumProducer: ChecksumProducer where Input == URL {}
+public protocol URLChecksumProducer: ChecksumProducer where Input == URL {}
 
-final class BaseURLChecksumProducer: URLChecksumProducer {
+public final class BaseURLChecksumProducer: URLChecksumProducer {
     
-    let fileManager = FileManager.default
+    private let fileManager: FileManager
     
-    func checksum(input: URL) throws -> BaseChecksum {
+    public init(fileManager: FileManager = FileManager.default) {
+        self.fileManager = fileManager
+    }
+    
+    public func checksum(input: URL) throws -> BaseChecksum {
         let path = input.path
         
         let isFile = try checkIsFile(filePath: path)
@@ -30,7 +34,7 @@ final class BaseURLChecksumProducer: URLChecksumProducer {
         var isDirectory: ObjCBool = false
         let fileExist = fileManager.fileExists(atPath: filePath, isDirectory: &isDirectory)
         if fileExist == false {
-            throw ProjectChecksumError.fileDoesntExist(path: filePath)
+            throw ChecksumError.fileDoesntExist(path: filePath)
         }
         return !isDirectory.boolValue
     }

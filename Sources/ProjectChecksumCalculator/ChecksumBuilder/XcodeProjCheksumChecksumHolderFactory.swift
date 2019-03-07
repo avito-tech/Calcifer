@@ -1,4 +1,5 @@
 import Foundation
+import Checksum
 
 final class XcodeProjChecksumHolderBuilderFactory {
     

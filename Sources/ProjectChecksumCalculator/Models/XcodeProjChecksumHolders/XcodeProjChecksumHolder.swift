@@ -1,4 +1,5 @@
 import Foundation
+import Checksum
 
 struct XcodeProjChecksumHolder<C: Checksum>: ChecksumHolder {
     let proj: ProjChecksumHolder<C>

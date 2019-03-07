@@ -1,4 +1,5 @@
 import Foundation
+import Checksum
 
 struct FileChecksumHolder<C: Checksum>: ChecksumHolder {
     let description: String
