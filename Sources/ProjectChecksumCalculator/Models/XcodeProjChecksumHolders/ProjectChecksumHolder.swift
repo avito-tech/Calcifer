@@ -7,7 +7,7 @@ struct ProjectChecksumHolder<C: Checksum>: ChecksumHolder {
     let checksum: C
 }
 
-extension ProjectChecksumHolder: NodeConvertable {
+extension ProjectChecksumHolder: TreeNodeConvertable {
     
     func node() -> TreeNode<C> {
         return TreeNode<C>(

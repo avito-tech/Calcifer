@@ -12,7 +12,7 @@ final class BuildRunner {
     
     func run() throws {
         
-        let params = try BuildParameters()
+        let params = try XcodeBuildEnvironmentParameters()
     
         let podsProjectPath = params.podsProjectPath
         let patchedProjectPath = params.patchedProjectPath
@@ -45,7 +45,7 @@ final class BuildRunner {
     
     private func obtainRequiredTargets(
         checksumProvider: TargetChecksumProvider<BaseChecksum>,
-        params: BuildParameters)
+        params: XcodeBuildEnvironmentParameters)
         throws -> [String]
     {
         let mainTargetName = "Pods-\(params.targetName)"
@@ -56,7 +56,7 @@ final class BuildRunner {
     }
     
     private func buildTargetChecksumProvider(podsProjectPath: String) throws -> TargetChecksumProvider<BaseChecksum> {
-        let checksumProducer = BaseURLChecksumProducer()
+        let checksumProducer = BaseURLChecksumProducer(fileManager: FileManager.default)
         let frameworkChecksumProviderFactory = FrameworkChecksumProviderFactory(checksumProducer: checksumProducer)
         let frameworkChecksumProvider = try frameworkChecksumProviderFactory.frameworkChecksumProvider(
             projectPath: podsProjectPath
@@ -97,8 +97,8 @@ final class BuildRunner {
         )
     }
     
-    private func build(params: BuildParameters, patchedProjectPath: String) throws {
-        let config = createTargetBuildConfig(
+    private func build(params: XcodeBuildEnvironmentParameters, patchedProjectPath: String) throws {
+        let config = try createTargetBuildConfig(
             params: params,
             patchedProjectPath: patchedProjectPath
         )
@@ -106,12 +106,12 @@ final class BuildRunner {
         builder.build(config: config)
     }
     
-    private func createTargetBuildConfig(params: BuildParameters, patchedProjectPath: String) throws -> TargetBuildConfig {
+    private func createTargetBuildConfig(params: XcodeBuildEnvironmentParameters, patchedProjectPath: String) throws -> TargetBuildConfig {
         guard let architecture = TargetBuildConfig.Architecture(rawValue: params.architecture) else {
-            throw BuildRunnerError.unableParseArchitecture(string: params.architecture)
+            throw BuildRunnerError.unableToParseArchitecture(string: params.architecture)
         }
         guard let platform = TargetBuildConfig.Platform(rawValue: params.platformName) else {
-            throw BuildRunnerError.unableParsePlatform(string: params.platformName)
+            throw BuildRunnerError.unableToParsePlatform(string: params.platformName)
         }
         let config = TargetBuildConfig(
             platform: platform,
@@ -126,7 +126,7 @@ final class BuildRunner {
     
 }
 
-extension BuildParameters {
+extension XcodeBuildEnvironmentParameters {
     
     var podsProjectPath: String {
         let podsProjectFileName = "Pods.xcodeproj"

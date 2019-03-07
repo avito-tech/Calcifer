@@ -7,7 +7,7 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
     
     private let fileManager: FileManager
     
-    public init(fileManager: FileManager = FileManager.default) {
+    public init(fileManager: FileManager) {
         self.fileManager = fileManager
     }
     

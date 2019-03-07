@@ -11,8 +11,8 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.C>) -> ())
-    typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.C>?))
+    typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.ChecksumType>) -> ())
+    typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.ChecksumType>?))
     
     @discardableResult
     func build(
@@ -20,14 +20,15 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         sourceRoot: Path,
         cacheReader: CacheReader,
         cacheWriter: CacheWriter)
-        throws -> TargetChecksumHolder<Builder.C>
+        throws -> TargetChecksumHolder<Builder.ChecksumType>
     {
         if let cachedChecksum = cacheReader(target) {
             return cachedChecksum
         }
-        var summarizedChecksums = [Builder.C]()
-        let dependenciesTargets = target.dependencies.compactMap({ $0.target })
-        let dependenciesChecksums = try dependenciesTargets.map { dependency -> TargetChecksumHolder<Builder.C> in
+        var summarizedChecksums = [Builder.ChecksumType]()
+        let dependenciesTargets = target.dependencies.compactMap { $0.target }
+        let dependenciesChecksums = try dependenciesTargets.map {
+            dependency -> TargetChecksumHolder<Builder.ChecksumType> in
             return try build(
                 target: dependency,
                 sourceRoot: sourceRoot,
@@ -46,7 +47,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
-        let targetChecksumHolder = TargetChecksumHolder<Builder.C>(
+        let targetChecksumHolder = TargetChecksumHolder<Builder.ChecksumType>(
             name: target.name,
             productName: target.productName,
             checksum: summarizedChecksum,

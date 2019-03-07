@@ -54,7 +54,7 @@ public enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         var wasChildren = [String: TreeNode<Value>]()
         if let was = was {
             wasChildren = Dictionary(uniqueKeysWithValues:
-                was.children?.compactMap({ ($0.name, $0) }) ?? []
+                was.children.compactMap({ ($0.name, $0) })
             )
         }
         wasChildren.keys.forEach {
@@ -65,7 +65,7 @@ public enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         var becameChildren = [String: TreeNode<Value>]()
         if let became = became {
             becameChildren = Dictionary(uniqueKeysWithValues:
-                became.children?.compactMap({ ($0.name, $0) }) ?? []
+                became.children.compactMap({ ($0.name, $0) })
             )
         }
         becameChildren.keys.forEach {

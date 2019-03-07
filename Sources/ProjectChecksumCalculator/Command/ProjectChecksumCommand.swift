@@ -30,11 +30,13 @@ public final class ProjectChecksumCommand: Command {
             name: Arguments.projectPath.rawValue
         )
         let builder = XcodeProjChecksumHolderBuilderFactory().projChecksumHolderBuilder(
-            checksumProducer: BaseURLChecksumProducer()
+            checksumProducer: BaseURLChecksumProducer(
+                fileManager: FileManager.default
+            )
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
         let data = try checksumHolder.encode()
-        let outputFileURL = FileManager.default.file(name: "checkum.json")
+        let outputFileURL = FileManager.default.pathToHomeDirectoryFile(name: "checkum.json")
         try data.write(to: outputFileURL)
         print(checksumHolder.checksum.description)
         print(outputFileURL)

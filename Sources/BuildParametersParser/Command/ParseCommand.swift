@@ -14,11 +14,11 @@ public final class ParseCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result) throws {
         
-        let params = try BuildParameters()
-        let ldFlags = LDFlagParser().parse(ldFlagsString: params.otherLDFlags)
-        let frameworks = ldFlags.compactMap({ $0.framework?.name })
+        let params = try XcodeBuildEnvironmentParameters()
+        let ldFlags = LinkerFlagParser().parse(linkerFlags: params.otherLDFlags)
+        let frameworks = ldFlags.compactMap { $0.framework?.name }
         
-        let outputFilePath = FileManager.default.file(name: "environment.txt")
+        let outputFilePath = FileManager.default.pathToHomeDirectoryFile(name: "environment.txt")
         try "\(frameworks)".description.write(to: outputFilePath, atomically: false, encoding: .utf8)
         print(outputFilePath)
     }

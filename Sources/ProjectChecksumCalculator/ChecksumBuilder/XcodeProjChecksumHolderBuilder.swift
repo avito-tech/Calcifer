@@ -11,7 +11,7 @@ final class XcodeProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    func build(projectPath: String) throws -> XcodeProjChecksumHolder<Builder.C> {
+    func build(projectPath: String) throws -> XcodeProjChecksumHolder<Builder.ChecksumType> {
         let path = Path(projectPath)
         let xcodeproject = try XcodeProj(path: path)
         let pbxproj = xcodeproject.pbxproj

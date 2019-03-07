@@ -4,7 +4,7 @@ import XCTest
 
 public final class LDFlagParserTests: XCTestCase {
     
-    let parser = LDFlagParser()
+    let parser = LinkerFlagParser()
     
     // MARK: - Lifecycle
     
@@ -14,12 +14,12 @@ public final class LDFlagParserTests: XCTestCase {
                     "\"AVFoundation\" -framework \"Alamofire\" -framework \"AlamofireImage\"",
                     " -weak_framework \"SafariServices\" -weak_framework \"WebKit\""].joined()
         
-        let ldFlags = parser.parse(ldFlagsString: string)
+        let ldFlags = parser.parse(linkerFlags: string)
         
-        let flags = ldFlags.compactMap({ $0.flag?.name })
-        let frameworks = ldFlags.compactMap({ $0.framework?.name })
-        let weakFrameworks = ldFlags.compactMap({ $0.weakFramework?.name })
-        let libraries = ldFlags.compactMap({ $0.library?.name })
+        let flags = ldFlags.compactMap { $0.flag?.name }
+        let frameworks = ldFlags.compactMap { $0.framework?.name }
+        let weakFrameworks = ldFlags.compactMap { $0.weakFramework?.name }
+        let libraries = ldFlags.compactMap { $0.library?.name }
         
         XCTAssertEqual(ldFlags.count, 14)
         XCTAssertEqual(flags.count, 2)

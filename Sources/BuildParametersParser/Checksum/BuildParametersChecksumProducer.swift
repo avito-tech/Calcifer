@@ -5,7 +5,7 @@ public final class BuildParametersChecksumProducer: ChecksumProducer {
     
     public init() {}
     
-    public func checksum(input: BuildParameters) throws -> BaseChecksum {
+    public func checksum(input: XcodeBuildEnvironmentParameters) throws -> BaseChecksum {
         let importantParams = [
             input.otherSwiftFlags,
             input.gccPreprocessorDefinitions,

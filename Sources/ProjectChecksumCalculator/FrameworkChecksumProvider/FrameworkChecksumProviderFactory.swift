@@ -9,7 +9,7 @@ public final class FrameworkChecksumProviderFactory<ChecksumProducer: URLChecksu
         self.checksumProducer = checksumProducer
     }
     
-    public func frameworkChecksumProvider(projectPath: String) throws -> TargetChecksumProvider<ChecksumProducer.C> {
+    public func frameworkChecksumProvider(projectPath: String) throws -> TargetChecksumProvider<ChecksumProducer.ChecksumType> {
         let builder = XcodeProjChecksumHolderBuilderFactory().projChecksumHolderBuilder(
             checksumProducer: checksumProducer
         )

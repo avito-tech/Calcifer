@@ -12,9 +12,9 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    func build(project: PBXProject, sourceRoot: Path) throws -> ProjectChecksumHolder<Builder.C> {
+    func build(project: PBXProject, sourceRoot: Path) throws -> ProjectChecksumHolder<Builder.ChecksumType> {
         let targets = NSArray(array: project.targets)
-        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.C>>()
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>()
         var buildError: Error?
         targets.enumerateObjects(options: .concurrent) { obj, key, stop in
             if let target = obj as? PBXTarget {
@@ -39,7 +39,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
                 left.name > right.name
         })
         let summarizedChecksum = try summarizedChecksums.checksum()
-        return ProjectChecksumHolder<Builder.C>(
+        return ProjectChecksumHolder<Builder.ChecksumType>(
             targets: summarizedChecksums,
             description: project.name,
             checksum: summarizedChecksum

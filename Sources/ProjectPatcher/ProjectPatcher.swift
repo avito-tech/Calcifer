@@ -14,7 +14,7 @@ public final class ProjectPatcher {
         let agregateTarget = PBXAggregateTarget(name: "Aggregate")
         var targetsForRemoving = [String]()
 
-        project.targets.enumerated().forEach({ index, target in
+        project.targets.enumerated().forEach { index, target in
             if targets.contains(target.name) {
                 let dependency = PBXTargetDependency(
                     name: target.name,
@@ -26,7 +26,7 @@ public final class ProjectPatcher {
             } else {
                 targetsForRemoving.append(target.name)
             }
-        })
+        }
         targetsForRemoving.forEach { targetName in
             if let index = project.targets.firstIndex(where: { $0.name == targetName }) {
                 // This is necessary because of an error about duplication of heders

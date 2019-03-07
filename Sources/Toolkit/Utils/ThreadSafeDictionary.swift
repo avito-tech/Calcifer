@@ -7,9 +7,9 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     private var dictionary = [Key: Value]()
     
     public private(set) lazy var read: (Key) -> (Value?) = { [weak self] key in
-        self?.lock.withLock({
-            return self?.dictionary[key]
-        })
+        self?.lock.withLock {
+            self?.dictionary[key]
+        }
     }
     
     public private(set) lazy var write: (Key, Value) -> () = { [weak self] key, value in

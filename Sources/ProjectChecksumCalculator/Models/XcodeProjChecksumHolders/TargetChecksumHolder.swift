@@ -59,7 +59,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(String.self, forKey: .name)
-        productName = try container.decode(String.self, forKey: .productName)
+        productName = try container.decodeIfPresent(String.self, forKey: .productName)
         checksum = try container.decode(C.self, forKey: .checksum)
         files = try container.decode([FileChecksumHolder<C>].self, forKey: .files)
         // Performance issue
@@ -67,7 +67,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     }
 }
 
-extension TargetChecksumHolder: NodeConvertable {
+extension TargetChecksumHolder: TreeNodeConvertable {
     
     func node() -> TreeNode<C> {
         let children = files.nodeList() + dependencies.nodeList()

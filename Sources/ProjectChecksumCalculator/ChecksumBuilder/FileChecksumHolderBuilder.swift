@@ -16,7 +16,7 @@ final class FileChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
         self.fullPathProvider = fullPathProvider
     }
     
-    func build(file: PBXFileElement, sourceRoot: Path) throws -> FileChecksumHolder<ChecksumProducer.C> {
+    func build(file: PBXFileElement, sourceRoot: Path) throws -> FileChecksumHolder<ChecksumProducer.ChecksumType> {
         let filePath = try fullPathProvider.fullPath(for: file, sourceRoot: sourceRoot)
         return FileChecksumHolder(
             description: filePath.string,

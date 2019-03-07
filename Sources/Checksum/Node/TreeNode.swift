@@ -4,9 +4,9 @@ public final class TreeNode<Value: Checksum>: Equatable, CustomStringConvertible
     
     public let name: String
     public let value: Value
-    public let children: [TreeNode<Value>]?
+    public let children: [TreeNode<Value>]
     
-    public init(name: String, value: Value, children: [TreeNode<Value>]?) {
+    public init(name: String, value: Value, children: [TreeNode<Value>]) {
         self.name = name
         self.value = value
         self.children = children

@@ -1,6 +1,6 @@
 import Foundation
 
-public final class BuildParameters {
+public final class XcodeBuildEnvironmentParameters {
     // "TARGETNAME": "Some"
     public let targetName: String
     // "FULL_PRODUCT_NAME": "Some.app"
