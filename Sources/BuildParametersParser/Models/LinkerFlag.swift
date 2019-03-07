@@ -50,4 +50,11 @@ public enum LinkerFlag {
         }
         return nil
     }
+    
+    public var flagWithValue: LinkerFlag? {
+        if case .flagWithValue = self {
+            return self
+        }
+        return nil
+    }
 }

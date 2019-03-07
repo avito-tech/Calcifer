@@ -11,25 +11,22 @@ public final class LinkerFlagParser {
             
             if string == "-framework" && index + 1 < components.count {
                 let nextString = components[index + 1]
-                if let frameworkName = escapingValue(from: nextString) {
-                    ldFlags.append(.framework(name: frameworkName))
-                }
+                let frameworkName = escapingValue(from: nextString)
+                ldFlags.append(.framework(name: frameworkName))
                 continue
             }
             
             if string == "-weak_framework" && index + 1 < components.count {
                 let nextString = components[index + 1]
-                if let frameworkName = escapingValue(from: nextString) {
-                    ldFlags.append(.weakFramework(name: frameworkName))
-                }
+                let frameworkName = escapingValue(from: nextString)
+                ldFlags.append(.weakFramework(name: frameworkName))
                 continue
             }
             
             // Also can be `-l/path/to/libSystem.dylib` or `-l /path/to/libSystem.dylib`
             if string.hasPrefix("-l\"") && string.hasSuffix("\"") {
-                if let name = escapingValue(from: string.chomp(2)) {
-                    ldFlags.append(.library(name: name))
-                }
+                let name = escapingValue(from: string.chomp(2))
+                ldFlags.append(.library(name: name))
                 continue
             }
             
@@ -40,7 +37,8 @@ public final class LinkerFlagParser {
                     if nextString.hasPrefix("-") {
                         ldFlags.append(.flag(name: name))
                         continue
-                    } else if let value = escapingValue(from: nextString) {
+                    } else {
+                        let value = escapingValue(from: nextString)
                         ldFlags.append(.flagWithValue(name: name, value: value))
                     }
                 }
@@ -50,12 +48,12 @@ public final class LinkerFlagParser {
         return ldFlags
     }
     
-    private func escapingValue(from string: String) -> String? {
+    private func escapingValue(from string: String) -> String {
         let escapingString = "\""
         if string.hasPrefix(escapingString) && string.hasSuffix(escapingString) {
             return string.components(separatedBy: escapingString)[1]
         }
-        return nil
+        return string
     }
     
 }
