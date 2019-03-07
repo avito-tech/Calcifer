@@ -37,23 +37,10 @@ final class BuildRunner {
             targets: targetsForBuild
         )
         
-        guard let architecture = TargetBuildConfig.Architecture(rawValue: params.architecture) else {
-            throw BuildRunnerError.unableParseArchitecture(string: params.architecture)
-        }
-        guard let platform = TargetBuildConfig.Platform(rawValue: params.platformName) else {
-            throw BuildRunnerError.unableParsePlatform(string: params.platformName)
-        }
-        let config = TargetBuildConfig(
-            platform: platform,
-            architecture: architecture,
-            projectPath: patchedProjectPath,
-            targetName: "Aggregate",
-            configurationName: params.configuration,
-            onlyActiveArchitecture: true
+        try build(
+            params: params,
+            patchedProjectPath: patchedProjectPath
         )
-        
-        let builder = FrameworkBuilder()
-        builder.build(config: config)
     }
     
     private func obtainRequiredTargets(
@@ -110,8 +97,31 @@ final class BuildRunner {
         )
     }
     
-    private func build(targets: [String]) {
-        
+    private func build(params: BuildParameters, patchedProjectPath: String) throws {
+        let config = createTargetBuildConfig(
+            params: params,
+            patchedProjectPath: patchedProjectPath
+        )
+        let builder = FrameworkBuilder()
+        builder.build(config: config)
+    }
+    
+    private func createTargetBuildConfig(params: BuildParameters, patchedProjectPath: String) throws -> TargetBuildConfig {
+        guard let architecture = TargetBuildConfig.Architecture(rawValue: params.architecture) else {
+            throw BuildRunnerError.unableParseArchitecture(string: params.architecture)
+        }
+        guard let platform = TargetBuildConfig.Platform(rawValue: params.platformName) else {
+            throw BuildRunnerError.unableParsePlatform(string: params.platformName)
+        }
+        let config = TargetBuildConfig(
+            platform: platform,
+            architecture: architecture,
+            projectPath: patchedProjectPath,
+            targetName: "Aggregate",
+            configurationName: params.configuration,
+            onlyActiveArchitecture: true
+        )
+        return config
     }
     
 }
