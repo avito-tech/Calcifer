@@ -31,7 +31,7 @@ public struct CommandRegistry {
                 let stream = BufferedOutputByteStream()
                 parser.printUsage(on: stream)
                 guard let description = stream.bytes.asString else {
-                    throw CommandExecutionError.unableGenerateDescription
+                    throw CommandExecutionError.unableToGenerateDescription
                 }
                 throw CommandExecutionError.incorrectUsage(usageDescription: description)
         }
