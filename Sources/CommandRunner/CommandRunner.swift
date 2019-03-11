@@ -1,7 +1,11 @@
+import XcodeBuildEnvironmentParametersParser
+import XcodeProjectChecksumCalculator
+import RemoteCachePreparer
+import XcodeProjectPatcher
+import XcodeProjectBuilder
 import ArgumentsParser
-import FrameworkBuilder
-import ProjectChecksumCalculator
-import ProjectPatcher
+
+
 
 public final class CommandRunner {
     
@@ -11,13 +15,15 @@ public final class CommandRunner {
         
         var registry = CommandRegistry(
             usage: "<subcommand> <options>",
-            overview: "Runs specific tasks related to iOS UI testing"
+            overview: "Runs specific tasks related to remote cache"
         )
         
-        registry.register(command: BuildCommand.self)
-        registry.register(command: ProjectChecksumCommand.self)
-        registry.register(command: ProjectChecksumDiffCommand.self)
-        registry.register(command: ProjectPatcherCommand.self)
+        registry.register(command: PrepareRemoteCacheCommand.self)
+        registry.register(command: ParseXcodeBuildEnvironmentParametersCommand.self)
+        registry.register(command: CalculateXcodeProjectChecksumCommand.self)
+        registry.register(command: CalculateXcodeProjectChecksumDiffCommand.self)
+        registry.register(command: BuildXcodeProjectCommand.self)
+        registry.register(command: PatchXcodeProjectCommand.self)
         
         let exitCode: Int32
         do {

@@ -22,7 +22,7 @@ let package = Package(
         .package(
             url: "https://github.com/httpswift/swifter.git",
             .branch("stable")
-        )
+        ),
     ],
     targets: [
         // MARK: Calcifer
@@ -38,9 +38,11 @@ let package = Package(
             name: "CommandRunner",
             dependencies: [
                 "Toolkit",
-                "FrameworkBuilder",
-                "ProjectChecksumCalculator",
-                "ProjectPatcher",
+                "XcodeProjectBuilder",
+                "XcodeProjectChecksumCalculator",
+                "XcodeProjectPatcher",
+                "XcodeBuildEnvironmentParametersParser",
+                "RemoteCachePreparer",
                 "ArgumentsParser"
             ]
         ),
@@ -51,37 +53,72 @@ let package = Package(
                 "Toolkit"
             ]
         ),
-        // MARK: FrameworkBuilder
+        // MARK: RemoteCachePreparer
         .target(
-            name: "FrameworkBuilder",
+            name: "RemoteCachePreparer",
+            dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
+                "XcodeProjectChecksumCalculator",
+                "XcodeProjectPatcher",
+                "XcodeProjectBuilder",
+                "Checksum",
+                "Toolkit"
+            ]
+        ),
+        // MARK: XcodeProjectBuilder
+        .target(
+            name: "XcodeProjectBuilder",
             dependencies: [
                 "ArgumentsParser",
                 "Toolkit"
             ]
         ),
-        // MARK: ProjectChecksumCalculator
+        // MARK: XcodeProjectChecksumCalculator
         .target(
-            name: "ProjectChecksumCalculator",
+            name: "XcodeProjectChecksumCalculator",
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
+                "Checksum"
+            ]
+        ),
+        .testTarget(
+            name: "XcodeProjectChecksumCalculatorTests",
+            dependencies: [
+                "XcodeProjectChecksumCalculator",
+                "xcodeproj",
+                "Toolkit"
+            ]
+        ),
+        // MARK: XcodeProjectPatcher
+        .target(
+            name: "XcodeProjectPatcher",
+            dependencies: [
+                "ArgumentsParser",
+                "xcodeproj",
+                "Toolkit"
+            ]
+        ),
+        // MARK: XcodeBuildEnvironmentParametersParser
+        .target(
+            name: "XcodeBuildEnvironmentParametersParser",
+            dependencies: [
+                "ArgumentsParser",
+                "Checksum",
                 "Toolkit"
             ]
         ),
         .testTarget(
-            name: "ProjectChecksumCalculatorTests",
+            name: "XcodeBuildEnvironmentParametersParserTests",
             dependencies: [
-                "ProjectChecksumCalculator",
-                "xcodeproj",
+                "XcodeBuildEnvironmentParametersParser",
                 "Toolkit"
             ]
         ),
-        // MARK: ProjectPatcher
+        // MARK: Checksum
         .target(
-            name: "ProjectPatcher",
+            name: "Checksum",
             dependencies: [
-                "ArgumentsParser",
-                "xcodeproj",
                 "Toolkit"
             ]
         ),
