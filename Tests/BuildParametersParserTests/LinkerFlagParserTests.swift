@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import BuildParametersParser
 
-public final class LDFlagParserTests: XCTestCase {
+public final class LinkerFlagParserTests: XCTestCase {
     
     let parser = LinkerFlagParser()
     
