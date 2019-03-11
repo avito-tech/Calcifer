@@ -5,7 +5,7 @@ import Toolkit
 
 public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
     
-    public let command = "parse"
+    public let command = "parseXcodeBuildEnvironmentParameters"
     public let overview = "Parse xcodebuild environment parameters"
     
     public required init(parser: ArgumentParser) {

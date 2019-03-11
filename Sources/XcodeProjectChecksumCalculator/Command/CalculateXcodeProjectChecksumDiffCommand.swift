@@ -7,7 +7,7 @@ import Toolkit
 public final class CalculateXcodeProjectChecksumDiffCommand: Command {
     
     public let command = "diff"
-    public let overview = "Calculate diff for checksums"
+    public let overview = "Calculate diff for xcode project checksums"
     
     enum Arguments: String, CommandArgument {
         case firstChecksumPath
