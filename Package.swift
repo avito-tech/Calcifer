@@ -38,11 +38,11 @@ let package = Package(
             name: "CommandRunner",
             dependencies: [
                 "Toolkit",
-                "FrameworkBuilder",
-                "ProjectChecksumCalculator",
-                "ProjectPatcher",
-                "BuildParametersParser",
-                "BuildRunner",
+                "XcodeProjectBuilder",
+                "XcodeProjectChecksumCalculator",
+                "XcodeProjectPatcher",
+                "XcodeBuildEnvironmentParametersParser",
+                "RemoteCachePreparer",
                 "ArgumentsParser"
             ]
         ),
@@ -53,29 +53,29 @@ let package = Package(
                 "Toolkit"
             ]
         ),
-        // MARK: BuildRunner
+        // MARK: RemoteCachePreparer
         .target(
-            name: "BuildRunner",
+            name: "RemoteCachePreparer",
             dependencies: [
-                "BuildParametersParser",
-                "ProjectChecksumCalculator",
-                "ProjectPatcher",
-                "FrameworkBuilder",
+                "XcodeBuildEnvironmentParametersParser",
+                "XcodeProjectChecksumCalculator",
+                "XcodeProjectPatcher",
+                "XcodeProjectBuilder",
                 "Checksum",
                 "Toolkit"
             ]
         ),
-        // MARK: FrameworkBuilder
+        // MARK: XcodeProjectBuilder
         .target(
-            name: "FrameworkBuilder",
+            name: "XcodeProjectBuilder",
             dependencies: [
                 "ArgumentsParser",
                 "Toolkit"
             ]
         ),
-        // MARK: ProjectChecksumCalculator
+        // MARK: XcodeProjectChecksumCalculator
         .target(
-            name: "ProjectChecksumCalculator",
+            name: "XcodeProjectChecksumCalculator",
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
@@ -83,25 +83,25 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "ProjectChecksumCalculatorTests",
+            name: "XcodeProjectChecksumCalculatorTests",
             dependencies: [
-                "ProjectChecksumCalculator",
+                "XcodeProjectChecksumCalculator",
                 "xcodeproj",
                 "Toolkit"
             ]
         ),
-        // MARK: ProjectPatcher
+        // MARK: XcodeProjectPatcher
         .target(
-            name: "ProjectPatcher",
+            name: "XcodeProjectPatcher",
             dependencies: [
                 "ArgumentsParser",
                 "xcodeproj",
                 "Toolkit"
             ]
         ),
-        // MARK: BuildParametersParser
+        // MARK: XcodeBuildEnvironmentParametersParser
         .target(
-            name: "BuildParametersParser",
+            name: "XcodeBuildEnvironmentParametersParser",
             dependencies: [
                 "ArgumentsParser",
                 "Checksum",
@@ -109,9 +109,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "BuildParametersParserTests",
+            name: "XcodeBuildEnvironmentParametersParserTests",
             dependencies: [
-                "BuildParametersParser",
+                "XcodeBuildEnvironmentParametersParser",
                 "Toolkit"
             ]
         ),
