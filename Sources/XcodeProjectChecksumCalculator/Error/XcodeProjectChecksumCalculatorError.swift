@@ -5,6 +5,8 @@ public enum XcodeProjectChecksumCalculatorError: Error, CustomStringConvertible 
     case emptyFullFilePath(name: String?, path: String?)
     case emptyRootGroup
     case emptyChecksum
+    case emptyProductName(target: String)
+    case emptyProductType(target: String)
     case emptyProductChecksum(productName: String)
     case emptyTargetChecksum(targetName: String)
     case unableToObtainSourceRoot(projectPath: String)
@@ -19,6 +21,10 @@ public enum XcodeProjectChecksumCalculatorError: Error, CustomStringConvertible 
             return "Unable to obtain root group"
         case .emptyChecksum:
             return "Unable to calculate checksum"
+        case let .emptyProductName(target):
+            return "Empty product name for target: \(target)"
+        case let .emptyProductType(target):
+            return "Empty product type for target: \(target)"
         case let .emptyProductChecksum(productName):
             return "Empty checksum for productName \(productName)"
         case let .emptyTargetChecksum(targetName):

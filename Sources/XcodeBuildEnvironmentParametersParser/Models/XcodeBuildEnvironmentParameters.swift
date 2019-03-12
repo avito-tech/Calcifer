@@ -1,6 +1,6 @@
 import Foundation
 
-public final class XcodeBuildEnvironmentParameters {
+public final class XcodeBuildEnvironmentParameters: Codable {
     // "TARGETNAME": "Some"
     public let targetName: String
     // "FULL_PRODUCT_NAME": "Some.app"
@@ -65,7 +65,7 @@ public final class XcodeBuildEnvironmentParameters {
     // "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"
     public let debugInformationFormat: String
     
-    public init(environment: [String : String] = ProcessInfo.processInfo.environment) throws {
+    public init(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
         targetName = try environment.getValue("TARGETNAME")
         fullProductName = try environment.getValue("FULL_PRODUCT_NAME")
         targetBuildDirectory = try environment.getValue("TARGET_BUILD_DIR")

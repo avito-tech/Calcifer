@@ -3,31 +3,37 @@ import Checksum
 
 struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     let name: String
-    let productName: String?
+    let productName: String
+    let productType: String
     let checksum: C
     let files: [FileChecksumHolder<C>]
     let dependencies: [TargetChecksumHolder<C>]
     
     init(
         name: String,
-        productName: String?,
+        productName: String,
+        productType: String,
         checksum: C,
         files: [FileChecksumHolder<C>],
         dependencies: [TargetChecksumHolder<C>])
     {
         self.name = name
         self.productName = productName
+        self.productType = productType
         self.checksum = checksum
         self.files = files
         self.dependencies = dependencies
     }
     
-    var allDependencies: [TargetChecksumHolder<C>] {
-        let all = dependencies + dependencies.flatMap({ $0.allDependencies })
+    var allFrameworkDependencies: [TargetChecksumHolder<C>] {
+        let all = dependencies + dependencies.flatMap { $0.allFrameworkDependencies }
         var uniq = [String: TargetChecksumHolder<C>]()
         for dependency in all {
-            uniq[dependency.name] = dependency
+            if dependency.productType == "com.apple.product-type.framework" {
+                uniq[dependency.name] = dependency
+            }
         }
+        
         return Array(uniq.values)
     }
     
@@ -40,6 +46,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     enum CodingKeys: String, CodingKey {
         case name
         case productName
+        case productType
         case checksum
         case files
         case dependencies
@@ -59,7 +66,8 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(String.self, forKey: .name)
-        productName = try container.decodeIfPresent(String.self, forKey: .productName)
+        productName = try container.decode(String.self, forKey: .productName)
+        productType = try container.decode(String.self, forKey: .productType)
         checksum = try container.decode(C.self, forKey: .checksum)
         files = try container.decode([FileChecksumHolder<C>].self, forKey: .files)
         // Performance issue

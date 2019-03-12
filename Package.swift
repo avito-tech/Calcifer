@@ -59,9 +59,35 @@ let package = Package(
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
                 "XcodeProjectChecksumCalculator",
+                "CacheStorage",
+                "BuildArtifacts",
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
                 "Checksum",
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "RemoteCachePreparerTests",
+            dependencies: [
+                "RemoteCachePreparer"
+            ]
+        ),
+        // MARK: CacheStorage
+        .target(
+            name: "CacheStorage",
+            dependencies: [
+                "XcodeProjectChecksumCalculator",
+                "ArgumentsParser",
+                "Toolkit"
+            ]
+        ),
+        // MARK: BuildArtifacts
+        .target(
+            name: "BuildArtifacts",
+            dependencies: [
+                "XcodeProjectChecksumCalculator",
+                "ArgumentsParser",
                 "Toolkit"
             ]
         ),

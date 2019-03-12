@@ -12,11 +12,10 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
         }
     }
     
-    public private(set) lazy var write: (Key, Value) -> () = { [weak self] key, value in
-        guard let strongSelf = self else { return }
+    public private(set) lazy var write: (Key, Value) -> () = { key, value in
         // In this situation, it is more correct to use the DispatchQueue, not the lock, but DispatchQueue works twice as long.
-        strongSelf.lock.withLock {
-            strongSelf.dictionary[key] = value
+        self.lock.withLock { [weak self] in
+            self?.dictionary[key] = value
         }
     }
     
