@@ -9,7 +9,7 @@ public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
         self.fileManager = fileManager
     }
     
-    // RemoteCacheStorage
+    // MARK: - CacheStorage
     public func cache(for entry: CacheEntry<ChecksumType>) throws -> CacheValue<ChecksumType>? {
         let entryURL = url(to: entry)
         if fileManager.directoryExist(at: entryURL) {
