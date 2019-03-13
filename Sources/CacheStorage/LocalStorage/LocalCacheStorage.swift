@@ -4,9 +4,11 @@ import Checksum
 public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
     
     private let fileManager: FileManager
+    private let cacheDirectoryPath: String
     
-    public init(fileManager: FileManager) {
+    public init(fileManager: FileManager, cacheDirectoryPath: String) {
         self.fileManager = fileManager
+        self.cacheDirectoryPath = cacheDirectoryPath
     }
     
     // MARK: - CacheStorage
@@ -18,6 +20,7 @@ public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
         return nil
     }
     
+    @discardableResult
     public func add(entry: CacheEntry<ChecksumType>, at artifactPath: String) throws -> CacheValue<ChecksumType> {
         let artifactURL = URL(fileURLWithPath: artifactPath)
         let entryURL = url(to: entry)
@@ -31,18 +34,7 @@ public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
     }
     
     public func purge() throws {
-        try fileManager.removeItem(atPath: cacheDirectoryPath())
-    }
-    
-    private func createCacheDirectory() throws {
-        try fileManager.createDirectory(
-            atPath: cacheDirectoryPath(),
-            withIntermediateDirectories: true
-        )
-    }
-    
-    private func cacheDirectoryPath() -> String {
-        return fileManager.calciferDirectory().appendingPathComponent("localCache")
+        try fileManager.removeItem(atPath: cacheDirectoryPath)
     }
     
     private func url(to entry: CacheEntry<ChecksumType>) -> URL {
@@ -50,7 +42,7 @@ public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
     }
     
     private func path(to entry: CacheEntry<ChecksumType>) -> String {
-        return cacheDirectoryPath()
+        return cacheDirectoryPath
             .appendingPathComponent(entry.name)
             .appendingPathComponent(entry.checksum.description)
     }

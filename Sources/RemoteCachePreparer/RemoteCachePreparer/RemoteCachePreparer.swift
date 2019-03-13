@@ -33,8 +33,11 @@ final class RemoteCachePreparer {
             buildParametersChecksum: paramsChecksum,
             params: params
         )
-        
-        let localStorage = LocalCacheStorage<BaseChecksum>(fileManager: fileManager)
+        let cacheDirectoryPath = fileManager.calciferDirectory().appendingPathComponent("localCache")
+        let localStorage = LocalCacheStorage<BaseChecksum>(
+            fileManager: fileManager,
+            cacheDirectoryPath: cacheDirectoryPath
+        )
         
         let targetsForBuild = try obtainTargetsForBuild(
             localStorage: localStorage,
@@ -59,7 +62,7 @@ final class RemoteCachePreparer {
                 .appendingPathComponent("build")
                 .appendingPathComponent("\(params.configuration)-\(params.platformName)")
             
-            let targetForCacheIntegration = frameworkTargetInfos(
+            let targetInfosForCacheIntegration = frameworkTargetInfos(
                 requiredTargets.filter { targetInfo in
                     targetsForBuild.contains(targetInfo) == false
                 }
@@ -68,7 +71,7 @@ final class RemoteCachePreparer {
             try integrateArtifacts(
                 checksumProducer: checksumProducer,
                 localStorage: localStorage,
-                targetInfos: targetForCacheIntegration,
+                targetInfos: targetInfosForCacheIntegration,
                 to: cacheBuildPath
             )
 

@@ -24,26 +24,31 @@ public final class TargetBuildArtifactProvider {
                     path: path
                 )
             }
-            
-            let frameworkName = targetInfo.productName
-            let frameworkPath = artifactPath.appendingPathComponent(frameworkName)
-            if fileManager.directoryExist(at: frameworkPath) == false {
-                throw BuildArtifactsError.frameworkDoesntExist(
-                    productName: targetInfo.targetName,
-                    path: path
-                )
-            }
-            
-            let dsymName = "\(targetInfo.productName).dSYM"
-            let dsymPath = artifactPath.appendingPathComponent(dsymName)
-            if fileManager.directoryExist(at: dsymPath) == false {
-                throw BuildArtifactsError.dsymDoesntExist(
-                    productName: targetInfo.targetName,
-                    path: path
-                )
-            }
-            
+            try valideArtifact(at: artifactPath, targetInfo: targetInfo)
             return TargetBuildArtifact(targetInfo: targetInfo, path: artifactPath)
+        }
+    }
+    
+    private func valideArtifact<ChecksumType: Checksum>(
+        at path: String,
+        targetInfo: TargetInfo<ChecksumType>) throws
+    {
+        let frameworkName = targetInfo.productName
+        let frameworkPath = path.appendingPathComponent(frameworkName)
+        if fileManager.directoryExist(at: frameworkPath) == false {
+            throw BuildArtifactsError.frameworkDoesntExist(
+                productName: targetInfo.targetName,
+                path: path
+            )
+        }
+        
+        let dsymName = "\(targetInfo.productName).dSYM"
+        let dsymPath = path.appendingPathComponent(dsymName)
+        if fileManager.directoryExist(at: dsymPath) == false {
+            throw BuildArtifactsError.dsymDoesntExist(
+                productName: targetInfo.targetName,
+                path: path
+            )
         }
     }
     

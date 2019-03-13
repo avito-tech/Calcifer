@@ -44,14 +44,14 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
         // target.productName is not correct. Mb should use buildSettings
-        guard let produсtName = target.product?.path else {
+        guard let productName = target.product?.path else {
             throw XcodeProjectChecksumCalculatorError.emptyProductName(
                 target: target.name
             )
         }
         
-        guard let produсtTypeName = target.productType?.rawValue,
-            let produсtType = TargetProductType(rawValue: produсtTypeName) else {
+        guard let productTypeName = target.productType?.rawValue,
+            let productType = TargetProductType(rawValue: productTypeName) else {
             throw XcodeProjectChecksumCalculatorError.emptyProductType(
                 target: target.name
             )
@@ -59,8 +59,8 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let targetChecksumHolder = TargetChecksumHolder<Builder.ChecksumType>(
             targetName: target.name,
-            productName: produсtName,
-            productType: produсtType,
+            productName: productName,
+            productType: productType,
             checksum: summarizedChecksum,
             files: filesChecksums,
             dependencies: dependenciesChecksums

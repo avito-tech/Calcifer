@@ -82,6 +82,12 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        .testTarget(
+            name: "CacheStorageTests",
+            dependencies: [
+                "CacheStorage"
+            ]
+        ),
         // MARK: BuildArtifacts
         .target(
             name: "BuildArtifacts",
@@ -89,6 +95,12 @@ let package = Package(
                 "XcodeProjectChecksumCalculator",
                 "ArgumentsParser",
                 "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "BuildArtifactsTests",
+            dependencies: [
+                "BuildArtifacts"
             ]
         ),
         // MARK: XcodeProjectBuilder
