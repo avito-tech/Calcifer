@@ -5,8 +5,6 @@ import XcodeProjectPatcher
 import XcodeProjectBuilder
 import ArgumentsParser
 
-
-
 public final class CommandRunner {
     
     public init() {}

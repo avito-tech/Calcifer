@@ -41,7 +41,14 @@ public enum TargetProductType: String, Decodable {
             return "bundle"
         case .unitTestBundle, .uiTestBundle:
             return "xctest"
-        case .appExtension, .tvExtension, .watchExtension, .watch2Extension, .messagesExtension, .stickerPack, .xcodeExtension, .intentsServiceExtension:
+        case .appExtension,
+             .tvExtension,
+             .watchExtension,
+             .watch2Extension,
+             .messagesExtension,
+             .stickerPack,
+             .xcodeExtension,
+             .intentsServiceExtension:
             return "appex"
         case .commandLineTool:
             return nil

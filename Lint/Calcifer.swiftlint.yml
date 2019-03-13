@@ -24,7 +24,6 @@ whitelist_rules:
   - discarded_notification_center_observer # DiscardedNotificationCenterObserverRule
   - discouraged_object_literal # DiscouragedObjectLiteral
   - discouraged_direct_init # DiscouragedDirectInitRule
-  - empty_count # EmptyCountRule
   - empty_enum_arguments # EmptyEnumArgumentsRule                                                 # Autocorrectable
   - empty_parameters # EmptyParametersRule
   - empty_parentheses_with_trailing_closure # EmptyParenthesesWithTrailingClosureRule             # Autocorrectable
@@ -149,9 +148,6 @@ di_resolve: # DIResolveRule
 
 discarded_notification_center_observer: # DiscardedNotificationCenterObserverRule
   severity: error
-
-empty_count: # EmptyCountRule
-  severity: warning
 
 empty_enum_arguments: # EmptyEnumArgumentsRule
   severity: error

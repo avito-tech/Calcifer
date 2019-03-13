@@ -98,7 +98,6 @@ public final class XcodeBuildEnvironmentParameters: Codable {
         architectures = try environment.getValue("ARCHS")
         onlyActiveArchitecture = try environment.getValue("ONLY_ACTIVE_ARCH") == "YES"
         
-        
         sdkVersion = try environment.getValue("SDK_VERSION")
         sdkNames = try environment.getValue("SDK_NAMES")
         swiftVersion = try environment.getValue("SWIFT_VERSION")

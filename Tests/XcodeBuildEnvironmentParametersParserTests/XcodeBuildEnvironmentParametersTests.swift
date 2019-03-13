@@ -11,6 +11,7 @@ public final class XcodeBuildEnvironmentParametersTests: XCTestCase {
     }
     
     private func environment() -> [String: String] {
+        // swiftlint:disable line_length
         return [
             "TARGETNAME": "Some",
             "FULL_PRODUCT_NAME": "Some.app",
