@@ -12,13 +12,13 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
     public func dependencies(
         for target: String,
         buildParametersChecksum: ChecksumType) throws -> [TargetInfo<ChecksumType>] {
-        guard let checksumHolder = targetChecksumHolder({ $0.name == target }) else {
+        guard let checksumHolder = targetChecksumHolder({ $0.targetName == target }) else {
             throw XcodeProjectChecksumCalculatorError.emptyTargetChecksum(targetName: target)
         }
         return try checksumHolder.allDependencies.map({ targetChecksumHolder in
             let targeChecksum = try targetChecksumHolder.checksum + buildParametersChecksum
             return TargetInfo(
-                targetName: targetChecksumHolder.name,
+                targetName: targetChecksumHolder.targetName,
                 productName: targetChecksumHolder.productName,
                 productType: targetChecksumHolder.productType,
                 checksum: targeChecksum
@@ -38,7 +38,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         }
         let targeChecksum = try checksumHolder.checksum + buildParametersChecksum
         return TargetInfo(
-            targetName: checksumHolder.name,
+            targetName: checksumHolder.targetName,
             productName: checksumHolder.productName,
             productType: checksumHolder.productType,
             checksum: targeChecksum

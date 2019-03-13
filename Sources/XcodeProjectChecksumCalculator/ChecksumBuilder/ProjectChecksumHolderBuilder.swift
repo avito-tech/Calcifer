@@ -36,7 +36,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
             throw error
         }
         let summarizedChecksums = cache.values.sorted(by: {left, right -> Bool in
-                left.name > right.name
+                left.targetName > right.targetName
         })
         let summarizedChecksum = try summarizedChecksums.checksum()
         return ProjectChecksumHolder<Builder.ChecksumType>(

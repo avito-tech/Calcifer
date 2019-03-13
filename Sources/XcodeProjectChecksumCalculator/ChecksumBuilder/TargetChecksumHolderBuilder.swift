@@ -62,7 +62,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         }
         
         let targetChecksumHolder = TargetChecksumHolder<Builder.ChecksumType>(
-            name: target.name,
+            targetName: target.name,
             productName: prodcutName,
             productType: prodcutType,
             checksum: summarizedChecksum,
