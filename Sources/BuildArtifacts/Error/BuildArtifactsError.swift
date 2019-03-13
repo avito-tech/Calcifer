@@ -8,11 +8,11 @@ public enum BuildArtifactsError: Error, CustomStringConvertible {
     public var description: String {
         switch self {
         case let .productDirectoryDoesntExist(targetName, path):
-            return "Directory for target \(targetName) dosen't exist at \(path)"
+            return "Directory for target \(targetName) doesn't exist at \(path)"
         case let .frameworkDoesntExist(productName, path):
-            return "Framework for product \(productName) dosen't exist at \(path)"
+            return "Framework for product \(productName) doesn't exist at \(path)"
         case let .dsymDoesntExist(productName, path):
-            return "dSYM for product \(productName) dosen't exist at \(path)"
+            return "dSYM for product \(productName) doesn't exist at \(path)"
         }
     }
 }
