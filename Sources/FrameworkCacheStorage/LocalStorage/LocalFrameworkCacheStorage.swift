@@ -1,7 +1,7 @@
 import Foundation
 import Checksum
 
-public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
+public final class LocalFrameworkCacheStorage<ChecksumType: Checksum>: FrameworkCacheStorage {
     
     private let fileManager: FileManager
     private let cacheDirectoryPath: String
@@ -11,17 +11,17 @@ public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
         self.cacheDirectoryPath = cacheDirectoryPath
     }
     
-    // MARK: - CacheStorage
-    public func cache(for cacheKey: CacheKey<ChecksumType>) throws -> CacheValue<ChecksumType>? {
+    // MARK: - FrameworkCacheStorage
+    public func cache(for cacheKey: FrameworkCacheKey<ChecksumType>) throws -> FrameworkCacheValue<ChecksumType>? {
         let entryURL = url(to: cacheKey)
         if fileManager.directoryExist(at: entryURL) {
-            return CacheValue(key: cacheKey, path: entryURL.path)
+            return FrameworkCacheValue(key: cacheKey, path: entryURL.path)
         }
         return nil
     }
     
     @discardableResult
-    public func add(cacheKey: CacheKey<ChecksumType>, at artifactPath: String) throws -> CacheValue<ChecksumType> {
+    public func add(cacheKey: FrameworkCacheKey<ChecksumType>, at artifactPath: String) throws -> FrameworkCacheValue<ChecksumType> {
         let artifactURL = URL(fileURLWithPath: artifactPath)
         let entryURL = url(to: cacheKey)
         if fileManager.directoryExist(at: entryURL) {
@@ -30,20 +30,20 @@ public final class LocalCacheStorage<ChecksumType: Checksum>: CacheStorage {
         let entryFolderURL = entryURL.deletingLastPathComponent()
         try fileManager.createDirectory(at: entryFolderURL, withIntermediateDirectories: true)
         try fileManager.copyItem(at: artifactURL, to: entryURL)
-        return CacheValue(key: cacheKey, path: entryURL.path)
+        return FrameworkCacheValue(key: cacheKey, path: entryURL.path)
     }
     
     public func purge() throws {
         try fileManager.removeItem(atPath: cacheDirectoryPath)
     }
     
-    private func url(to cacheKey: CacheKey<ChecksumType>) -> URL {
+    private func url(to cacheKey: FrameworkCacheKey<ChecksumType>) -> URL {
         return URL(fileURLWithPath: path(to: cacheKey))
     }
     
-    private func path(to cacheKey: CacheKey<ChecksumType>) -> String {
+    private func path(to cacheKey: FrameworkCacheKey<ChecksumType>) -> String {
         return cacheDirectoryPath
-            .appendingPathComponent(cacheKey.name)
+            .appendingPathComponent(cacheKey.frameworkName)
             .appendingPathComponent(cacheKey.checksum.description)
     }
     

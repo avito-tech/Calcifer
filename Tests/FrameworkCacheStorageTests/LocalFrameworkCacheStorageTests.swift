@@ -1,9 +1,9 @@
 import Foundation
 import XCTest
 import Checksum
-@testable import CacheStorage
+@testable import FrameworkCacheStorage
 
-public final class LocalCacheStorageTests: XCTestCase {
+public final class LocalFrameworkCacheStorageTests: XCTestCase {
     
     private let cacheDirectoryPath = NSTemporaryDirectory().appendingPathComponent("test")
     private let fileManager = FileManager.default
@@ -21,12 +21,12 @@ public final class LocalCacheStorageTests: XCTestCase {
     func test_addCache() {
         XCTAssertNoThrow(try {
             // Given
-            let storage = LocalCacheStorage<BaseChecksum>(
+            let storage = LocalFrameworkCacheStorage<BaseChecksum>(
                 fileManager: fileManager,
                 cacheDirectoryPath: cacheDirectoryPath
             )
-            let cacheKey = CacheKey(
-                name: "Some",
+            let cacheKey = FrameworkCacheKey(
+                frameworkName: "Some",
                 checksum: BaseChecksum(UUID().uuidString)
             )
             let frameworkContainingFolderPath = try createArtifactFile(
@@ -45,19 +45,19 @@ public final class LocalCacheStorageTests: XCTestCase {
             }
 
             // Then
-            XCTAssertFalse(fileManager.directoryExist(at: expectedPath))
+            XCTAssertTrue(fileManager.directoryExist(at: expectedPath))
             XCTAssertEqual(value.path, expectedPath)
         }(), "Caught exception")
     }
     
     private func createArtifactFile(
         fileManager: FileManager,
-        cacheKey: CacheKey<BaseChecksum>)
+        cacheKey: FrameworkCacheKey<BaseChecksum>)
         throws -> String
     {
         let currentPath = cacheDirectoryPath.appendingPathComponent("Debug-iphoneos")
-        let frameworkContainingFolderPath = currentPath.appendingPathComponent(cacheKey.name)
-        let frameworkPath = frameworkContainingFolderPath.appendingPathComponent("\(cacheKey.name).framework")
+        let frameworkContainingFolderPath = currentPath.appendingPathComponent(cacheKey.frameworkName)
+        let frameworkPath = frameworkContainingFolderPath.appendingPathComponent("\(cacheKey.frameworkName).framework")
         try fileManager.createDirectory(
             atPath: frameworkContainingFolderPath,
             withIntermediateDirectories: true
@@ -69,9 +69,9 @@ public final class LocalCacheStorageTests: XCTestCase {
         return frameworkContainingFolderPath
     }
     
-    private func obtainExpectedPath(for cacheKey: CacheKey<BaseChecksum>) -> String {
+    private func obtainExpectedPath(for cacheKey: FrameworkCacheKey<BaseChecksum>) -> String {
          return cacheDirectoryPath
-            .appendingPathComponent(cacheKey.name)
+            .appendingPathComponent(cacheKey.frameworkName)
             .appendingPathComponent(cacheKey.checksum.description)
     }
 

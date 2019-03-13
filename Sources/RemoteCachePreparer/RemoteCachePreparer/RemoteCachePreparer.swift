@@ -4,7 +4,7 @@ import XcodeProjectChecksumCalculator
 import XcodeProjectBuilder
 import XcodeProjectPatcher
 import BuildArtifacts
-import CacheStorage
+import FrameworkCacheStorage
 import Checksum
 import Toolkit
 
@@ -29,7 +29,7 @@ final class RemoteCachePreparer {
         
         let localCacheDirectoryPath = fileManager.calciferDirectory()
             .appendingPathComponent("localCache")
-        let localStorage = LocalCacheStorage<BaseChecksum>(
+        let localStorage = LocalFrameworkCacheStorage<BaseChecksum>(
             fileManager: fileManager,
             cacheDirectoryPath: localCacheDirectoryPath
         )
@@ -74,7 +74,7 @@ final class RemoteCachePreparer {
     private func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
         requiredTargets: [TargetInfo<BaseChecksum>],
-        localStorage: LocalCacheStorage<BaseChecksum>,
+        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
         checksumProducer: BaseURLChecksumProducer)
         throws
     {
@@ -158,7 +158,7 @@ final class RemoteCachePreparer {
     }
     
     private func obtainTargetsForBuild(
-        localStorage: LocalCacheStorage<BaseChecksum>,
+        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
@@ -224,10 +224,10 @@ final class RemoteCachePreparer {
     
     @discardableResult
     private func saveArtifacts(
-        localStorage: LocalCacheStorage<BaseChecksum>,
+        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
         for targetInfos: [TargetInfo<BaseChecksum>],
         at path: String)
-        throws -> [CacheValue<BaseChecksum>]
+        throws -> [FrameworkCacheValue<BaseChecksum>]
     {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager
@@ -242,7 +242,7 @@ final class RemoteCachePreparer {
     
     private func integrateArtifacts(
         checksumProducer: BaseURLChecksumProducer,
-        localStorage: LocalCacheStorage<BaseChecksum>,
+        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
         targetInfos: [TargetInfo<BaseChecksum>],
         to path: String) throws
     {
@@ -269,10 +269,10 @@ final class RemoteCachePreparer {
     
     private func createCacheKey(
         from targetInfo: TargetInfo<BaseChecksum>)
-        -> CacheKey<BaseChecksum>
+        -> FrameworkCacheKey<BaseChecksum>
     {
-        return CacheKey<BaseChecksum>(
-            name: targetInfo.targetName,
+        return FrameworkCacheKey<BaseChecksum>(
+            frameworkName: targetInfo.targetName,
             checksum: targetInfo.checksum
         )
     }

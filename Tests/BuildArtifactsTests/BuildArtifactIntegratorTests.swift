@@ -49,7 +49,7 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
             )
 
             // Then
-            XCTAssertFalse(fileManager.directoryExist(at: expectedPath))
+            XCTAssertTrue(fileManager.directoryExist(at: expectedPath))
         }(), "Caught exception")
     }
     
@@ -57,9 +57,7 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
         for targetInfo: TargetInfo<BaseChecksum>)
         -> String
     {
-        return artifactsDestination
-            .appendingPathComponent(targetInfo.targetName)
-            .appendingPathComponent(targetInfo.checksum.description)
+        return artifactsDestination.appendingPathComponent(targetInfo.targetName)
     }
 
 }
