@@ -3,11 +3,11 @@ import Checksum
 
 public struct CacheValue<ChecksumType: Checksum> {
     
-    public let entry: CacheEntry<ChecksumType>
+    public let key: CacheKey<ChecksumType>
     public let path: String
     
-    public init(entry: CacheEntry<ChecksumType>, path: String) {
-        self.entry = entry
+    public init(key: CacheKey<ChecksumType>, path: String) {
+        self.key = key
         self.path = path
     }
 }

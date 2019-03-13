@@ -18,7 +18,6 @@ final class RemoteCachePreparer {
     
     func prepare(params: XcodeBuildEnvironmentParameters) throws {
         let podsProjectPath = params.podsProjectPath
-        let patchedProjectPath = params.patchedProjectPath
         
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
     
@@ -28,64 +27,24 @@ final class RemoteCachePreparer {
             checksumProducer: checksumProducer
         )
         
-        let requiredTargets = try obtainRequiredTargets(
-            checksumProvider: targetChecksumProvider,
-            buildParametersChecksum: paramsChecksum,
-            params: params
-        )
         let cacheDirectoryPath = fileManager.calciferDirectory().appendingPathComponent("localCache")
         let localStorage = LocalCacheStorage<BaseChecksum>(
             fileManager: fileManager,
             cacheDirectoryPath: cacheDirectoryPath
         )
         
-        let targetsForBuild = try obtainTargetsForBuild(
-            localStorage: localStorage,
-            requiredFrameworks: requiredTargets
+        let requiredTargets = try obtainRequiredTargets(
+            checksumProvider: targetChecksumProvider,
+            buildParametersChecksum: paramsChecksum,
+            params: params
         )
-        let targetNamesForBuild = targetsForBuild.map { $0.targetName }
-        let targetInfosForStore = frameworkTargetInfos(targetsForBuild)
-        
-        // If we do not need to store an artifact, then we don’t need to build it.
-        // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
-        // If any file in the bundle has changed, then all dependencies will be rebuilded.
-        // Because their checksum has changed.
-        if targetInfosForStore.count > 0 {
-            
-            try patchProject(
-                podsProjectPath: podsProjectPath,
-                patchedProjectPath: patchedProjectPath,
-                targets: targetNamesForBuild
-            )
-            
-            let cacheBuildPath = params.projectDirectory
-                .appendingPathComponent("build")
-                .appendingPathComponent("\(params.configuration)-\(params.platformName)")
-            
-            let targetInfosForCacheIntegration = frameworkTargetInfos(
-                requiredTargets.filter { targetInfo in
-                    targetsForBuild.contains(targetInfo) == false
-                }
-            )
-            
-            try integrateArtifacts(
-                checksumProducer: checksumProducer,
-                localStorage: localStorage,
-                targetInfos: targetInfosForCacheIntegration,
-                to: cacheBuildPath
-            )
 
-            try build(
-                params: params,
-                patchedProjectPath: patchedProjectPath
-            )
-            
-            try saveArtifacts(
-                localStorage: localStorage,
-                for: targetInfosForStore,
-                at: cacheBuildPath
-            )
-        }
+        try prepareAndBuildCacheProjectIfNeeded(
+            params: params,
+            requiredTargets: requiredTargets,
+            localStorage: localStorage,
+            checksumProducer: checksumProducer
+        )
         
         let targetInfosForIntegration = frameworkTargetInfos(requiredTargets)
         try integrateArtifacts(
@@ -111,6 +70,66 @@ final class RemoteCachePreparer {
         return targetInfos
     }
     
+    private func prepareAndBuildCacheProjectIfNeeded(
+        params: XcodeBuildEnvironmentParameters,
+        requiredTargets: [TargetInfo<BaseChecksum>],
+        localStorage: LocalCacheStorage<BaseChecksum>,
+        checksumProducer: BaseURLChecksumProducer)
+        throws
+    {
+    
+        let podsProjectPath = params.podsProjectPath
+        let patchedProjectPath = params.patchedProjectPath
+        
+        let targetsForBuild = try obtainTargetsForBuild(
+            localStorage: localStorage,
+            requiredFrameworks: requiredTargets
+        )
+        let targetNamesForBuild = targetsForBuild.map { $0.targetName }
+        let targetInfosForStore = frameworkTargetInfos(targetsForBuild)
+        
+        // If we do not need to store an artifact, then we don’t need to build it.
+        // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
+        // If any file in the bundle has changed, then all dependencies will be rebuilded.
+        // Because their checksum has changed.
+        if targetInfosForStore.count > 0 {
+        
+            try patchProject(
+                podsProjectPath: podsProjectPath,
+                patchedProjectPath: patchedProjectPath,
+                targets: targetNamesForBuild
+            )
+            
+            let cacheBuildPath = params.projectDirectory
+                .appendingPathComponent("build")
+                .appendingPathComponent("\(params.configuration)-\(params.platformName)")
+            
+            let targetInfosForCacheIntegration = frameworkTargetInfos(
+                requiredTargets.filter { targetInfo in
+                    targetsForBuild.contains(targetInfo) == false
+                }
+            )
+            
+            try integrateArtifacts(
+                checksumProducer: checksumProducer,
+                localStorage: localStorage,
+                targetInfos: targetInfosForCacheIntegration,
+                to: cacheBuildPath
+            )
+            
+            try build(
+                params: params,
+                patchedProjectPath: patchedProjectPath
+            )
+            
+            try saveArtifacts(
+                localStorage: localStorage,
+                for: targetInfosForStore,
+                at: cacheBuildPath
+            )
+        }
+    }
+    
     private func buildTargetChecksumProvider(
         podsProjectPath: String,
         checksumProducer: BaseURLChecksumProducer)
@@ -132,9 +151,9 @@ final class RemoteCachePreparer {
     {
         // TODO: Filter the frameworks that are already in the remote cache.
         return try requiredFrameworks.filter { targetInfo in
-            let entry = createCacheEntry(from: targetInfo)
-            let cache = try localStorage.cache(for: entry)
-            return cache == nil
+            let cacheKey = createCacheKey(from: targetInfo)
+            let cacheValue = try localStorage.cache(for: cacheKey)
+            return cacheValue == nil
         }
     }
     
@@ -203,8 +222,8 @@ final class RemoteCachePreparer {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
         
         return try artifacts.map { artifact in
-            let entry = createCacheEntry(from: artifact.targetInfo)
-            return try localStorage.add(entry: entry, at: artifact.path)
+            let cacheKey = createCacheKey(from: artifact.targetInfo)
+            return try localStorage.add(cacheKey: cacheKey, at: artifact.path)
         }
     }
     
@@ -219,8 +238,8 @@ final class RemoteCachePreparer {
             checksumProducer: checksumProducer
         )
         let buildArtifacts: [TargetBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
-            let entry = createCacheEntry(from: targetInfo)
-            guard let cacheValue = try localStorage.cache(for: entry) else {
+            let cacheKey = createCacheKey(from: targetInfo)
+            guard let cacheValue = try localStorage.cache(for: cacheKey) else {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
                     checksumValue: targetInfo.checksum.description
@@ -235,11 +254,11 @@ final class RemoteCachePreparer {
         try integrator.integrate(artifacts: buildArtifacts, to: path)
     }
     
-    private func createCacheEntry(
+    private func createCacheKey(
         from targetInfo: TargetInfo<BaseChecksum>)
-        -> CacheEntry<BaseChecksum>
+        -> CacheKey<BaseChecksum>
     {
-        return CacheEntry<BaseChecksum>(
+        return CacheKey<BaseChecksum>(
             name: targetInfo.targetName,
             checksum: targetInfo.checksum
         )

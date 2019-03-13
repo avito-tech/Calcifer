@@ -19,13 +19,13 @@ public final class BuildArtifactIntegrator {
         to path: String) throws
     {
         try artifacts.forEach { artifact in
-            let artifactDestination = obtainDestination(for: artifact, at: path)
+            let artifactDestinationURL = obtainDestination(for: artifact, at: path)
             let artifactCurrentURL = URL(fileURLWithPath: artifact.path)
-            if try compareArtifacts(artifactCurrentURL, artifactDestination) == false {
-                if fileManager.directoryExist(at: artifactDestination) {
-                    try fileManager.removeItem(at: artifactDestination)
+            if try compareArtifacts(artifactCurrentURL, artifactDestinationURL) == false {
+                if fileManager.directoryExist(at: artifactDestinationURL) {
+                    try fileManager.removeItem(at: artifactDestinationURL)
                 }
-                let artifactDestinationFolderURL = artifactDestination.deletingLastPathComponent()
+                let artifactDestinationFolderURL = artifactDestinationURL.deletingLastPathComponent()
                 if fileManager.directoryExist(at: artifactDestinationFolderURL) == false {
                     try fileManager.createDirectory(
                         at: artifactDestinationFolderURL,
@@ -34,7 +34,7 @@ public final class BuildArtifactIntegrator {
                 }
                 try fileManager.copyItem(
                     at: artifactCurrentURL,
-                    to: artifactDestination
+                    to: artifactDestinationURL
                 )
             }
         }

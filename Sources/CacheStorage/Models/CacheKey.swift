@@ -1,7 +1,7 @@
 import Foundation
 import Checksum
 
-public struct CacheEntry<ChecksumType: Checksum> {
+public struct CacheKey<ChecksumType: Checksum> {
     let name: String
     let checksum: ChecksumType
     

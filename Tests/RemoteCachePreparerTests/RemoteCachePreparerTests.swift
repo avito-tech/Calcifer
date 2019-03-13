@@ -9,11 +9,11 @@ public final class RemoteCachePreparerTests: XCTestCase {
     
     // MARK: - Lifecycle
     
-    func test_prepare() {
+//    func test_prepare() {
 //        XCTAssertNoThrow(try {
 //            let params = try XcodeBuildEnvironmentParameters()
 //            try parser.prepare(params: params)
 //        }(), "Caught exception")
-    }
+//    }
 
 }

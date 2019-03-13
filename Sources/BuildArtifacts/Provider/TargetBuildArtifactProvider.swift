@@ -33,8 +33,7 @@ public final class TargetBuildArtifactProvider {
         at path: String,
         targetInfo: TargetInfo<ChecksumType>) throws
     {
-        let frameworkName = targetInfo.productName
-        let frameworkPath = path.appendingPathComponent(frameworkName)
+        let frameworkPath = path.appendingPathComponent(targetInfo.productName)
         if fileManager.directoryExist(at: frameworkPath) == false {
             throw BuildArtifactsError.frameworkDoesntExist(
                 productName: targetInfo.targetName,

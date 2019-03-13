@@ -5,10 +5,10 @@ public protocol CacheStorage {
     
     associatedtype ChecksumType: Checksum
     
-    func cache(for entry: CacheEntry<ChecksumType>) throws -> CacheValue<ChecksumType>?
+    func cache(for cacheKey: CacheKey<ChecksumType>) throws -> CacheValue<ChecksumType>?
     
     @discardableResult
-    func add(entry: CacheEntry<ChecksumType>, at path: String) throws -> CacheValue<ChecksumType>
+    func add(cacheKey: CacheKey<ChecksumType>, at path: String) throws -> CacheValue<ChecksumType>
     
     func purge() throws
     

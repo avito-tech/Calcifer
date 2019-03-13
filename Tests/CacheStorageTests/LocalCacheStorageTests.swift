@@ -25,19 +25,19 @@ public final class LocalCacheStorageTests: XCTestCase {
                 fileManager: fileManager,
                 cacheDirectoryPath: cacheDirectoryPath
             )
-            let entry = CacheEntry(
+            let cacheKey = CacheKey(
                 name: "Some",
                 checksum: BaseChecksum(UUID().uuidString)
             )
             let frameworkContainingFolderPath = try createArtifactFile(
                 fileManager: fileManager,
-                entry: entry
+                cacheKey: cacheKey
             )
-            let expectedPath = obtainExpectedPath(for: entry)
+            let expectedPath = obtainExpectedPath(for: cacheKey)
             
             // When
-            try storage.add(entry: entry, at: frameworkContainingFolderPath)
-            guard let optionalValue = try? storage.cache(for: entry),
+            try storage.add(cacheKey: cacheKey, at: frameworkContainingFolderPath)
+            guard let optionalValue = try? storage.cache(for: cacheKey),
                 let value = optionalValue
                 else {
                 XCTFail("Empty cache value")
@@ -52,12 +52,12 @@ public final class LocalCacheStorageTests: XCTestCase {
     
     private func createArtifactFile(
         fileManager: FileManager,
-        entry: CacheEntry<BaseChecksum>)
+        cacheKey: CacheKey<BaseChecksum>)
         throws -> String
     {
         let currentPath = cacheDirectoryPath.appendingPathComponent("Debug-iphoneos")
-        let frameworkContainingFolderPath = currentPath.appendingPathComponent(entry.name)
-        let frameworkPath = frameworkContainingFolderPath.appendingPathComponent("\(entry.name).framework")
+        let frameworkContainingFolderPath = currentPath.appendingPathComponent(cacheKey.name)
+        let frameworkPath = frameworkContainingFolderPath.appendingPathComponent("\(cacheKey.name).framework")
         try fileManager.createDirectory(
             atPath: frameworkContainingFolderPath,
             withIntermediateDirectories: true
@@ -69,10 +69,10 @@ public final class LocalCacheStorageTests: XCTestCase {
         return frameworkContainingFolderPath
     }
     
-    private func obtainExpectedPath(for entry: CacheEntry<BaseChecksum>) -> String {
+    private func obtainExpectedPath(for cacheKey: CacheKey<BaseChecksum>) -> String {
          return cacheDirectoryPath
-            .appendingPathComponent(entry.name)
-            .appendingPathComponent(entry.checksum.description)
+            .appendingPathComponent(cacheKey.name)
+            .appendingPathComponent(cacheKey.checksum.description)
     }
 
 }
