@@ -8,7 +8,7 @@ public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
     public let command = "parseXcodeBuildEnvironmentParameters"
     public let overview = "Parse xcodebuild environment parameters"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case outputPath
     }
     
@@ -17,7 +17,7 @@ public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         outputPathArgument = subparser.add(
-            option: "--\(Arguments.outputPath.rawValue)",
+            option: Arguments.outputPath.optionString,
             kind: String.self,
             usage: "Specify output path"
         )

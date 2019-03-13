@@ -82,7 +82,7 @@ extension PBXTarget {
             files.append(contentsOf: sourcesFileElement)
         }
         
-        if case .bundle? = productType {
+        if let productType = productType, case .bundle = productType {
             if let resourcesBuildPhase = try? resourcesBuildPhase(),
                 let resourcesFileElement = resourcesBuildPhase?.fileElements() {
                 files.append(contentsOf: resourcesFileElement)

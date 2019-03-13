@@ -8,7 +8,7 @@ public final class PatchXcodeProjectCommand: Command {
     public let command = "patchXcodeProject"
     public let overview = "Patch xcode project"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case projectPath
         case outputPath
         case targets
@@ -21,17 +21,17 @@ public final class PatchXcodeProjectCommand: Command {
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         projectPathArgument = subparser.add(
-            option: "--\(Arguments.projectPath.rawValue)",
+            option: Arguments.projectPath.optionString,
             kind: String.self,
             usage: "Specify Pods project path"
         )
         outputPathArgument = subparser.add(
-            option: "--\(Arguments.outputPath.rawValue)",
+            option: Arguments.outputPath.optionString,
             kind: String.self,
             usage: "Specify output path"
         )
         targetsArgument = subparser.add(
-            option: "--\(Arguments.targets.rawValue)",
+            option: Arguments.targets.optionString,
             kind: [String].self,
             usage: "Specify targets name"
         )

@@ -2,13 +2,14 @@ import XcodeBuildEnvironmentParametersParser
 import ArgumentsParser
 import Foundation
 import Utility
+import Toolkit
 
 public final class PrepareRemoteCacheCommand: Command {
     
     public let command = "prepareRemoteCache"
     public let overview = "Prepare remote cache"
     
-    enum Arguments: String {
+    enum Arguments: String, CommandArgument {
         case environmentFilePath
     }
     
@@ -17,7 +18,7 @@ public final class PrepareRemoteCacheCommand: Command {
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         environmentFilePath = subparser.add(
-            option: "--\(Arguments.environmentFilePath.rawValue)",
+            option: Arguments.environmentFilePath.optionString,
             kind: String.self,
             usage: "Specify environment file path"
         )
