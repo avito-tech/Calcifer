@@ -25,7 +25,7 @@ public final class TargetBuildArtifactProvider {
                 )
             }
             
-            let frameworkName = "\(targetInfo.productName)"
+            let frameworkName = targetInfo.productName
             let frameworkPath = artifactPath.appendingPathComponent(frameworkName)
             if fileManager.directoryExist(at: frameworkPath) == false {
                 throw BuildArtifactsError.frameworkDoesntExist(

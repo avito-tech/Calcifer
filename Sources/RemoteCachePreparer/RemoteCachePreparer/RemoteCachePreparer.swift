@@ -55,7 +55,7 @@ final class RemoteCachePreparer {
                 targets: targetNamesForBuild
             )
             
-            let cacheBuildPath = "\(params.projectDirectory)"
+            let cacheBuildPath = params.projectDirectory
                 .appendingPathComponent("build")
                 .appendingPathComponent("\(params.configuration)-\(params.platformName)")
             
