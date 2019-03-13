@@ -27,10 +27,11 @@ final class RemoteCachePreparer {
             checksumProducer: checksumProducer
         )
         
-        let cacheDirectoryPath = fileManager.calciferDirectory().appendingPathComponent("localCache")
+        let localCacheDirectoryPath = fileManager.calciferDirectory()
+            .appendingPathComponent("localCache")
         let localStorage = LocalCacheStorage<BaseChecksum>(
             fileManager: fileManager,
-            cacheDirectoryPath: cacheDirectoryPath
+            cacheDirectoryPath: localCacheDirectoryPath
         )
         
         let requiredTargets = try obtainRequiredTargets(
@@ -39,7 +40,7 @@ final class RemoteCachePreparer {
             params: params
         )
 
-        try prepareAndBuildCacheProjectIfNeeded(
+        try prepareAndBuildPatchedProjectIfNeeded(
             params: params,
             requiredTargets: requiredTargets,
             localStorage: localStorage,
@@ -70,7 +71,7 @@ final class RemoteCachePreparer {
         return targetInfos
     }
     
-    private func prepareAndBuildCacheProjectIfNeeded(
+    private func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
         requiredTargets: [TargetInfo<BaseChecksum>],
         localStorage: LocalCacheStorage<BaseChecksum>,
@@ -104,16 +105,15 @@ final class RemoteCachePreparer {
                 .appendingPathComponent("build")
                 .appendingPathComponent("\(params.configuration)-\(params.platformName)")
             
-            let targetInfosForCacheIntegration = frameworkTargetInfos(
-                requiredTargets.filter { targetInfo in
-                    targetsForBuild.contains(targetInfo) == false
-                }
+            let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
+                requiredTargets: requiredTargets,
+                targetsForBuild: targetsForBuild
             )
             
             try integrateArtifacts(
                 checksumProducer: checksumProducer,
                 localStorage: localStorage,
-                targetInfos: targetInfosForCacheIntegration,
+                targetInfos: targetInfosForPatchedProjectIntegration,
                 to: cacheBuildPath
             )
             
@@ -128,6 +128,19 @@ final class RemoteCachePreparer {
                 at: cacheBuildPath
             )
         }
+    }
+    
+    private func targetInfosForIntegrationToPatchedProject(
+        requiredTargets: [TargetInfo<BaseChecksum>],
+        targetsForBuild: [TargetInfo<BaseChecksum>])
+        -> [TargetInfo<BaseChecksum>]
+    {
+        let targetInfos = frameworkTargetInfos(
+            requiredTargets.filter { targetInfo in
+                targetsForBuild.contains(targetInfo) == false
+            }
+        )
+        return targetInfos
     }
     
     private func buildTargetChecksumProvider(
