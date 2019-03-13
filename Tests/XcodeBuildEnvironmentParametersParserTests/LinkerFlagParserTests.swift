@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import BuildParametersParser
+@testable import XcodeBuildEnvironmentParametersParser
 
 public final class LinkerFlagParserTests: XCTestCase {
     

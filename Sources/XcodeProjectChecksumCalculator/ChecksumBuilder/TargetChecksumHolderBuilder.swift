@@ -2,6 +2,7 @@ import Foundation
 import xcodeproj
 import Checksum
 import PathKit
+import Toolkit
 
 final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
@@ -11,18 +12,14 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.ChecksumType>) -> ())
-    typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.ChecksumType>?))
-    
     @discardableResult
     func build(
         target: PBXTarget,
         sourceRoot: Path,
-        cacheReader: CacheReader,
-        cacheWriter: CacheWriter)
+        cache: inout ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>)
         throws -> TargetChecksumHolder<Builder.ChecksumType>
     {
-        if let cachedChecksum = cacheReader(target) {
+        if let cachedChecksum = cache.read(target) {
             return cachedChecksum
         }
         var summarizedChecksums = [Builder.ChecksumType]()
@@ -32,8 +29,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
             return try build(
                 target: dependency,
                 sourceRoot: sourceRoot,
-                cacheReader: cacheReader,
-                cacheWriter: cacheWriter
+                cache: &cache
             )
         }
         let dependenciesChecksum = try dependenciesChecksums.checksum()
@@ -69,7 +65,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
             files: filesChecksums,
             dependencies: dependenciesChecksums
         )
-        cacheWriter(target, targetChecksumHolder)
+        cache.write(targetChecksumHolder, for: target)
         return targetChecksumHolder
     }
 }
