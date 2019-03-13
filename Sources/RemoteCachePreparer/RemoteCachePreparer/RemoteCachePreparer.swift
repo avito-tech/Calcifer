@@ -43,9 +43,10 @@ final class RemoteCachePreparer {
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
         let targetInfosForStore = frameworkTargetInfos(targetsForBuild)
         
-        // If any image in the bundle has changed, then all dependencies will be rebuilded.
-        
         // If we do not need to store an artifact, then we don’t need to build it.
+        // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
+        // If any file in the bundle has changed, then all dependencies will be rebuilded.
+        // Because their checksum has changed.
         if targetInfosForStore.count > 0 {
             
             try patchProject(
