@@ -205,10 +205,10 @@ final class RemoteCachePreparer {
         patchedProjectPath: String)
         throws -> XcodeProjectBuildConfig
     {
-        guard let architecture = XcodeProjectBuildConfig.Architecture(rawValue: params.architectures) else {
+        guard let architecture = Architecture(rawValue: params.architectures) else {
             throw RemoteCachePreparerError.unableToParseArchitecture(string: params.architectures)
         }
-        guard let platform = XcodeProjectBuildConfig.Platform(rawValue: params.platformName) else {
+        guard let platform = Platform(rawValue: params.platformName) else {
             throw RemoteCachePreparerError.unableToParsePlatform(string: params.platformName)
         }
         let config = XcodeProjectBuildConfig(

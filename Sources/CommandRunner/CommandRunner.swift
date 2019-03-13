@@ -29,7 +29,8 @@ public final class CommandRunner {
             exitCode = 0
         } catch {
             exitCode = 1
-            print("\(error)")
+            // `error` for xcode log highlighting
+            print("error: \(error)")
         }
 
         return exitCode

@@ -49,7 +49,10 @@ public final class BuildArtifactIntegrator {
             return false
         }
         let artifactChecksum = try checksumProducer.checksum(input: artifactPath)
-        let destinationChecksum = try checksumProducer.checksum(input: artifactDestination)
+        // We do not throw an exception if there is nothing along this path. Just overwrite. This is a valid case.
+        guard let destinationChecksum = try? checksumProducer.checksum(input: artifactDestination) else {
+            return false
+        }
         return artifactChecksum == destinationChecksum
     }
     

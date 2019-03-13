@@ -66,11 +66,11 @@ public final class BuildXcodeProjectCommand: Command {
             name: Arguments.platform.rawValue
         )
         
-        guard let architecture = XcodeProjectBuildConfig.Architecture(rawValue: architectureName) else {
+        guard let architecture = Architecture(rawValue: architectureName) else {
             throw ArgumentsError.argumentValueCannotBeUsed(Arguments.architecture.rawValue)
         }
         
-        guard let platform = XcodeProjectBuildConfig.Platform(rawValue: platformName) else {
+        guard let platform = Platform(rawValue: platformName) else {
             throw ArgumentsError.argumentValueCannotBeUsed(
                 Arguments.platform.rawValue
             )
