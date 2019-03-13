@@ -15,7 +15,9 @@ public final class BuildXcodeProjectCommand: Command {
         case platform
     }
     
-    private let builder = XcodeProjectBuilder()
+    private let builder = XcodeProjectBuilder(
+        shellExecutor: ShellCommandExecutorImpl()
+    )
     
     private let projectPathArgument: OptionArgument<String>
     private let configurationArgument: OptionArgument<String>
@@ -64,11 +66,11 @@ public final class BuildXcodeProjectCommand: Command {
             name: Arguments.platform.rawValue
         )
         
-        guard let architecture = XcodeProjectBuildConfig.Architecture(rawValue: architectureName) else {
+        guard let architecture = Architecture(rawValue: architectureName) else {
             throw ArgumentsError.argumentValueCannotBeUsed(Arguments.architecture.rawValue)
         }
         
-        guard let platform = XcodeProjectBuildConfig.Platform(rawValue: platformName) else {
+        guard let platform = Platform(rawValue: platformName) else {
             throw ArgumentsError.argumentValueCannotBeUsed(
                 Arguments.platform.rawValue
             )
@@ -82,6 +84,7 @@ public final class BuildXcodeProjectCommand: Command {
             configurationName: configuration,
             onlyActiveArchitecture: true
         )
-        builder.build(config: config)
+        let environment = ProcessInfo.processInfo.environment
+        try builder.build(config: config, environment: environment)
     }
 }

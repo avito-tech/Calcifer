@@ -2,6 +2,7 @@ import Foundation
 import xcodeproj
 import Checksum
 import PathKit
+import Toolkit
 
 final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
@@ -11,18 +12,14 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    typealias CacheWriter = ((PBXTarget, TargetChecksumHolder<Builder.ChecksumType>) -> ())
-    typealias CacheReader = ((PBXTarget) -> (TargetChecksumHolder<Builder.ChecksumType>?))
-    
     @discardableResult
     func build(
         target: PBXTarget,
         sourceRoot: Path,
-        cacheReader: CacheReader,
-        cacheWriter: CacheWriter)
+        cache: inout ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>)
         throws -> TargetChecksumHolder<Builder.ChecksumType>
     {
-        if let cachedChecksum = cacheReader(target) {
+        if let cachedChecksum = cache.read(target) {
             return cachedChecksum
         }
         var summarizedChecksums = [Builder.ChecksumType]()
@@ -32,8 +29,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
             return try build(
                 target: dependency,
                 sourceRoot: sourceRoot,
-                cacheReader: cacheReader,
-                cacheWriter: cacheWriter
+                cache: &cache
             )
         }
         let dependenciesChecksum = try dependenciesChecksums.checksum()
@@ -47,14 +43,29 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
+        // target.productName is not correct. Mb should use buildSettings
+        guard let productName = target.product?.path else {
+            throw XcodeProjectChecksumCalculatorError.emptyProductName(
+                target: target.name
+            )
+        }
+        
+        guard let productTypeName = target.productType?.rawValue,
+            let productType = TargetProductType(rawValue: productTypeName) else {
+            throw XcodeProjectChecksumCalculatorError.emptyProductType(
+                target: target.name
+            )
+        }
+        
         let targetChecksumHolder = TargetChecksumHolder<Builder.ChecksumType>(
-            name: target.name,
-            productName: target.productName,
+            targetName: target.name,
+            productName: productName,
+            productType: productType,
             checksum: summarizedChecksum,
             files: filesChecksums,
             dependencies: dependenciesChecksums
         )
-        cacheWriter(target, targetChecksumHolder)
+        cache.write(targetChecksumHolder, for: target)
         return targetChecksumHolder
     }
 }
@@ -66,12 +77,13 @@ extension PBXTarget {
             let sourcesFileElement = sourcesBuildPhase?.fileElements() {
             files.append(contentsOf: sourcesFileElement)
         }
-        // TODO: Fix after MVP
         
-//        if let resourcesBuildPhase = try? resourcesBuildPhase(),
-//            let resourcesFileElement = resourcesBuildPhase?.fileElements() {
-//            files.append(contentsOf: resourcesFileElement)
-//        }
+        if let productType = productType, case .bundle = productType {
+            if let resourcesBuildPhase = try? resourcesBuildPhase(),
+                let resourcesFileElement = resourcesBuildPhase?.fileElements() {
+                files.append(contentsOf: resourcesFileElement)
+            }
+        }
         return files
     }
 }

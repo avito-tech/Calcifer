@@ -42,11 +42,16 @@ final class PBXObjectFactory {
         targetDependencies.forEach({
             objects?.add(object: $0)
         })
+        let product = PBXFileReference(path: UUID().uuidString)
+        objects?.add(object: product)
         let target = PBXTarget(
             name: name,
-            dependencies: targetDependencies
+            dependencies: targetDependencies,
+            product: product,
+            productType: .framework
         )
         target.buildPhases.append(buildPhase)
+        
         return target
     }
 }

@@ -14,7 +14,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
     
     func build(project: PBXProject, sourceRoot: Path) throws -> ProjectChecksumHolder<Builder.ChecksumType> {
         let targets = NSArray(array: project.targets)
-        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>()
+        var cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>()
         var buildError: Error?
         targets.enumerateObjects(options: .concurrent) { obj, key, stop in
             if let target = obj as? PBXTarget {
@@ -22,8 +22,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
                     try builder.build(
                         target: target,
                         sourceRoot: sourceRoot,
-                        cacheReader: cache.read,
-                        cacheWriter: cache.write
+                        cache: &cache
                     )
                 } catch {
                     buildError = error
@@ -36,7 +35,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
             throw error
         }
         let summarizedChecksums = cache.values.sorted(by: {left, right -> Bool in
-                left.name > right.name
+                left.targetName > right.targetName
         })
         let summarizedChecksum = try summarizedChecksums.checksum()
         return ProjectChecksumHolder<Builder.ChecksumType>(

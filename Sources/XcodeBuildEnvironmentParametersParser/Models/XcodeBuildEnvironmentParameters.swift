@@ -1,6 +1,6 @@
 import Foundation
 
-public final class XcodeBuildEnvironmentParameters {
+public final class XcodeBuildEnvironmentParameters: Codable {
     // "TARGETNAME": "Some"
     public let targetName: String
     // "FULL_PRODUCT_NAME": "Some.app"
@@ -26,6 +26,9 @@ public final class XcodeBuildEnvironmentParameters {
     public let podsConfigurationBuildDirectory: String
     // "PODS_ROOT": "/b/Some/Pods"
     public let podsRoot: String
+    
+    // "PATH": "/usr/bin"
+    public let userBinaryPath: String
     
     // "OTHER_LDFLAGS": " -ObjC -ObjC -l\"c++\" -l\"resolv\" -l\"sqlite3\" -l\"stdc++\" -l\"xml2\" -l\"z\" -framework \"AVFoundation\" ..."
     public let otherLDFlags: String
@@ -65,7 +68,7 @@ public final class XcodeBuildEnvironmentParameters {
     // "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"
     public let debugInformationFormat: String
     
-    public init(environment: [String : String] = ProcessInfo.processInfo.environment) throws {
+    public init(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
         targetName = try environment.getValue("TARGETNAME")
         fullProductName = try environment.getValue("FULL_PRODUCT_NAME")
         targetBuildDirectory = try environment.getValue("TARGET_BUILD_DIR")
@@ -80,6 +83,8 @@ public final class XcodeBuildEnvironmentParameters {
         podsConfigurationBuildDirectory = try environment.getValue("PODS_CONFIGURATION_BUILD_DIR")
         podsRoot = try environment.getValue("PODS_ROOT")
         
+        userBinaryPath = try environment.getValue("PATH")
+        
         otherLDFlags = try environment.getValue("OTHER_LDFLAGS")
         otherSwiftFlags = try environment.getValue("OTHER_SWIFT_FLAGS")
         gccPreprocessorDefinitions = try environment.getValue("GCC_PREPROCESSOR_DEFINITIONS")
@@ -92,7 +97,6 @@ public final class XcodeBuildEnvironmentParameters {
         architecture = try environment.getValue("arch")
         architectures = try environment.getValue("ARCHS")
         onlyActiveArchitecture = try environment.getValue("ONLY_ACTIVE_ARCH") == "YES"
-        
         
         sdkVersion = try environment.getValue("SDK_VERSION")
         sdkNames = try environment.getValue("SDK_NAMES")

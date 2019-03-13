@@ -8,19 +8,30 @@ public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
     public let command = "parseXcodeBuildEnvironmentParameters"
     public let overview = "Parse xcodebuild environment parameters"
     
+    enum Arguments: String, CommandArgument {
+        case outputPath
+    }
+    
+    private let outputPathArgument: OptionArgument<String>
+    
     public required init(parser: ArgumentParser) {
-        parser.add(subparser: command, overview: overview)
+        let subparser = parser.add(subparser: command, overview: overview)
+        outputPathArgument = subparser.add(
+            option: Arguments.outputPath.optionString,
+            kind: String.self,
+            usage: "Specify output path"
+        )
     }
     
     public func run(with arguments: ArgumentParser.Result) throws {
-        
+        let outputPath = try ArgumentsReader.validateNotNil(
+            arguments.get(self.outputPathArgument),
+            name: Arguments.outputPath.rawValue
+        )
         let params = try XcodeBuildEnvironmentParameters()
-        let flags = LinkerFlagParser().parse(linkerFlags: params.otherLDFlags)
-        let frameworks = flags.compactMap { $0.framework?.name }
-        
-        let outputFilePath = FileManager.default.pathToHomeDirectoryFile(name: "environment.txt")
-        try "\(frameworks)".description.write(to: outputFilePath, atomically: false, encoding: .utf8)
-        print(outputFilePath)
+        let data = try params.encode()
+        try data.write(to: URL(fileURLWithPath: outputPath))
+        print(outputPath)
     }
     
 }
