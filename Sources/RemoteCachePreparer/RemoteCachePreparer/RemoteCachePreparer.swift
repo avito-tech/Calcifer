@@ -247,7 +247,10 @@ final class RemoteCachePreparer {
     {
         // The bundle is already in the framework (this is done by cocoapods)
         return targetInfos.filter { targetInfo in
-            targetInfo.productType != "com.apple.product-type.bundle"
+            if case .bundle = targetInfo.productType {
+                return false
+            }
+            return true
         }
     }
     

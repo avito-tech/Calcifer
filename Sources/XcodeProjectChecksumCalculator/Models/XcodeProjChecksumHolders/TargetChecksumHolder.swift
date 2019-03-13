@@ -4,7 +4,7 @@ import Checksum
 struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     let name: String
     let productName: String
-    let productType: String
+    let productType: TargetProductType
     let checksum: C
     let files: [FileChecksumHolder<C>]
     let dependencies: [TargetChecksumHolder<C>]
@@ -12,7 +12,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     init(
         name: String,
         productName: String,
-        productType: String,
+        productType: TargetProductType,
         checksum: C,
         files: [FileChecksumHolder<C>],
         dependencies: [TargetChecksumHolder<C>])
@@ -65,7 +65,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(String.self, forKey: .name)
         productName = try container.decode(String.self, forKey: .productName)
-        productType = try container.decode(String.self, forKey: .productType)
+        productType = try container.decode(TargetProductType.self, forKey: .productType)
         checksum = try container.decode(C.self, forKey: .checksum)
         files = try container.decode([FileChecksumHolder<C>].self, forKey: .files)
         // Performance issue

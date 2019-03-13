@@ -54,7 +54,8 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
             )
         }
         
-        guard let prodcutType = target.productType?.rawValue else {
+        guard let prodcutTypeName = target.productType?.rawValue,
+            let prodcutType = TargetProductType(rawValue: prodcutTypeName) else {
             throw XcodeProjectChecksumCalculatorError.emptyProductType(
                 target: target.name
             )

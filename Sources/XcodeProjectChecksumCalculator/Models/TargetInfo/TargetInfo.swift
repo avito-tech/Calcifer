@@ -5,13 +5,13 @@ public struct TargetInfo<ChecksumType: Checksum>: Equatable {
     
     public let targetName: String
     public let productName: String
-    public let productType: String
+    public let productType: TargetProductType
     public let checksum: ChecksumType
     
     public init(
         targetName: String,
         productName: String,
-        productType: String,
+        productType: TargetProductType,
         checksum: ChecksumType)
     {
         self.targetName = targetName
