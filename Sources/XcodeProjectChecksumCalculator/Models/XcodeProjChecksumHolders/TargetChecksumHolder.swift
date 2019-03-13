@@ -25,13 +25,11 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         self.dependencies = dependencies
     }
     
-    var allFrameworkDependencies: [TargetChecksumHolder<C>] {
-        let all = dependencies + dependencies.flatMap { $0.allFrameworkDependencies }
+    var allDependencies: [TargetChecksumHolder<C>] {
+        let all = dependencies + dependencies.flatMap { $0.allDependencies }
         var uniq = [String: TargetChecksumHolder<C>]()
         for dependency in all {
-            if dependency.productType == "com.apple.product-type.framework" {
-                uniq[dependency.name] = dependency
-            }
+            uniq[dependency.name] = dependency
         }
         
         return Array(uniq.values)

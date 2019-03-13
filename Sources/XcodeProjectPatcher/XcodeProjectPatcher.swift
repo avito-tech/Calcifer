@@ -34,6 +34,9 @@ public final class XcodeProjectPatcher {
                 // Perhaps this can be corrected in another way.
                 let target = project.targets[index]
                 removeGroup(for: target, pbxproj: pbxproj, project: project)
+                if let product = target.product {
+                    pbxproj.delete(object: product)
+                }
 
                 project.targets.remove(at: index)
             }
@@ -58,6 +61,11 @@ public final class XcodeProjectPatcher {
             }
             if let targetGroup = developmentPodsGroup?.group(named: productName) {
                 pbxproj.delete(object: targetGroup)
+            }
+        }
+        if let productName = target.product?.name {
+            if let productGroup = project.productsGroup?.group(named: productName) {
+                pbxproj.delete(object: productGroup)
             }
         }
     }

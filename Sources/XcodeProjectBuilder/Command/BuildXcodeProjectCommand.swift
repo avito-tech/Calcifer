@@ -15,7 +15,9 @@ public final class BuildXcodeProjectCommand: Command {
         case platform
     }
     
-    private let builder = XcodeProjectBuilder()
+    private let builder = XcodeProjectBuilder(
+        shellExecutor: ShellCommandExecutorImpl()
+    )
     
     private let projectPathArgument: OptionArgument<String>
     private let configurationArgument: OptionArgument<String>
@@ -82,6 +84,7 @@ public final class BuildXcodeProjectCommand: Command {
             configurationName: configuration,
             onlyActiveArchitecture: true
         )
-        builder.build(config: config)
+        let environment = ProcessInfo.processInfo.environment
+        try builder.build(config: config, environment: environment)
     }
 }

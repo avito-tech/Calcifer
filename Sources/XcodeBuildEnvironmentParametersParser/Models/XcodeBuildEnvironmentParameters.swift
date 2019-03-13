@@ -27,6 +27,9 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     // "PODS_ROOT": "/b/Some/Pods"
     public let podsRoot: String
     
+    // "PATH": "/usr/bin"
+    public let userBinaryPath: String
+    
     // "OTHER_LDFLAGS": " -ObjC -ObjC -l\"c++\" -l\"resolv\" -l\"sqlite3\" -l\"stdc++\" -l\"xml2\" -l\"z\" -framework \"AVFoundation\" ..."
     public let otherLDFlags: String
     // "OTHER_SWIFT_FLAGS": "-DDEBUG -Onone \"-D\" \"COCOAPODS\""
@@ -79,6 +82,8 @@ public final class XcodeBuildEnvironmentParameters: Codable {
         
         podsConfigurationBuildDirectory = try environment.getValue("PODS_CONFIGURATION_BUILD_DIR")
         podsRoot = try environment.getValue("PODS_ROOT")
+        
+        userBinaryPath = try environment.getValue("PATH")
         
         otherLDFlags = try environment.getValue("OTHER_LDFLAGS")
         otherSwiftFlags = try environment.getValue("OTHER_SWIFT_FLAGS")

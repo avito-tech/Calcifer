@@ -13,12 +13,17 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
     
     public func checksum(input: URL) throws -> BaseChecksum {
         let path = input.path
-        
+        let resultChecksum: BaseChecksum
         let isFile = try checkIsFile(filePath: path)
         if isFile {
-            return try checksum(for: input)
+            resultChecksum = try checksum(for: input)
+        } else {
+            resultChecksum = try folderChecksum(path)
         }
-        return try folderChecksum(path)
+        if resultChecksum == .zero {
+            throw ChecksumError.zeroChecksum(path: input.path)
+        }
+        return resultChecksum
     }
     
     private func checksum(for file: URL) throws -> BaseChecksum {
@@ -42,11 +47,16 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
     private func folderChecksum(_ path: String) throws -> BaseChecksum {
         let enumerator = fileManager.enumerator(atPath: path)
         var filesChecksums = [BaseChecksum]()
-        while let element = enumerator?.nextObject() as? String {
-            let url = URL(fileURLWithPath: element)
-            let isFile = try checkIsFile(filePath: path)
+        guard let allElements = enumerator?.allObjects as? [String] else {
+            throw ChecksumError.unableToEnumerateDirectory(path: path)
+        }
+        let sortedElements = allElements.sorted()
+        for element in sortedElements {
+            let elementPath = (path as NSString).appendingPathComponent(element)
+            let isFile = try checkIsFile(filePath: elementPath)
             if isFile {
-                let checksumValue = try checksum(for: url)
+                let fileURL = URL(fileURLWithPath: elementPath)
+                let checksumValue = try checksum(for: fileURL)
                 filesChecksums.append(checksumValue)
             }
         }

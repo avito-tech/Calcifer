@@ -48,7 +48,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
         // target.productName is not correct. Mb should use buildSettings
-        guard let prodcutName = target.product?.name else {
+        guard let prodcutName = target.product?.path else {
             throw XcodeProjectChecksumCalculatorError.emptyProductName(
                 target: target.name
             )
@@ -80,12 +80,13 @@ extension PBXTarget {
             let sourcesFileElement = sourcesBuildPhase?.fileElements() {
             files.append(contentsOf: sourcesFileElement)
         }
-        // TODO: Fix after MVP
         
-//        if let resourcesBuildPhase = try? resourcesBuildPhase(),
-//            let resourcesFileElement = resourcesBuildPhase?.fileElements() {
-//            files.append(contentsOf: resourcesFileElement)
-//        }
+        if case .bundle? = productType {
+            if let resourcesBuildPhase = try? resourcesBuildPhase(),
+                let resourcesFileElement = resourcesBuildPhase?.fileElements() {
+                files.append(contentsOf: resourcesFileElement)
+            }
+        }
         return files
     }
 }

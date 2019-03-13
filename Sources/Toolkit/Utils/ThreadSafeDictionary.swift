@@ -6,8 +6,8 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     private let lock = Lock()
     private var dictionary = [Key: Value]()
     
-    public private(set) lazy var read: (Key) -> (Value?) = { [weak self] key in
-        self?.lock.withLock {
+    public private(set) lazy var read: (Key) -> (Value?) = { key in
+        self.lock.withLock { [weak self] in
             self?.dictionary[key]
         }
     }
