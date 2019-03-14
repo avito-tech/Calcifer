@@ -37,7 +37,7 @@ public final class LocalFrameworkCacheStorageTests: XCTestCase {
             
             // When
             try storage.add(cacheKey: cacheKey, at: frameworkContainingFolderPath)
-            guard let optionalValue = try? storage.cache(for: cacheKey),
+            guard let optionalValue = try? storage.cached(for: cacheKey),
                 let value = optionalValue
                 else {
                 XCTFail("Empty cache value")

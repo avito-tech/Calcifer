@@ -27,12 +27,7 @@ final class RemoteCachePreparer {
             checksumProducer: checksumProducer
         )
         
-        let localCacheDirectoryPath = fileManager.calciferDirectory()
-            .appendingPathComponent("localCache")
-        let localStorage = LocalFrameworkCacheStorage<BaseChecksum>(
-            fileManager: fileManager,
-            cacheDirectoryPath: localCacheDirectoryPath
-        )
+        let cacheStorage = try createCacheStorage()
         
         let requiredTargets = try obtainRequiredTargets(
             checksumProvider: targetChecksumProvider,
@@ -43,14 +38,14 @@ final class RemoteCachePreparer {
         try prepareAndBuildPatchedProjectIfNeeded(
             params: params,
             requiredTargets: requiredTargets,
-            localStorage: localStorage,
+            cacheStorage: cacheStorage,
             checksumProducer: checksumProducer
         )
         
         let targetInfosForIntegration = frameworkTargetInfos(requiredTargets)
         try integrateArtifacts(
             checksumProducer: checksumProducer,
-            localStorage: localStorage,
+            cacheStorage: cacheStorage,
             targetInfos: targetInfosForIntegration,
             to: params.configurationBuildDirectory
         )
@@ -74,7 +69,7 @@ final class RemoteCachePreparer {
     private func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
         requiredTargets: [TargetInfo<BaseChecksum>],
-        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
         checksumProducer: BaseURLChecksumProducer)
         throws
     {
@@ -83,7 +78,7 @@ final class RemoteCachePreparer {
         let patchedProjectPath = params.patchedProjectPath
         
         let targetsForBuild = try obtainTargetsForBuild(
-            localStorage: localStorage,
+            cacheStorage: cacheStorage,
             requiredFrameworks: requiredTargets
         )
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
@@ -112,7 +107,7 @@ final class RemoteCachePreparer {
             
             try integrateArtifacts(
                 checksumProducer: checksumProducer,
-                localStorage: localStorage,
+                cacheStorage: cacheStorage,
                 targetInfos: targetInfosForPatchedProjectIntegration,
                 to: cacheBuildPath
             )
@@ -123,7 +118,7 @@ final class RemoteCachePreparer {
             )
             
             try saveArtifacts(
-                localStorage: localStorage,
+                cacheStorage: cacheStorage,
                 for: targetInfosForStore,
                 at: cacheBuildPath
             )
@@ -158,14 +153,13 @@ final class RemoteCachePreparer {
     }
     
     private func obtainTargetsForBuild(
-        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
-        // TODO: Filter the frameworks that are already in the remote cache.
         return try requiredFrameworks.filter { targetInfo in
             let cacheKey = createCacheKey(from: targetInfo)
-            let cacheValue = try localStorage.cache(for: cacheKey)
+            let cacheValue = try cacheStorage.cached(for: cacheKey)
             return cacheValue == nil
         }
     }
@@ -222,27 +216,25 @@ final class RemoteCachePreparer {
         return config
     }
     
-    @discardableResult
     private func saveArtifacts(
-        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
         for targetInfos: [TargetInfo<BaseChecksum>],
-        at path: String)
-        throws -> [FrameworkCacheValue<BaseChecksum>]
+        at path: String) throws
     {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager
         )
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
         
-        return try artifacts.map { artifact in
+        try artifacts.forEach { artifact in
             let cacheKey = createCacheKey(from: artifact.targetInfo)
-            return try localStorage.add(cacheKey: cacheKey, at: artifact.path)
+            try cacheStorage.add(cacheKey: cacheKey, at: artifact.path)
         }
     }
     
     private func integrateArtifacts(
         checksumProducer: BaseURLChecksumProducer,
-        localStorage: LocalFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
         targetInfos: [TargetInfo<BaseChecksum>],
         to path: String) throws
     {
@@ -252,7 +244,7 @@ final class RemoteCachePreparer {
         )
         let buildArtifacts: [TargetBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
             let cacheKey = createCacheKey(from: targetInfo)
-            guard let cacheValue = try localStorage.cache(for: cacheKey) else {
+            guard let cacheValue = try cacheStorage.cached(for: cacheKey) else {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
                     checksumValue: targetInfo.checksum.description
@@ -288,6 +280,32 @@ final class RemoteCachePreparer {
             }
             return true
         }
+    }
+    
+    private func createCacheStorage() throws -> MixedFrameworkCacheStorage<BaseChecksum> {
+        let localCacheDirectoryPath = fileManager.calciferDirectory()
+            .appendingPathComponent("localCache")
+        let localStorage = LocalFrameworkCacheStorage<BaseChecksum>(
+            fileManager: fileManager,
+            cacheDirectoryPath: localCacheDirectoryPath
+        )
+        let gradleHost = "http://localhost:5071"
+        guard let gradleHostURL = URL(string: gradleHost) else {
+            throw RemoteCachePreparerError.unableToCreateRemoteCacheHostURL(
+                string: gradleHost
+            )
+        }
+        let gradleClient = GradleBuildCacheClient(gradleHost: gradleHostURL)
+        let remoteStorage = GradleRemoteFrameworkCacheStorage<BaseChecksum>(
+            gradleBuildCacheClient: gradleClient,
+            fileManager: fileManager
+        )
+        return MixedFrameworkCacheStorage(
+            fileManager: fileManager,
+            localCacheStorage: localStorage,
+            remoteCacheStorage: remoteStorage,
+            shouldUpload: true
+        )
     }
     
 }

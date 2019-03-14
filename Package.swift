@@ -23,6 +23,10 @@ let package = Package(
             url: "https://github.com/httpswift/swifter.git",
             .branch("stable")
         ),
+        .package(
+            url: "https://github.com/weichsel/ZIPFoundation/",
+            .exact("0.9.8")
+        )
     ],
     targets: [
         // MARK: Calcifer
@@ -78,6 +82,7 @@ let package = Package(
             name: "FrameworkCacheStorage",
             dependencies: [
                 "XcodeProjectChecksumCalculator",
+                "ZIPFoundation",
                 "ArgumentsParser",
                 "Toolkit"
             ]
