@@ -1,17 +1,24 @@
 import Foundation
 import Checksum
 
-public final class MixedFrameworkCacheStorage<ChecksumType: Checksum>: FrameworkCacheStorage {
+public final class MixedFrameworkCacheStorage<
+    ChecksumType,
+    LocalCacheStorage: FrameworkCacheStorage,
+    RemoteCacheStorage: FrameworkCacheStorage>: FrameworkCacheStorage
+    where
+    LocalCacheStorage.ChecksumType == ChecksumType,
+    RemoteCacheStorage.ChecksumType == ChecksumType
+{
     
     private let fileManager: FileManager
-    private let localCacheStorage: LocalFrameworkCacheStorage<ChecksumType>
-    private let remoteCacheStorage: GradleRemoteFrameworkCacheStorage<ChecksumType>
+    private let localCacheStorage: LocalCacheStorage
+    private let remoteCacheStorage: RemoteCacheStorage
     private let shouldUpload: Bool
     
     public init(
         fileManager: FileManager,
-        localCacheStorage: LocalFrameworkCacheStorage<ChecksumType>,
-        remoteCacheStorage: GradleRemoteFrameworkCacheStorage<ChecksumType>,
+        localCacheStorage: LocalCacheStorage,
+        remoteCacheStorage: RemoteCacheStorage,
         shouldUpload: Bool)
     {
         self.fileManager = fileManager

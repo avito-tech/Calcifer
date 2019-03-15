@@ -69,7 +69,7 @@ final class RemoteCachePreparer {
     private func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
         requiredTargets: [TargetInfo<BaseChecksum>],
-        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: DefaultMixedFrameworkCacheStorage,
         checksumProducer: BaseURLChecksumProducer)
         throws
     {
@@ -153,7 +153,7 @@ final class RemoteCachePreparer {
     }
     
     private func obtainTargetsForBuild(
-        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: DefaultMixedFrameworkCacheStorage,
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
@@ -217,7 +217,7 @@ final class RemoteCachePreparer {
     }
     
     private func saveArtifacts(
-        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: DefaultMixedFrameworkCacheStorage,
         for targetInfos: [TargetInfo<BaseChecksum>],
         at path: String) throws
     {
@@ -234,7 +234,7 @@ final class RemoteCachePreparer {
     
     private func integrateArtifacts(
         checksumProducer: BaseURLChecksumProducer,
-        cacheStorage: MixedFrameworkCacheStorage<BaseChecksum>,
+        cacheStorage: DefaultMixedFrameworkCacheStorage,
         targetInfos: [TargetInfo<BaseChecksum>],
         to path: String) throws
     {
@@ -282,7 +282,12 @@ final class RemoteCachePreparer {
         }
     }
     
-    private func createCacheStorage() throws -> MixedFrameworkCacheStorage<BaseChecksum> {
+    typealias DefaultMixedFrameworkCacheStorage = MixedFrameworkCacheStorage<
+        BaseChecksum,
+        LocalFrameworkCacheStorage<BaseChecksum>,
+        GradleRemoteFrameworkCacheStorage<BaseChecksum>>
+    
+    private func createCacheStorage() throws -> DefaultMixedFrameworkCacheStorage {
         let localCacheDirectoryPath = fileManager.calciferDirectory()
             .appendingPathComponent("localCache")
         let localStorage = LocalFrameworkCacheStorage<BaseChecksum>(
@@ -300,7 +305,7 @@ final class RemoteCachePreparer {
             gradleBuildCacheClient: gradleClient,
             fileManager: fileManager
         )
-        return MixedFrameworkCacheStorage(
+        return DefaultMixedFrameworkCacheStorage(
             fileManager: fileManager,
             localCacheStorage: localStorage,
             remoteCacheStorage: remoteStorage,
