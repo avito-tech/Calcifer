@@ -60,8 +60,4 @@ public final class GradleRemoteFrameworkCacheStorage<ChecksumType: Checksum>: Fr
         try fileManager.removeItem(at: zipFileURL)
     }
     
-    public func purge() throws {
-        
-    }
-    
 }

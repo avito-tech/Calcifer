@@ -59,8 +59,4 @@ public final class MixedFrameworkCacheStorage<
         }
     }
     
-    public func purge() throws {
-        
-    }
-    
 }
