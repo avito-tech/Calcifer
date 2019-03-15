@@ -247,7 +247,7 @@ final class RemoteCachePreparer {
             guard let cacheValue = try cacheStorage.cached(for: cacheKey) else {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
-                    checksumValue: targetInfo.checksum.description
+                    checksumValue: targetInfo.checksum.stringValue
                 )
             }
             let buildArtifact = TargetBuildArtifact(

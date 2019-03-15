@@ -21,7 +21,7 @@ public final class GradleRemoteFrameworkCacheStorage<ChecksumType: Checksum>: Fr
         throws -> FrameworkCacheValue<ChecksumType>?
     {
         let semaphore = DispatchSemaphore(value: 0)
-        let key = cacheKey.checksum.description
+        let key = cacheKey.checksum.stringValue
         var downloadResult: GradleBuildCacheClient.Result<URL?>?
         gradleBuildCacheClient.download(key: key) { result in
             downloadResult = result
@@ -52,7 +52,7 @@ public final class GradleRemoteFrameworkCacheStorage<ChecksumType: Checksum>: Fr
         let zipFileURL = URL(fileURLWithPath: zipFilePath)
         try fileManager.zipItem(at: artifactURL, to: zipFileURL)
         let semaphore = DispatchSemaphore(value: 0)
-        let key = cacheKey.checksum.description
+        let key = cacheKey.checksum.stringValue
         gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { result in
             semaphore.signal()
         }

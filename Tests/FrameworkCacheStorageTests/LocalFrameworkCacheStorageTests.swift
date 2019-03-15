@@ -72,7 +72,7 @@ public final class LocalFrameworkCacheStorageTests: XCTestCase {
     private func obtainExpectedPath(for cacheKey: FrameworkCacheKey<BaseChecksum>) -> String {
          return cacheDirectoryPath
             .appendingPathComponent(cacheKey.frameworkName)
-            .appendingPathComponent(cacheKey.checksum.description)
+            .appendingPathComponent(cacheKey.checksum.stringValue)
     }
 
 }

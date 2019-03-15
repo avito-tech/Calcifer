@@ -38,7 +38,7 @@ public final class LocalFrameworkCacheStorage<ChecksumType: Checksum>: Framework
     private func path(to cacheKey: FrameworkCacheKey<ChecksumType>) -> String {
         return cacheDirectoryPath
             .appendingPathComponent(cacheKey.frameworkName)
-            .appendingPathComponent(cacheKey.checksum.description)
+            .appendingPathComponent(cacheKey.checksum.stringValue)
     }
     
 }

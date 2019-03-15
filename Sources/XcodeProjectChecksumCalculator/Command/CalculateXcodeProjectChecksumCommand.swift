@@ -38,7 +38,7 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
         let data = try checksumHolder.encode()
         let outputFileURL = FileManager.default.pathToHomeDirectoryFile(name: "checkum.json")
         try data.write(to: outputFileURL)
-        print(checksumHolder.checksum.description)
+        print(checksumHolder.checksum.stringValue)
         print(outputFileURL)
     }
 }
