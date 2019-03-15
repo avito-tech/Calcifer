@@ -1,7 +1,7 @@
 import Foundation
 import Checksum
 
-public struct FrameworkCacheKey<ChecksumType: Checksum> {
+public struct FrameworkCacheKey<ChecksumType: Checksum>: Equatable {
     let frameworkName: String
     let checksum: ChecksumType
     

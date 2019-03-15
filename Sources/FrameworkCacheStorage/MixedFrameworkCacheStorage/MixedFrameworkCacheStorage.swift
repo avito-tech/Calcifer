@@ -49,8 +49,8 @@ public final class MixedFrameworkCacheStorage<
         at artifactPath: String) throws
     {
         try localCacheStorage.add(cacheKey: cacheKey, at: artifactPath)
-        if let localCacheValue = try localCacheStorage.cached(for: cacheKey),
-            shouldUpload == true
+        if shouldUpload == true,
+            let localCacheValue = try localCacheStorage.cached(for: cacheKey)
         {
             try remoteCacheStorage.add(
                 cacheKey: cacheKey,

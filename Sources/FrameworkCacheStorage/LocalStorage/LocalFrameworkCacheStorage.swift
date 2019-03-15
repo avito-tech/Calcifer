@@ -31,7 +31,7 @@ public final class LocalFrameworkCacheStorage<ChecksumType: Checksum>: Framework
         try fileManager.copyItem(at: artifactURL, to: entryURL)
     }
     
-    private func url(to cacheKey: FrameworkCacheKey<ChecksumType>) -> URL {
+    @inline(__always) private func url(to cacheKey: FrameworkCacheKey<ChecksumType>) -> URL {
         return URL(fileURLWithPath: path(to: cacheKey))
     }
     

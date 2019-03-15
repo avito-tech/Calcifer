@@ -300,7 +300,10 @@ final class RemoteCachePreparer {
                 string: gradleHost
             )
         }
-        let gradleClient = GradleBuildCacheClient(gradleHost: gradleHostURL)
+        let gradleClient = GradleBuildCacheClientImpl(
+            gradleHost: gradleHostURL,
+            session: URLSession.shared
+        )
         let remoteStorage = GradleRemoteFrameworkCacheStorage<BaseChecksum>(
             gradleBuildCacheClient: gradleClient,
             fileManager: fileManager

@@ -22,7 +22,7 @@ public final class GradleRemoteFrameworkCacheStorage<ChecksumType: Checksum>: Fr
     {
         let semaphore = DispatchSemaphore(value: 0)
         let key = cacheKey.checksum.stringValue
-        var downloadResult: GradleBuildCacheClient.Result<URL?>?
+        var downloadResult: BuildCacheClientResult<URL?>?
         gradleBuildCacheClient.download(key: key) { result in
             downloadResult = result
             semaphore.signal()

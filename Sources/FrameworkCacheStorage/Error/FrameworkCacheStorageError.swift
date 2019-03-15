@@ -9,7 +9,7 @@ public enum FrameworkCacheStorageError: Error, CustomStringConvertible {
         case let .networkError(error):
             return "Network error \(error)"
         case let .unableToDownloadCache(key):
-            return "Unable to download cache for \(key)"
+            return "Unable to download cached item for \(key)"
         }
     }
 }
