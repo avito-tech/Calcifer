@@ -33,9 +33,3 @@ public extension FileManager {
         return directoryExist(at: url.path)
     }
 }
-
-public extension String {
-    func appendingPathComponent(_ component: String) -> String {
-        return (self as NSString).appendingPathComponent(component)
-    }
-}

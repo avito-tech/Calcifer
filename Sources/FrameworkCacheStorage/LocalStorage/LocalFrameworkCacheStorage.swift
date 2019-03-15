@@ -12,7 +12,7 @@ public final class LocalFrameworkCacheStorage<ChecksumType: Checksum>: Framework
     }
     
     // MARK: - FrameworkCacheStorage
-    public func cache(for cacheKey: FrameworkCacheKey<ChecksumType>) throws -> FrameworkCacheValue<ChecksumType>? {
+    public func cached(for cacheKey: FrameworkCacheKey<ChecksumType>) throws -> FrameworkCacheValue<ChecksumType>? {
         let entryURL = url(to: cacheKey)
         if fileManager.directoryExist(at: entryURL) {
             return FrameworkCacheValue(key: cacheKey, path: entryURL.path)
@@ -20,8 +20,7 @@ public final class LocalFrameworkCacheStorage<ChecksumType: Checksum>: Framework
         return nil
     }
     
-    @discardableResult
-    public func add(cacheKey: FrameworkCacheKey<ChecksumType>, at artifactPath: String) throws -> FrameworkCacheValue<ChecksumType> {
+    public func add(cacheKey: FrameworkCacheKey<ChecksumType>, at artifactPath: String) throws {
         let artifactURL = URL(fileURLWithPath: artifactPath)
         let entryURL = url(to: cacheKey)
         if fileManager.directoryExist(at: entryURL) {
@@ -30,21 +29,16 @@ public final class LocalFrameworkCacheStorage<ChecksumType: Checksum>: Framework
         let entryFolderURL = entryURL.deletingLastPathComponent()
         try fileManager.createDirectory(at: entryFolderURL, withIntermediateDirectories: true)
         try fileManager.copyItem(at: artifactURL, to: entryURL)
-        return FrameworkCacheValue(key: cacheKey, path: entryURL.path)
     }
     
-    public func purge() throws {
-        try fileManager.removeItem(atPath: cacheDirectoryPath)
-    }
-    
-    private func url(to cacheKey: FrameworkCacheKey<ChecksumType>) -> URL {
+    @inline(__always) private func url(to cacheKey: FrameworkCacheKey<ChecksumType>) -> URL {
         return URL(fileURLWithPath: path(to: cacheKey))
     }
     
     private func path(to cacheKey: FrameworkCacheKey<ChecksumType>) -> String {
         return cacheDirectoryPath
             .appendingPathComponent(cacheKey.frameworkName)
-            .appendingPathComponent(cacheKey.checksum.description)
+            .appendingPathComponent(cacheKey.checksum.stringValue)
     }
     
 }

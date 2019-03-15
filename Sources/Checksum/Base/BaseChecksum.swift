@@ -3,7 +3,7 @@ import Toolkit
 
 public final class BaseChecksum: Checksum {
     
-    let stringValue: String
+    public let stringValue: String
     
     public init(_ stringValue: String) {
         self.stringValue = stringValue

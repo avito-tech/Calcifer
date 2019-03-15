@@ -52,7 +52,7 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
         }
         let sortedElements = allElements.sorted()
         for element in sortedElements {
-            let elementPath = (path as NSString).appendingPathComponent(element)
+            let elementPath = path.appendingPathComponent(element)
             let isFile = try checkIsFile(filePath: elementPath)
             if isFile {
                 let fileURL = URL(fileURLWithPath: elementPath)
