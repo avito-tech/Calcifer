@@ -20,35 +20,46 @@ final class RemoteCachePreparer {
         let podsProjectPath = params.podsProjectPath
         
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
-    
         let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
-        let targetChecksumProvider = try buildTargetChecksumProvider(
-            podsProjectPath: podsProjectPath,
-            checksumProducer: checksumProducer
-        )
         
-        let cacheStorage = try createCacheStorage()
+        // TODO: save xcodeproj as json and if hash of xml same use json instead xcodeproj
+        let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
+            try buildTargetChecksumProvider(
+                podsProjectPath: podsProjectPath,
+                checksumProducer: checksumProducer
+            )
+        }
         
-        let requiredTargets = try obtainRequiredTargets(
-            checksumProvider: targetChecksumProvider,
-            buildParametersChecksum: paramsChecksum,
-            params: params
-        )
+        let cacheStorage = try TimeProfiler.measure("Create cache storage") {
+            try createCacheStorage()
+        }
+        
+        let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
+            try obtainRequiredTargets(
+                checksumProvider: targetChecksumProvider,
+                buildParametersChecksum: paramsChecksum,
+                params: params
+            )
+        }
 
-        try prepareAndBuildPatchedProjectIfNeeded(
-            params: params,
-            requiredTargets: requiredTargets,
-            cacheStorage: cacheStorage,
-            checksumProducer: checksumProducer
-        )
+        try TimeProfiler.measure("Prepare and build patched project if needed") {
+            try prepareAndBuildPatchedProjectIfNeeded(
+                params: params,
+                requiredTargets: requiredTargets,
+                cacheStorage: cacheStorage,
+                checksumProducer: checksumProducer
+            )
+        }
         
         let targetInfosForIntegration = frameworkTargetInfos(requiredTargets)
-        try integrateArtifacts(
-            checksumProducer: checksumProducer,
-            cacheStorage: cacheStorage,
-            targetInfos: targetInfosForIntegration,
-            to: params.configurationBuildDirectory
-        )
+        try TimeProfiler.measure("Integrate artifacts to Derived Data") {
+            try integrateArtifacts(
+                checksumProducer: checksumProducer,
+                cacheStorage: cacheStorage,
+                targetInfos: targetInfosForIntegration,
+                to: params.configurationBuildDirectory
+            )
+        }
         
     }
     
@@ -90,11 +101,13 @@ final class RemoteCachePreparer {
         // Because their checksum has changed.
         if targetInfosForStore.count > 0 {
         
-            try patchProject(
-                podsProjectPath: podsProjectPath,
-                patchedProjectPath: patchedProjectPath,
-                targets: targetNamesForBuild
-            )
+            try TimeProfiler.measure("patch project") {
+                try patchProject(
+                    podsProjectPath: podsProjectPath,
+                    patchedProjectPath: patchedProjectPath,
+                    targets: targetNamesForBuild
+                )
+            }
             
             let cacheBuildPath = params.projectDirectory
                 .appendingPathComponent("build")
@@ -105,23 +118,29 @@ final class RemoteCachePreparer {
                 targetsForBuild: targetsForBuild
             )
             
-            try integrateArtifacts(
-                checksumProducer: checksumProducer,
-                cacheStorage: cacheStorage,
-                targetInfos: targetInfosForPatchedProjectIntegration,
-                to: cacheBuildPath
-            )
+            try TimeProfiler.measure("Integrate artifacts to patched project") {
+                try integrateArtifacts(
+                    checksumProducer: checksumProducer,
+                    cacheStorage: cacheStorage,
+                    targetInfos: targetInfosForPatchedProjectIntegration,
+                    to: cacheBuildPath
+                )
+            }
             
-            try build(
-                params: params,
-                patchedProjectPath: patchedProjectPath
-            )
+            try TimeProfiler.measure("Build patched project") {
+                try build(
+                    params: params,
+                    patchedProjectPath: patchedProjectPath
+                )
+            }
             
-            try saveArtifacts(
-                cacheStorage: cacheStorage,
-                for: targetInfosForStore,
-                at: cacheBuildPath
-            )
+            try TimeProfiler.measure("Save artifacts from builded patched project") {
+                try saveArtifacts(
+                    cacheStorage: cacheStorage,
+                    for: targetInfosForStore,
+                    at: cacheBuildPath
+                )
+            }
         }
     }
     
@@ -188,6 +207,7 @@ final class RemoteCachePreparer {
         let builder = XcodeProjectBuilder(
             shellExecutor: ShellCommandExecutorImpl()
         )
+        // TODO: Get environment from /usr/bin/env
         try builder.build(
             config: config,
             environment: ["PATH": params.userBinaryPath]
@@ -294,7 +314,7 @@ final class RemoteCachePreparer {
             fileManager: fileManager,
             cacheDirectoryPath: localCacheDirectoryPath
         )
-        let gradleHost = "http://localhost:5071"
+        let gradleHost = "http://gradle-remote-cache-ios.k.avito.ru"
         guard let gradleHostURL = URL(string: gradleHost) else {
             throw RemoteCachePreparerError.unableToCreateRemoteCacheHostURL(
                 string: gradleHost

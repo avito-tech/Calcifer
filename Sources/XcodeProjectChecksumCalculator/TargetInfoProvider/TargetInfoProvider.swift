@@ -15,7 +15,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         guard let checksumHolder = targetChecksumHolder({ $0.targetName == target }) else {
             throw XcodeProjectChecksumCalculatorError.emptyTargetChecksum(targetName: target)
         }
-        return try checksumHolder.allDependencies.map({ targetChecksumHolder in
+        return try checksumHolder.allFlatDependencies.map({ targetChecksumHolder in
             let targeChecksum = try targetChecksumHolder.checksum + buildParametersChecksum
             return TargetInfo(
                 targetName: targetChecksumHolder.targetName,

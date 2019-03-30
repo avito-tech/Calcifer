@@ -4,6 +4,7 @@ import RemoteCachePreparer
 import XcodeProjectPatcher
 import XcodeProjectBuilder
 import ArgumentsParser
+import Toolkit
 
 public final class CommandRunner {
     
@@ -25,10 +26,13 @@ public final class CommandRunner {
         
         let exitCode: Int32
         do {
-            try registry.run()
+            try TimeProfiler.measure("Execute command") {
+                try registry.run()
+            }
             exitCode = 0
         } catch {
             exitCode = 1
+            Logger.error("error: \(error)")
             // `error` for xcode log highlighting
             print("error: \(error)")
         }

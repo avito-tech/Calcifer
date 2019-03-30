@@ -56,6 +56,15 @@
         }
       },
       {
+        "package": "SwiftyBeaver",
+        "repositoryURL": "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
+        "state": {
+          "branch": null,
+          "revision": "78352a16ed33e53307795b46145a1c739e08fb83",
+          "version": "1.6.2"
+        }
+      },
+      {
         "package": "ZIPFoundation",
         "repositoryURL": "https://github.com/weichsel/ZIPFoundation/",
         "state": {

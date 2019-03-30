@@ -43,19 +43,14 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
-        // target.productName is not correct. Mb should use buildSettings
-        guard let productName = target.product?.path else {
-            throw XcodeProjectChecksumCalculatorError.emptyProductName(
-                target: target.name
-            )
-        }
-        
         guard let productTypeName = target.productType?.rawValue,
             let productType = TargetProductType(rawValue: productTypeName) else {
-            throw XcodeProjectChecksumCalculatorError.emptyProductType(
-                target: target.name
-            )
+                throw XcodeProjectChecksumCalculatorError.emptyProductType(
+                    target: target.name
+                )
         }
+        
+        let productName = try obtainProductName(for: target, type: productType)
         
         let targetChecksumHolder = TargetChecksumHolder<Builder.ChecksumType>(
             targetName: target.name,
@@ -67,6 +62,34 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         )
         cache.write(targetChecksumHolder, for: target)
         return targetChecksumHolder
+    }
+    
+    private func obtainProductName(for target: PBXTarget, type: TargetProductType) throws -> String {
+        // target.productName is not correct. Mb should use buildSettings
+        if let productName = target.product?.name,
+            isValidProductName(productName, type: type) {
+            return productName
+        }
+        if let productName = target.product?.path,
+            isValidProductName(productName, type: type) {
+            return productName
+        }
+        if let productName = target.productNameWithExtension(),
+            isValidProductName(productName, type: type) {
+            return productName
+        }
+        throw XcodeProjectChecksumCalculatorError.emptyProductName(
+            target: target.name
+        )
+    }
+    
+    private func isValidProductName(_ productName: String, type: TargetProductType) -> Bool {
+        switch type {
+        case .framework:
+            return productName.contains("-") == false
+        default:
+            return true
+        }
     }
 }
 

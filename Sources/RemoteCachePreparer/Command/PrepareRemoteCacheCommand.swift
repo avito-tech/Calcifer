@@ -25,15 +25,20 @@ public final class PrepareRemoteCacheCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result) throws {
-        let params: XcodeBuildEnvironmentParameters
-        if let environmentFilePath = arguments.get(self.environmentFilePath) {
-            let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
-            params = try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
-        } else {
-            params = try XcodeBuildEnvironmentParameters()
+        let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
+            "Parse environment parameters"
+        ) {
+            if let environmentFilePath = arguments.get(self.environmentFilePath) {
+                let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
+                return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+            } else {
+                return try XcodeBuildEnvironmentParameters()
+            }
         }
         
         let preparer = RemoteCachePreparer(fileManager: FileManager.default)
-        try preparer.prepare(params: params)
+        try TimeProfiler.measure("Prepare remote cache") {
+            try preparer.prepare(params: params)
+        }
     }
 }

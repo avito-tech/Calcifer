@@ -26,6 +26,10 @@ let package = Package(
         .package(
             url: "https://github.com/weichsel/ZIPFoundation/",
             .exact("0.9.8")
+        ),
+        .package(
+            url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
+            .exact("1.6.2")
         )
     ],
     targets: [
@@ -169,6 +173,7 @@ let package = Package(
         .target(
             name: "Toolkit",
             dependencies: [
+                "SwiftyBeaver",
                 "Utility"
             ]
         ),

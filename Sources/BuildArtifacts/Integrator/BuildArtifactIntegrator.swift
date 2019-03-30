@@ -21,6 +21,7 @@ public final class BuildArtifactIntegrator {
         try artifacts.forEach { artifact in
             let artifactDestinationURL = obtainDestination(for: artifact, at: path)
             let artifactCurrentURL = URL(fileURLWithPath: artifact.path)
+            // Performance issue in this check
             if try compareArtifacts(artifactCurrentURL, artifactDestinationURL) == false {
                 if fileManager.directoryExist(at: artifactDestinationURL) {
                     try fileManager.removeItem(at: artifactDestinationURL)
