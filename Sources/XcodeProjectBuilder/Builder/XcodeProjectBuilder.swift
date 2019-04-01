@@ -1,4 +1,5 @@
 import Foundation
+import ShellCommand
 
 public final class XcodeProjectBuilder {
     
@@ -26,7 +27,8 @@ public final class XcodeProjectBuilder {
             ],
             environment: environment
         )
-        let statusCode = shellExecutor.execute(command: command)
+        let result = shellExecutor.execute(command: command)
+        let statusCode = result.terminationStatus
         if statusCode != 0 {
             throw XcodeProjectBuilderError.failedExecuteXcodebuild(
                 status: statusCode,

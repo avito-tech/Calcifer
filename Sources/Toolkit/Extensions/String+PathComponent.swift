@@ -12,4 +12,12 @@ public extension String {
     func deletingLastPathComponent() -> String {
         return (self as NSString).deletingLastPathComponent
     }
+    
+    func pathComponents() -> [String] {
+        return (self as NSString).pathComponents
+    }
+    
+    static func path(withComponents components: [String]) -> String {
+        return NSString.path(withComponents: components)
+    }
 }

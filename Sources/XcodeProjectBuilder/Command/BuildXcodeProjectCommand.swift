@@ -1,5 +1,6 @@
 import ArgumentsParser
 import Foundation
+import ShellCommand
 import Utility
 import Toolkit
 
