@@ -49,6 +49,7 @@ let package = Package(
                 "XcodeProjectBuilder",
                 "XcodeProjectChecksumCalculator",
                 "XcodeProjectPatcher",
+                "DSYMSymbolizer",
                 "XcodeBuildEnvironmentParametersParser",
                 "RemoteCachePreparer",
                 "ArgumentsParser"
@@ -116,6 +117,7 @@ let package = Package(
         .target(
             name: "XcodeProjectBuilder",
             dependencies: [
+                "ShellCommand",
                 "ArgumentsParser",
                 "Toolkit"
             ]
@@ -146,6 +148,15 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: DSYMSymbolizer
+        .target(
+            name: "DSYMSymbolizer",
+            dependencies: [
+                "ShellCommand",
+                "ArgumentsParser",
+                "Toolkit"
+            ]
+        ),
         // MARK: XcodeBuildEnvironmentParametersParser
         .target(
             name: "XcodeBuildEnvironmentParametersParser",
@@ -165,6 +176,13 @@ let package = Package(
         // MARK: Checksum
         .target(
             name: "Checksum",
+            dependencies: [
+                "Toolkit"
+            ]
+        ),
+        // MARK: ShellCommand
+        .target(
+            name: "ShellCommand",
             dependencies: [
                 "Toolkit"
             ]

@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import XcodeProjectBuilder
 import XcodeProjectPatcher
 import BuildArtifacts
+import ShellCommand
 import FrameworkCacheStorage
 import Checksum
 import Toolkit
@@ -248,7 +249,7 @@ final class RemoteCachePreparer {
         
         try artifacts.forEach { artifact in
             let cacheKey = createCacheKey(from: artifact.targetInfo)
-            try cacheStorage.add(cacheKey: cacheKey, at: artifact.path)
+            try cacheStorage.add(cacheKey: cacheKey, at: artifact.productPath)
         }
     }
     
@@ -262,7 +263,7 @@ final class RemoteCachePreparer {
             fileManager: fileManager,
             checksumProducer: checksumProducer
         )
-        let buildArtifacts: [TargetBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
+        let productBuildArtifacts: [ProductBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
             let cacheKey = createCacheKey(from: targetInfo)
             guard let cacheValue = try cacheStorage.cached(for: cacheKey) else {
                 throw RemoteCachePreparerError.unableToObtainCache(
@@ -270,13 +271,13 @@ final class RemoteCachePreparer {
                     checksumValue: targetInfo.checksum.stringValue
                 )
             }
-            let buildArtifact = TargetBuildArtifact(
+            let productBuildArtifact = ProductBuildArtifact(
                 targetInfo: targetInfo,
                 path: cacheValue.path
             )
-            return buildArtifact
+            return productBuildArtifact
         }
-        try integrator.integrate(artifacts: buildArtifacts, to: path)
+        try integrator.integrate(artifacts: productBuildArtifacts, to: path)
     }
     
     private func createCacheKey(

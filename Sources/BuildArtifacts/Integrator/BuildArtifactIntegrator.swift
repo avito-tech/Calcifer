@@ -15,7 +15,7 @@ public final class BuildArtifactIntegrator {
     }
     
     public func integrate<ChecksumType: Checksum>(
-        artifacts: [TargetBuildArtifact<ChecksumType>],
+        artifacts: [ProductBuildArtifact<ChecksumType>],
         to path: String) throws
     {
         try artifacts.forEach { artifact in
@@ -58,7 +58,7 @@ public final class BuildArtifactIntegrator {
     }
     
     private func obtainDestination<ChecksumType: Checksum>(
-        for artifact: TargetBuildArtifact<ChecksumType>,
+        for artifact: ProductBuildArtifact<ChecksumType>,
         at path: String)
         -> URL
     {
