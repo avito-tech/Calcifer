@@ -3,7 +3,7 @@ import XCTest
 import Checksum
 @testable import FrameworkCacheStorage
 
-public final class GradleRemoteFrameworkCacheStorageTests: XCTestCase {
+public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     
     private let fileManager = FileManager.default
     private let client = GradleBuildCacheClientMock()

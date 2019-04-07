@@ -70,8 +70,11 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
         )
         let task = session.downloadTask(
             with: request)
-        { localURL, _, error in
-            guard let error = error else {
+        { localURL, response, error in
+            guard let response = response as? HTTPURLResponse,
+                response.statusCode == 200
+                else
+            {
                 completion(BuildCacheClientResult.success(localURL))
                 return
             }

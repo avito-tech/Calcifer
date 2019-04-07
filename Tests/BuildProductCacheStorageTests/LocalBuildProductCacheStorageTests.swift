@@ -3,7 +3,7 @@ import XCTest
 import Checksum
 @testable import FrameworkCacheStorage
 
-public final class LocalFrameworkCacheStorageTests: XCTestCase {
+public final class LocalBuildProductCacheStorageTests: XCTestCase {
     
     private let cacheDirectoryPath = NSTemporaryDirectory().appendingPathComponent("test")
     private let fileManager = FileManager.default
@@ -21,7 +21,7 @@ public final class LocalFrameworkCacheStorageTests: XCTestCase {
     func test_addCache() {
         XCTAssertNoThrow(try {
             // Given
-            let storage = LocalFrameworkCacheStorage<BaseChecksum>(
+            let storage = LocalBuildProductCacheStorage<BaseChecksum>(
                 fileManager: fileManager,
                 cacheDirectoryPath: cacheDirectoryPath
             )

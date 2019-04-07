@@ -5,7 +5,7 @@ import XcodeProjectBuilder
 import XcodeProjectPatcher
 import BuildArtifacts
 import ShellCommand
-import FrameworkCacheStorage
+import BuildProductCacheStorage
 import Checksum
 import Toolkit
 
@@ -178,7 +178,7 @@ final class RemoteCachePreparer {
         throws -> [TargetInfo<BaseChecksum>]
     {
         return try requiredFrameworks.filter { targetInfo in
-            let cacheKey = createCacheKey(from: targetInfo)
+            let cacheKey = createFrameworkCacheKey(from: targetInfo)
             let cacheValue = try cacheStorage.cached(for: cacheKey)
             return cacheValue == nil
         }
@@ -248,8 +248,11 @@ final class RemoteCachePreparer {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
         
         try artifacts.forEach { artifact in
-            let cacheKey = createCacheKey(from: artifact.targetInfo)
-            try cacheStorage.add(cacheKey: cacheKey, at: artifact.productPath)
+            let frameworkCacheKey = createFrameworkCacheKey(from: artifact.targetInfo)
+            try cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath)
+            
+            let dsymCacheKey = createDSYMCacheKey(from: artifact.targetInfo)
+            try cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath)
         }
     }
     
@@ -264,7 +267,7 @@ final class RemoteCachePreparer {
             checksumProducer: checksumProducer
         )
         let productBuildArtifacts: [ProductBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
-            let cacheKey = createCacheKey(from: targetInfo)
+            let cacheKey = createFrameworkCacheKey(from: targetInfo)
             guard let cacheValue = try cacheStorage.cached(for: cacheKey) else {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
@@ -280,12 +283,24 @@ final class RemoteCachePreparer {
         try integrator.integrate(artifacts: productBuildArtifacts, to: path)
     }
     
-    private func createCacheKey(
+    private func createFrameworkCacheKey(
         from targetInfo: TargetInfo<BaseChecksum>)
-        -> FrameworkCacheKey<BaseChecksum>
+        -> BuildProductCacheKey<BaseChecksum>
     {
-        return FrameworkCacheKey<BaseChecksum>(
-            frameworkName: targetInfo.targetName,
+        return BuildProductCacheKey<BaseChecksum>(
+            productName: targetInfo.targetName,
+            productType: .framework,
+            checksum: targetInfo.checksum
+        )
+    }
+    
+    private func createDSYMCacheKey(
+        from targetInfo: TargetInfo<BaseChecksum>)
+        -> BuildProductCacheKey<BaseChecksum>
+    {
+        return BuildProductCacheKey<BaseChecksum>(
+            productName: targetInfo.targetName,
+            productType: .dSYM,
             checksum: targetInfo.checksum
         )
     }
@@ -303,15 +318,15 @@ final class RemoteCachePreparer {
         }
     }
     
-    typealias DefaultMixedFrameworkCacheStorage = MixedFrameworkCacheStorage<
+    typealias DefaultMixedFrameworkCacheStorage = MixedBuildProductCacheStorage<
         BaseChecksum,
-        LocalFrameworkCacheStorage<BaseChecksum>,
-        GradleRemoteFrameworkCacheStorage<BaseChecksum>>
+        LocalBuildProductCacheStorage<BaseChecksum>,
+        GradleRemoteBuildProductCacheStorage<BaseChecksum>>
     
     private func createCacheStorage() throws -> DefaultMixedFrameworkCacheStorage {
         let localCacheDirectoryPath = fileManager.calciferDirectory()
             .appendingPathComponent("localCache")
-        let localStorage = LocalFrameworkCacheStorage<BaseChecksum>(
+        let localStorage = LocalBuildProductCacheStorage<BaseChecksum>(
             fileManager: fileManager,
             cacheDirectoryPath: localCacheDirectoryPath
         )
@@ -325,7 +340,7 @@ final class RemoteCachePreparer {
             gradleHost: gradleHostURL,
             session: URLSession.shared
         )
-        let remoteStorage = GradleRemoteFrameworkCacheStorage<BaseChecksum>(
+        let remoteStorage = GradleRemoteBuildProductCacheStorage<BaseChecksum>(
             gradleBuildCacheClient: gradleClient,
             fileManager: fileManager
         )

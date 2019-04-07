@@ -68,7 +68,7 @@ let package = Package(
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
                 "XcodeProjectChecksumCalculator",
-                "FrameworkCacheStorage",
+                "BuildProductCacheStorage",
                 "BuildArtifacts",
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
@@ -82,9 +82,9 @@ let package = Package(
                 "RemoteCachePreparer"
             ]
         ),
-        // MARK: FrameworkCacheStorage
+        // MARK: BuildProductCacheStorage
         .target(
-            name: "FrameworkCacheStorage",
+            name: "BuildProductCacheStorage",
             dependencies: [
                 "XcodeProjectChecksumCalculator",
                 "ZIPFoundation",
@@ -93,9 +93,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "FrameworkCacheStorageTests",
+            name: "BuildProductCacheStorageTests",
             dependencies: [
-                "FrameworkCacheStorage"
+                "BuildProductCacheStorage"
             ]
         ),
         // MARK: BuildArtifacts

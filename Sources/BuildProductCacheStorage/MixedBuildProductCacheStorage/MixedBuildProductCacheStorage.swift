@@ -1,10 +1,10 @@
 import Foundation
 import Checksum
 
-public final class MixedFrameworkCacheStorage<
+public final class MixedBuildProductCacheStorage<
     ChecksumType,
-    LocalCacheStorage: FrameworkCacheStorage,
-    RemoteCacheStorage: FrameworkCacheStorage>: FrameworkCacheStorage
+    LocalCacheStorage: BuildProductCacheStorage,
+    RemoteCacheStorage: BuildProductCacheStorage>: BuildProductCacheStorage
     where
     LocalCacheStorage.ChecksumType == ChecksumType,
     RemoteCacheStorage.ChecksumType == ChecksumType
@@ -29,8 +29,8 @@ public final class MixedFrameworkCacheStorage<
     
     // MARK: - FrameworkCacheStorage
     public func cached(
-        for cacheKey: FrameworkCacheKey<ChecksumType>)
-        throws -> FrameworkCacheValue<ChecksumType>?
+        for cacheKey: BuildProductCacheKey<ChecksumType>)
+        throws -> BuildProductCacheValue<ChecksumType>?
     {
         if let localCacheValue = try localCacheStorage.cached(for: cacheKey) {
             return localCacheValue
@@ -45,7 +45,7 @@ public final class MixedFrameworkCacheStorage<
     }
     
     public func add(
-        cacheKey: FrameworkCacheKey<ChecksumType>,
+        cacheKey: BuildProductCacheKey<ChecksumType>,
         at artifactPath: String) throws
     {
         try localCacheStorage.add(cacheKey: cacheKey, at: artifactPath)
