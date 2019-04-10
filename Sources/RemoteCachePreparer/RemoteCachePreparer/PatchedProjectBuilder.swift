@@ -130,7 +130,7 @@ final class PatchedProjectBuilder {
                 let connectedFrameworkTarget = frameworkTargets.first(
                     where: { frameworkTargetInfo -> Bool in
                         frameworkTargetInfo.dependencies.contains(targetInfo.targetName)
-                }
+                    }
                 )
                 return connectedFrameworkTarget != nil
             }

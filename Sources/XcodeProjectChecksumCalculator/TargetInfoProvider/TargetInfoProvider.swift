@@ -15,16 +15,18 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         guard let checksumHolder = targetChecksumHolder({ $0.targetName == target }) else {
             throw XcodeProjectChecksumCalculatorError.emptyTargetChecksum(targetName: target)
         }
-        return try checksumHolder.allFlatDependencies.map({ targetChecksumHolder in
+        let allFlatDependencies = checksumHolder.allFlatDependencies
+        let result: [TargetInfo<ChecksumType>] = try allFlatDependencies.map({ targetChecksumHolder in
             let targeChecksum = try targetChecksumHolder.checksum + buildParametersChecksum
             return TargetInfo(
                 targetName: targetChecksumHolder.targetName,
                 productName: targetChecksumHolder.productName,
                 productType: targetChecksumHolder.productType,
-                dependencies: checksumHolder.dependencies.map { $0.targetName },
+                dependencies: targetChecksumHolder.dependencies.map { $0.targetName },
                 checksum: targeChecksum
             )
         })
+        return result
     }
     
     public func targetInfo(
