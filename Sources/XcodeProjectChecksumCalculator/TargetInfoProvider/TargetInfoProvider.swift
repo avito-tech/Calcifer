@@ -21,6 +21,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
                 targetName: targetChecksumHolder.targetName,
                 productName: targetChecksumHolder.productName,
                 productType: targetChecksumHolder.productType,
+                dependencies: checksumHolder.dependencies.map { $0.targetName },
                 checksum: targeChecksum
             )
         })
@@ -41,6 +42,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
             targetName: checksumHolder.targetName,
             productName: checksumHolder.productName,
             productType: checksumHolder.productType,
+            dependencies: checksumHolder.dependencies.map { $0.targetName },
             checksum: targeChecksum
         )
     }

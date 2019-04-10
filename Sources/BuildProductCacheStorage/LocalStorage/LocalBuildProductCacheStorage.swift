@@ -22,12 +22,17 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
     
     public func add(cacheKey: BuildProductCacheKey<ChecksumType>, at artifactPath: String) throws {
         let artifactURL = URL(fileURLWithPath: artifactPath)
-        let entryURL = url(to: cacheKey).appendingPathComponent(artifactURL.lastPathComponent)
-        if fileManager.directoryExist(at: entryURL) {
-            try fileManager.removeItem(at: entryURL)
-        }
+        let entryURL = url(to: cacheKey)
+        
         let entryFolderURL = entryURL.deletingLastPathComponent()
-        try fileManager.createDirectory(at: entryFolderURL, withIntermediateDirectories: true)
+        if fileManager.directoryExist(at: entryFolderURL) {
+            try fileManager.removeItem(at: entryFolderURL)
+        }
+        try fileManager.createDirectory(
+            at: entryFolderURL,
+            withIntermediateDirectories: true
+        )
+        
         try fileManager.copyItem(at: artifactURL, to: entryURL)
     }
     
@@ -39,10 +44,13 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
     }
     
     private func path(to cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
-        return cacheDirectoryPath
+        var path = cacheDirectoryPath
             .appendingPathComponent(cacheKey.productType.rawValue)
             .appendingPathComponent(cacheKey.productName)
             .appendingPathComponent(cacheKey.checksum.stringValue)
+            .appendingPathComponent(cacheKey.productName)
+        path.append(cacheKey.productType.fileExtension)
+        return path
     }
     
 }

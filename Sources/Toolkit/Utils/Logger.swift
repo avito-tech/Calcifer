@@ -57,7 +57,9 @@ public final class Logger {
             atPath: logDirectory,
             withIntermediateDirectories: true
         )
-        let logFilePath = logDirectory.appendingPathComponent(currentDateString())
+        let logFilePath = logDirectory
+            .appendingPathComponent(currentDateString())
+            .appending(".txt")
         let logFile = URL(fileURLWithPath: logFilePath)
         return logFile
     }

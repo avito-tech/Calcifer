@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 import Checksum
-@testable import FrameworkCacheStorage
+@testable import BuildProductCacheStorage
 
 public final class LocalBuildProductCacheStorageTests: XCTestCase {
     
@@ -25,8 +25,9 @@ public final class LocalBuildProductCacheStorageTests: XCTestCase {
                 fileManager: fileManager,
                 cacheDirectoryPath: cacheDirectoryPath
             )
-            let cacheKey = FrameworkCacheKey(
-                frameworkName: "Some",
+            let cacheKey = BuildProductCacheKey(
+                productName: "Some",
+                productType: .framework,
                 checksum: BaseChecksum(UUID().uuidString)
             )
             let frameworkContainingFolderPath = try createArtifactFile(
@@ -52,12 +53,12 @@ public final class LocalBuildProductCacheStorageTests: XCTestCase {
     
     private func createArtifactFile(
         fileManager: FileManager,
-        cacheKey: FrameworkCacheKey<BaseChecksum>)
+        cacheKey: BuildProductCacheKey<BaseChecksum>)
         throws -> String
     {
         let currentPath = cacheDirectoryPath.appendingPathComponent("Debug-iphoneos")
-        let frameworkContainingFolderPath = currentPath.appendingPathComponent(cacheKey.frameworkName)
-        let frameworkPath = frameworkContainingFolderPath.appendingPathComponent("\(cacheKey.frameworkName).framework")
+        let frameworkContainingFolderPath = currentPath.appendingPathComponent(cacheKey.productName)
+        let frameworkPath = frameworkContainingFolderPath.appendingPathComponent("\(cacheKey.productName).framework")
         try fileManager.createDirectory(
             atPath: frameworkContainingFolderPath,
             withIntermediateDirectories: true
@@ -69,9 +70,10 @@ public final class LocalBuildProductCacheStorageTests: XCTestCase {
         return frameworkContainingFolderPath
     }
     
-    private func obtainExpectedPath(for cacheKey: FrameworkCacheKey<BaseChecksum>) -> String {
+    private func obtainExpectedPath(for cacheKey: BuildProductCacheKey<BaseChecksum>) -> String {
          return cacheDirectoryPath
-            .appendingPathComponent(cacheKey.frameworkName)
+            .appendingPathComponent(cacheKey.productType.rawValue)
+            .appendingPathComponent(cacheKey.productName)
             .appendingPathComponent(cacheKey.checksum.stringValue)
     }
 

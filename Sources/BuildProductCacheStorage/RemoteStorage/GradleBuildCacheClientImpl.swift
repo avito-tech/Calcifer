@@ -25,7 +25,7 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
     
     public func download(
         key: String,
-        completion: @escaping (BuildCacheClientResult<URL?>) -> ())
+        completion: @escaping (BuildCacheClientResult<URL>) -> ())
     {
         let downloadURL = url(key: key)
         downloadFile(
@@ -61,7 +61,7 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
     
     private func downloadFile(
         downloadURL: URL,
-        completion: @escaping (BuildCacheClientResult<URL?>) -> ())
+        completion: @escaping (BuildCacheClientResult<URL>) -> ())
     {
         let request = URLRequest(
             url: downloadURL,
@@ -72,13 +72,14 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
             with: request)
         { localURL, response, error in
             guard let response = response as? HTTPURLResponse,
-                response.statusCode == 200
+                response.statusCode == 200,
+                let fileURL = localURL
                 else
             {
-                completion(BuildCacheClientResult.success(localURL))
+                completion(BuildCacheClientResult.failure(error))
                 return
             }
-            completion(BuildCacheClientResult.failure(error))
+            completion(BuildCacheClientResult.success(fileURL))
         }
         task.resume()
     }

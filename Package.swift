@@ -72,6 +72,7 @@ let package = Package(
                 "BuildArtifacts",
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
+                "DSYMSymbolizer",
                 "Checksum",
                 "Toolkit"
             ]

@@ -8,7 +8,7 @@ public final class DSYMSymbolizer {
     private let dwarfUUIDProvider: DWARFUUIDProvider
     private let fileManager: FileManager
     
-    init(
+    public init(
         symbolTableProvider: SymbolTableProvider,
         dwarfUUIDProvider: DWARFUUIDProvider,
         fileManager: FileManager)
@@ -21,19 +21,33 @@ public final class DSYMSymbolizer {
     // Some lldb related source https://github.com/llvm-mirror/lldb/blob/master/source/Plugins/SymbolVendor/MacOSX/SymbolVendorMacOSX.cpp
     // Post about patching https://medium.com/@maxraskin/background-1b4b6a9c65be
     
-    func symbolize(dsymPath: String, sourcePath: String, binaryPath: String) throws {
+    public func symbolize(
+        dsymPath: String,
+        sourcePath: String,
+        binaryPath: String)
+        throws
+    {
         let binaryUUIDs = try dwarfUUIDProvider.obtainDwarfUUID(path: binaryPath)
         let dsymUUIDs = try dwarfUUIDProvider.obtainDwarfUUID(path: dsymPath)
-        try validateUUID(
+        let valid = try validateUUID(
             dsymPath: dsymPath,
             binaryPath: binaryPath,
             binaryUUIDs: binaryUUIDs,
             dsymUUIDs: dsymUUIDs
         )
+        if valid == false {
+            throw DSYMSymbolizerError.uuidMismatch(
+                dsymPath: dsymPath,
+                binaryPath: binaryPath
+            )
+        }
         let buildSourcePath = try obtainBuildSourcePath(
             sourcePath: sourcePath,
             binaryPath: binaryPath
         )
+        if buildSourcePath == sourcePath {
+            return
+        }
         try generatePlist(
             dsymPath: dsymPath,
             binaryPath: binaryPath,
@@ -48,19 +62,15 @@ public final class DSYMSymbolizer {
         binaryPath: String,
         binaryUUIDs: [DWARFUUID],
         dsymUUIDs: [DWARFUUID])
-        throws
+        throws -> Bool
     {
         for binaryUUID in binaryUUIDs {
             if dsymUUIDs.contains(binaryUUID) {
                 continue
             }
-            throw DSYMSymbolizerError.uuidMismatch(
-                dsymPath: dsymPath,
-                binaryPath: binaryPath,
-                architecture: binaryUUID.architecture,
-                binaryUUID: binaryUUID.uuid.uuidString
-            )
+            return false
         }
+        return true
     }
     
     func generatePlist(
@@ -85,6 +95,14 @@ public final class DSYMSymbolizer {
                 "DBGSymbolRichExecutable": binaryPath
             ]
             let dictionary = NSDictionary(dictionary: content)
+            
+            if fileManager.fileExists(atPath: plistPath) {
+                let plistContent = NSDictionary(contentsOfFile: plistPath)
+                if plistContent == dictionary {
+                    return
+                }
+            }
+            
             let isWritten = dictionary.write(toFile: plistPath, atomically: true)
             if isWritten == false {
                 throw DSYMSymbolizerError.unableToWritePlist(
@@ -105,6 +123,9 @@ public final class DSYMSymbolizer {
         }
         guard let buildPath = sorted.first,  let sourceBuildPath = sourceMap[buildPath] else {
             throw DSYMSymbolizerError.unableToFindBuildSourcePath(binaryPath: binaryPath)
+        }
+        if buildPath == sourceBuildPath {
+            return buildPath
         }
         var buildPathComponents = buildPath.pathComponents()
         for component in sourceBuildPath.pathComponents().reversed() {

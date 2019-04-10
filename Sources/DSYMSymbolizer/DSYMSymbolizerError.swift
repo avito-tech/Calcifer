@@ -6,7 +6,7 @@ public enum DSYMSymbolizerError: Error, CustomStringConvertible {
     case emptyPathList(binaryPath: String)
     case unableToFindNewSourcePath(path: String, sourceRoot: String)
     case unableToObtainDWARFDumpUUID(path: String, code: Int32, output: String?, error: String?)
-    case uuidMismatch(dsymPath: String, binaryPath: String, architecture: String, binaryUUID: String)
+    case uuidMismatch(dsymPath: String, binaryPath: String)
     case multipleDWARFFileInDSYM(dsymPath: String)
     case unableToFindDWARFFileInDSYM(dsymPath: String)
     case unableToWritePlist(path: String, content: [String: String])
@@ -38,12 +38,8 @@ public enum DSYMSymbolizerError: Error, CustomStringConvertible {
             output: \(output ?? "-")
             error: \(error ?? "-")
             """
-        case let .uuidMismatch(dsymPath, binaryPath, architecture, binaryUUID):
-            return """
-            UUID mismatch for \(binaryPath) architecture \(architecture)
-            binary uuid: \(binaryUUID)
-            dsym path: \(dsymPath)
-            """
+        case let .uuidMismatch(dsymPath, binaryPath):
+            return "UUID mismatch for \(binaryPath) dsym \(dsymPath)"
         case let .multipleDWARFFileInDSYM(dsymPath):
             return "Found more than one dwarf file in dsym \(dsymPath)"
         case let .unableToFindDWARFFileInDSYM(dsymPath):

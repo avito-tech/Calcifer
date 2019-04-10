@@ -6,6 +6,7 @@ import XcodeProjectPatcher
 import BuildArtifacts
 import ShellCommand
 import BuildProductCacheStorage
+import DSYMSymbolizer
 import Checksum
 import Toolkit
 
@@ -53,13 +54,20 @@ final class RemoteCachePreparer {
         }
         
         let targetInfosForIntegration = frameworkTargetInfos(requiredTargets)
-        try TimeProfiler.measure("Integrate artifacts to Derived Data") {
+        let integrated = try TimeProfiler.measure("Integrate artifacts to Derived Data") {
             try integrateArtifacts(
                 checksumProducer: checksumProducer,
                 cacheStorage: cacheStorage,
                 targetInfos: targetInfosForIntegration,
                 to: params.configurationBuildDirectory
             )
+        }
+        
+        try TimeProfiler.measure("Patch dSYM") {
+            let sourceRoot = params.podsRoot
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+            try patchDSYM(for: integrated, sourceRoot: sourceRoot)
         }
         
     }
@@ -94,13 +102,11 @@ final class RemoteCachePreparer {
             requiredFrameworks: requiredTargets
         )
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
-        let targetInfosForStore = frameworkTargetInfos(targetsForBuild)
-        
         // If we do not need to store an artifact, then we don’t need to build it.
         // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
         // If any file in the bundle has changed, then all dependencies will be rebuilded.
         // Because their checksum has changed.
-        if targetInfosForStore.count > 0 {
+        if targetNamesForBuild.count > 0 {
         
             try TimeProfiler.measure("patch project") {
                 try patchProject(
@@ -138,7 +144,7 @@ final class RemoteCachePreparer {
             try TimeProfiler.measure("Save artifacts from builded patched project") {
                 try saveArtifacts(
                     cacheStorage: cacheStorage,
-                    for: targetInfosForStore,
+                    for: frameworkTargetInfos(targetsForBuild),
                     at: cacheBuildPath
                 )
             }
@@ -177,11 +183,32 @@ final class RemoteCachePreparer {
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
-        return try requiredFrameworks.filter { targetInfo in
-            let cacheKey = createFrameworkCacheKey(from: targetInfo)
-            let cacheValue = try cacheStorage.cached(for: cacheKey)
-            return cacheValue == nil
+        let allTargetForBuild = try requiredFrameworks.filter { targetInfo in
+            let frameworkCacheKey = createFrameworkCacheKey(from: targetInfo)
+            let dSYMCacheKey = createDSYMCacheKey(from: targetInfo)
+            let frameworkCacheValue = try cacheStorage.cached(for: frameworkCacheKey)
+            let dSYMCacheKeyCacheValue = try cacheStorage.cached(for: dSYMCacheKey)
+            return frameworkCacheValue == nil || dSYMCacheKeyCacheValue == nil
         }
+        let frameworkTargets = allTargetForBuild.filter { targetInfo in
+            if case .bundle = targetInfo.productType {
+                return false
+            }
+            return true
+        }
+        let connectedBundleTargets = allTargetForBuild.filter { targetInfo in
+            if case .bundle = targetInfo.productType {
+                let connectedFrameworkTarget = frameworkTargets.first(
+                    where: { frameworkTargetInfo -> Bool in
+                        frameworkTargetInfo.dependencies.contains(targetInfo.targetName)
+                    }
+                )
+                return connectedFrameworkTarget != nil
+            }
+            return false
+        }
+        // The bundle is already in the framework (this is done by cocoapods)
+        return frameworkTargets + connectedBundleTargets
     }
     
     private func patchProject(
@@ -256,31 +283,46 @@ final class RemoteCachePreparer {
         }
     }
     
+    @discardableResult
     private func integrateArtifacts(
         checksumProducer: BaseURLChecksumProducer,
         cacheStorage: DefaultMixedFrameworkCacheStorage,
         targetInfos: [TargetInfo<BaseChecksum>],
-        to path: String) throws
+        to path: String) throws -> [TargetBuildArtifact<BaseChecksum>]
     {
         let integrator = BuildArtifactIntegrator(
             fileManager: fileManager,
             checksumProducer: checksumProducer
         )
-        let productBuildArtifacts: [ProductBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
-            let cacheKey = createFrameworkCacheKey(from: targetInfo)
-            guard let cacheValue = try cacheStorage.cached(for: cacheKey) else {
+        let artifacts: [TargetBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
+            
+            let frameworkCacheKey = createFrameworkCacheKey(from: targetInfo)
+            guard let frameworkCacheValue = try cacheStorage.cached(for: frameworkCacheKey) else {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
+                    type: targetInfo.productType.rawValue,
                     checksumValue: targetInfo.checksum.stringValue
                 )
             }
-            let productBuildArtifact = ProductBuildArtifact(
+            
+            let dSYMCacheKey = createDSYMCacheKey(from: targetInfo)
+            guard let dSYMCacheValue = try cacheStorage.cached(for: dSYMCacheKey) else {
+                throw RemoteCachePreparerError.unableToObtainCache(
+                    target: targetInfo.targetName,
+                    type: targetInfo.productType.rawValue,
+                    checksumValue: targetInfo.checksum.stringValue
+                )
+            }
+            
+            let artifact = TargetBuildArtifact(
                 targetInfo: targetInfo,
-                path: cacheValue.path
+                productPath: frameworkCacheValue.path,
+                dsymPath: dSYMCacheValue.path
             )
-            return productBuildArtifact
+            return artifact
         }
-        try integrator.integrate(artifacts: productBuildArtifacts, to: path)
+        let destionations = try integrator.integrate(artifacts: artifacts, to: path)
+        return destionations
     }
     
     private func createFrameworkCacheKey(
@@ -309,13 +351,66 @@ final class RemoteCachePreparer {
         _ targetInfos: [TargetInfo<BaseChecksum>])
         -> [TargetInfo<BaseChecksum>]
     {
-        // The bundle is already in the framework (this is done by cocoapods)
         return targetInfos.filter { targetInfo in
             if case .bundle = targetInfo.productType {
                 return false
             }
             return true
         }
+    }
+    
+    private func createDSYMSymbolizer() -> DSYMSymbolizer {
+        let shellCommandExecutor = ShellCommandExecutorImpl()
+        let symbolizer = DSYMSymbolizer(
+            symbolTableProvider: SymbolTableProviderImpl(shellCommandExecutor: shellCommandExecutor),
+            dwarfUUIDProvider: DWARFUUIDProviderImpl(shellCommandExecutor: shellCommandExecutor),
+            fileManager: fileManager
+        )
+        return symbolizer
+    }
+    
+    private func patchDSYM(
+        for artifacts: [TargetBuildArtifact<BaseChecksum>],
+        sourceRoot: String) throws
+    {
+        let symbolizer = createDSYMSymbolizer()
+        for artifact in artifacts {
+            let dsymPath = artifact.dsymPath
+            let binaryPath = try obtainBinaryPath(
+                from: artifact.productPath,
+                targetInfo: artifact.targetInfo
+            )
+            try symbolizer.symbolize(
+                dsymPath: dsymPath,
+                sourcePath: sourceRoot,
+                binaryPath: binaryPath
+            )
+        }
+    }
+    
+    private func obtainBinaryPath(
+        from productPath: String,
+        targetInfo: TargetInfo<BaseChecksum>)
+        throws -> String
+    {
+        var path = productPath
+            .appendingPathComponent(targetInfo.productName.deletingPathExtension())
+        if fileManager.fileExists(atPath: path) {
+            return path
+        }
+        path = productPath
+            .appendingPathComponent(productPath.lastPathComponent().deletingPathExtension())
+        if fileManager.fileExists(atPath: path) {
+            return path
+        }
+        path = productPath.appendingPathComponent(targetInfo.targetName)
+        if fileManager.fileExists(atPath: path) {
+            return path
+        }
+        throw RemoteCachePreparerError.unableToBinaryInFramework(
+            path: path,
+            productName: targetInfo.productName
+        )
     }
     
     typealias DefaultMixedFrameworkCacheStorage = MixedBuildProductCacheStorage<

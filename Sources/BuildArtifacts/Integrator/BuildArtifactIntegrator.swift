@@ -14,30 +14,50 @@ public final class BuildArtifactIntegrator {
         self.checksumProducer = checksumProducer
     }
     
+    @discardableResult
     public func integrate<ChecksumType: Checksum>(
-        artifacts: [ProductBuildArtifact<ChecksumType>],
-        to path: String) throws
+        artifacts: [TargetBuildArtifact<ChecksumType>],
+        to path: String) throws -> [TargetBuildArtifact<ChecksumType>]
     {
+        var destinations = [TargetBuildArtifact<ChecksumType>]()
         try artifacts.forEach { artifact in
-            let artifactDestinationURL = obtainDestination(for: artifact, at: path)
-            let artifactCurrentURL = URL(fileURLWithPath: artifact.path)
-            // Performance issue in this check
-            if try compareArtifacts(artifactCurrentURL, artifactDestinationURL) == false {
-                if fileManager.directoryExist(at: artifactDestinationURL) {
-                    try fileManager.removeItem(at: artifactDestinationURL)
-                }
-                let artifactDestinationFolderURL = artifactDestinationURL.deletingLastPathComponent()
-                if fileManager.directoryExist(at: artifactDestinationFolderURL) == false {
-                    try fileManager.createDirectory(
-                        at: artifactDestinationFolderURL,
-                        withIntermediateDirectories: true
-                    )
-                }
-                try fileManager.copyItem(
-                    at: artifactCurrentURL,
-                    to: artifactDestinationURL
+            
+            let productCurrentURL = URL(fileURLWithPath: artifact.productPath)
+            let productDestinationURL = obtainProductDestination(for: artifact, at: path)
+            try integrate(at: productCurrentURL, to: productDestinationURL)
+            
+            let dsymCurrentURL = URL(fileURLWithPath: artifact.dsymPath)
+            let dsymDestinationURL = obtainDSYMDestination(for: artifact, at: path)
+            try integrate(at: dsymCurrentURL, to: dsymDestinationURL)
+
+            destinations.append(
+                TargetBuildArtifact(
+                    targetInfo: artifact.targetInfo,
+                    productPath: productDestinationURL.path,
+                    dsymPath: dsymDestinationURL.path
+                )
+            )
+        }
+        return destinations
+    }
+    
+    private func integrate(at path: URL, to destination: URL) throws {
+        // Performance issue in this check
+        if try compareArtifacts(path, destination) == false {
+            if fileManager.directoryExist(at: destination) {
+                try fileManager.removeItem(at: destination)
+            }
+            let destinationFolderURL = destination.deletingLastPathComponent()
+            if fileManager.directoryExist(at: destinationFolderURL) == false {
+                try fileManager.createDirectory(
+                    at: destinationFolderURL,
+                    withIntermediateDirectories: true
                 )
             }
+            try fileManager.copyItem(
+                at: path,
+                to: destination
+            )
         }
     }
     
@@ -57,16 +77,26 @@ public final class BuildArtifactIntegrator {
         return artifactChecksum == destinationChecksum
     }
     
-    private func obtainDestination<ChecksumType: Checksum>(
-        for artifact: ProductBuildArtifact<ChecksumType>,
+    private func obtainProductDestination<ChecksumType: Checksum>(
+        for artifact: TargetBuildArtifact<ChecksumType>,
         at path: String)
         -> URL
     {
-        return URL(
-            fileURLWithPath: path.appendingPathComponent(
-                artifact.targetInfo.targetName
-            )
-        )
+        let path = path
+            .appendingPathComponent(artifact.targetInfo.targetName)
+            .appendingPathComponent(artifact.productPath.lastPathComponent())
+        return URL(fileURLWithPath: path)
+    }
+    
+    private func obtainDSYMDestination<ChecksumType: Checksum>(
+        for artifact: TargetBuildArtifact<ChecksumType>,
+        at path: String)
+        -> URL
+    {
+        let path = path
+            .appendingPathComponent(artifact.targetInfo.targetName)
+            .appendingPathComponent(artifact.dsymPath.lastPathComponent())
+        return URL(fileURLWithPath: path)
     }
     
 }

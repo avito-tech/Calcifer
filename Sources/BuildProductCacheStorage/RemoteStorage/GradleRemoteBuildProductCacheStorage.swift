@@ -21,8 +21,8 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         throws -> BuildProductCacheValue<ChecksumType>?
     {
         let semaphore = DispatchSemaphore(value: 0)
-        let key = gradleKey(for: cacheKey)
-        var downloadResult: BuildCacheClientResult<URL?>?
+        let key = try gradleKey(for: cacheKey)
+        var downloadResult: BuildCacheClientResult<URL>?
         gradleBuildCacheClient.download(key: key) { result in
             downloadResult = result
             semaphore.signal()
@@ -33,14 +33,14 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         }
         switch result {
         case let .success(url):
-            guard let url = url else {
-                throw BuildProductCacheStorageError.unableToDownloadCache(key: key)
-            }
             let unzipURL = url.deletingLastPathComponent()
             try fileManager.unzipItem(at: url, to: unzipURL)
-            let unzipResult = unzipURL.appendingPathComponent(key)
+            let unzipResult = unzipURL.appendingPathComponent(cacheKey.checksum.stringValue)
             try fileManager.removeItem(at: url)
-            return BuildProductCacheValue(key: cacheKey, path: unzipResult.path)
+            var path = unzipResult.path.appendingPathComponent(cacheKey.productName)
+            path.append(cacheKey.productType.fileExtension)
+            try validateArtifactExist(at: path)
+            return BuildProductCacheValue(key: cacheKey, path: path)
         case let .failure(error):
             throw BuildProductCacheStorageError.networkError(error: error)
         }
@@ -48,11 +48,12 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
     
     public func add(cacheKey: BuildProductCacheKey<ChecksumType>, at artifactPath: String) throws {
         let artifactURL = URL(fileURLWithPath: artifactPath)
-        let zipFilePath = artifactPath.appending(".zip")
-        let zipFileURL = URL(fileURLWithPath: zipFilePath)
+        let key = try gradleKey(for: cacheKey)
+        let zipFileURL = URL(
+            fileURLWithPath: artifactPath.deletingLastPathComponent()
+        ).appendingPathComponent(key + ".zip")
         try fileManager.zipItem(at: artifactURL, to: zipFileURL)
         let semaphore = DispatchSemaphore(value: 0)
-        let key = gradleKey(for: cacheKey)
         gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { result in
             semaphore.signal()
         }
@@ -60,10 +61,22 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         try fileManager.removeItem(at: zipFileURL)
     }
     
-    func gradleKey(for cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
-        return cacheKey.productType.rawValue + "-" +
+    private func validateArtifactExist(at path: String) throws {
+        if fileManager.fileExists(atPath: path) == false {
+            throw BuildProductCacheStorageError.unableToCreateGradleCacheKey
+        }
+    }
+    
+    func gradleKey(for cacheKey: BuildProductCacheKey<ChecksumType>) throws -> String {
+        guard let key = try (
+            cacheKey.productType.rawValue + "-" +
             cacheKey.productName + "-" +
             cacheKey.checksum.stringValue
+            ).md5()
+        else {
+            throw BuildProductCacheStorageError.unableToCreateGradleCacheKey
+        }
+        return key
     }
     
 }

@@ -17,6 +17,14 @@ public extension String {
         return (self as NSString).pathComponents
     }
     
+    func pathExtension() -> String {
+        return (self as NSString).pathExtension
+    }
+    
+    func lastPathComponent() -> String {
+        return (self as NSString).lastPathComponent
+    }
+    
     static func path(withComponents components: [String]) -> String {
         return NSString.path(withComponents: components)
     }

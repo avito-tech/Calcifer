@@ -58,7 +58,8 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
             
             // Then
             XCTAssertEqual(checksum.stringValue, client.key)
-            XCTAssertEqual(cached?.key, key)
+            XCTAssertEqual(cached?.key.frameworkName, key.frameworkName)
+            XCTAssertEqual(cached?.key.checksum, key.checksum)
             guard let resultPath = cached?.path else {
                 XCTFail("Result path is nil")
                 return

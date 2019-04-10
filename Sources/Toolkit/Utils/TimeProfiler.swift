@@ -5,6 +5,7 @@ public final class TimeProfiler {
     public typealias TimeMeasurementTimestamp = TimeInterval
     public typealias TimeMeasurementDescription = String
     
+    @discardableResult
     public static func measure<R>(
         _ description: TimeMeasurementDescription,
         action: (() throws -> (R)))

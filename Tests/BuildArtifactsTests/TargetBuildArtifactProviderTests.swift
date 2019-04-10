@@ -27,6 +27,7 @@ public final class TargetBuildArtifactProviderTests: XCTestCase {
                 targetName: "Some",
                 productName: "Some.framework",
                 productType: .framework,
+                dependencies: [],
                 checksum: BaseChecksum(UUID().uuidString)
             )
             let expectedPath = try ArtifactFileBuilder().createArtifactFile(
@@ -39,7 +40,7 @@ public final class TargetBuildArtifactProviderTests: XCTestCase {
             let artifacts = try provider.artifacts(for: [targetInfo], at: artifactsDirectoryPath)
             
             // Then
-            XCTAssertEqual(artifacts.first?.path, expectedPath)
+            XCTAssertEqual(artifacts.first?.productPath, expectedPath)
         }(), "Caught exception")
     }
 
