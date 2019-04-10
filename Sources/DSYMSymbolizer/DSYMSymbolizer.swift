@@ -203,6 +203,9 @@ public final class DSYMSymbolizer {
     
     private func findEqualPath(for path: String, rootPath: String) throws -> String {
         let components = path.pathComponents()
+        if path.hasPrefix(rootPath) {
+            return path
+        }
         let rootPathComponents = rootPath.pathComponents()
         for i in 0..<components.count {
             let resultPathComponents = rootPathComponents + components[i...]
