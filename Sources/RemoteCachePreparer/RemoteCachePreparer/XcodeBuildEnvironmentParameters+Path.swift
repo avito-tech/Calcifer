@@ -12,7 +12,7 @@ extension XcodeBuildEnvironmentParameters {
     }
     
     var patchedProjectPath: String {
-        let patchedProjectFileName = "Pods2.xcodeproj"
+        let patchedProjectFileName = "RemoteCache.xcodeproj"
         let patchedProjectPath = podsRoot + "/" + patchedProjectFileName
         return patchedProjectPath
     }
