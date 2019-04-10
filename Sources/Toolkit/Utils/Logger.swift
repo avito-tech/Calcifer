@@ -21,7 +21,7 @@ public final class Logger {
         let fileDestination = FileDestination()
         fileDestination.logFileURL = logFileURL()
         fileDestination.asynchronously = false
-        fileDestination.minLevel = minLogLevel
+        fileDestination.minLevel = .verbose
 
         swiftyBeaver.addDestination(consoleDestination)
         swiftyBeaver.addDestination(fileDestination)
