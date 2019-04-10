@@ -1,6 +1,7 @@
 import Foundation
 
 public enum RemoteCachePreparerError: Error, CustomStringConvertible {
+    case unableToObtainSourcePath
     case unableToParseArchitecture(string: String)
     case unableToParsePlatform(string: String)
     case unableToObtainCache(target: String, type: String, checksumValue: String)
@@ -10,6 +11,8 @@ public enum RemoteCachePreparerError: Error, CustomStringConvertible {
     
     public var description: String {
         switch self {
+        case .unableToObtainSourcePath:
+            return "Unable to obtain source path"
         case let .unableToParseArchitecture(string):
             return "Unable to parse architecture from \(string)"
         case let .unableToParsePlatform(string):

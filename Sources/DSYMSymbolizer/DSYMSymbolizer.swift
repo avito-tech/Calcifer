@@ -27,6 +27,16 @@ public final class DSYMSymbolizer {
         binaryPath: String)
         throws
     {
+        if try shouldPatchDSYM(dsymPath: dsymPath, sourcePath: sourcePath) == false {
+            return
+        }
+        let buildSourcePath = try obtainBuildSourcePath(
+            sourcePath: sourcePath,
+            binaryPath: binaryPath
+        )
+        if buildSourcePath.hasPrefix(sourcePath) {
+            return
+        }
         let binaryUUIDs = try dwarfUUIDProvider.obtainDwarfUUID(path: binaryPath)
         let dsymUUIDs = try dwarfUUIDProvider.obtainDwarfUUID(path: dsymPath)
         let valid = try validateUUID(
@@ -40,13 +50,6 @@ public final class DSYMSymbolizer {
                 dsymPath: dsymPath,
                 binaryPath: binaryPath
             )
-        }
-        let buildSourcePath = try obtainBuildSourcePath(
-            sourcePath: sourcePath,
-            binaryPath: binaryPath
-        )
-        if buildSourcePath == sourcePath {
-            return
         }
         try generatePlist(
             dsymPath: dsymPath,
@@ -69,6 +72,27 @@ public final class DSYMSymbolizer {
                 continue
             }
             return false
+        }
+        return true
+    }
+    
+    func shouldPatchDSYM(dsymPath: String, sourcePath: String) throws -> Bool {
+        let plistDirectory = dsymPath
+            .appendingPathComponent("Contents")
+            .appendingPathComponent("Resources")
+        let directoryFiles = try fileManager.contentsOfDirectory(atPath: plistDirectory)
+        for fileName in directoryFiles {
+            if fileName.pathExtension() == "plist" {
+                let filePath = plistDirectory.appendingPathComponent(fileName)
+                if fileManager.isReadableFile(atPath: filePath) {
+                    if let plistContent = NSDictionary(contentsOfFile: filePath),
+                        let plistSourcePath = plistContent["DBGSourcePath"] as? String,
+                        plistSourcePath.contains(sourcePath)
+                    {
+                        return false
+                    }
+                }
+            }
         }
         return true
     }
