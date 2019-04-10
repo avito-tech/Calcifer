@@ -79,6 +79,7 @@ public final class PrepareRemoteCacheCommand: Command {
         {
             throw RemoteCachePreparerError.unableToObtainSourcePath
         }
-        return output
+        // Remove trailing new line
+        return output.chop()
     }
 }
