@@ -46,9 +46,9 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
     private func path(to cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
         var path = cacheDirectoryPath
             .appendingPathComponent(cacheKey.productType.rawValue)
-            .appendingPathComponent(cacheKey.productName)
+            .appendingPathComponent(cacheKey.productName.deletingPathExtension())
             .appendingPathComponent(cacheKey.checksum.stringValue)
-            .appendingPathComponent(cacheKey.productName)
+            .appendingPathComponent(cacheKey.productName.deletingPathExtension())
         path.append(cacheKey.productType.fileExtension)
         return path
     }

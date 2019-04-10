@@ -34,13 +34,17 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         switch result {
         case let .success(url):
             let unzipURL = url.deletingLastPathComponent()
+            var productName = cacheKey.productName.deletingPathExtension()
+            productName.append(cacheKey.productType.fileExtension)
+            let unzipResult = unzipURL
+                .appendingPathComponent(productName)
+            if fileManager.fileExists(atPath: unzipResult.path) {
+                try fileManager.removeItem(at: unzipResult)
+            }
             try fileManager.unzipItem(at: url, to: unzipURL)
-            let unzipResult = unzipURL.appendingPathComponent(cacheKey.checksum.stringValue)
             try fileManager.removeItem(at: url)
-            var path = unzipResult.path.appendingPathComponent(cacheKey.productName)
-            path.append(cacheKey.productType.fileExtension)
-            try validateArtifactExist(at: path)
-            return BuildProductCacheValue(key: cacheKey, path: path)
+            try validateArtifactExist(at: unzipResult.path)
+            return BuildProductCacheValue(key: cacheKey, path: unzipResult.path)
         case let .failure(error):
             throw BuildProductCacheStorageError.networkError(error: error)
         }

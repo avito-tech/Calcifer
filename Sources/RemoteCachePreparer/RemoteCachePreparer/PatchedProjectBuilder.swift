@@ -49,17 +49,19 @@ final class PatchedProjectBuilder {
         let podsProjectPath = params.podsProjectPath
         let patchedProjectPath = params.patchedProjectPath
         
-        let targetsForBuild = try obtainTargetsForBuild(
-            cacheStorage: cacheStorage,
-            requiredFrameworks: requiredTargets
-        )
+        let targetsForBuild = try TimeProfiler.measure("Obtain cache") {
+            try obtainTargetsForBuild(
+                cacheStorage: cacheStorage,
+                requiredFrameworks: requiredTargets
+            )
+        }
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
         // If we do not need to store an artifact, then we don’t need to build it.
         // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
         // If any file in the bundle has changed, then all dependencies will be rebuilded.
         // Because their checksum has changed.
         if targetNamesForBuild.count > 0 {
-            
+            Logger.verbose("Target for build: \(targetNamesForBuild)")
             try TimeProfiler.measure("patch project") {
                 try patchProject(
                     podsProjectPath: podsProjectPath,
@@ -87,6 +89,7 @@ final class PatchedProjectBuilder {
             }
             
             try TimeProfiler.measure("Build patched project") {
+                Logger.info("Started build project with \(targetNamesForBuild.count) targets")
                 try build(
                     params: params,
                     patchedProjectPath: patchedProjectPath
