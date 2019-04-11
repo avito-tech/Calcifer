@@ -3,6 +3,7 @@ import XcodeProjectChecksumCalculator
 import RemoteCachePreparer
 import XcodeProjectPatcher
 import XcodeProjectBuilder
+import BuildStepIntegrator
 import ArgumentsParser
 import DSYMSymbolizer
 import Toolkit
@@ -25,6 +26,7 @@ public final class CommandRunner {
         registry.register(command: BuildXcodeProjectCommand.self)
         registry.register(command: PatchXcodeProjectCommand.self)
         registry.register(command: SymbolizeDSYMCommand.self)
+        registry.register(command: BuildStepIntegrateCommand.self)
         
         let exitCode: Int32
         do {

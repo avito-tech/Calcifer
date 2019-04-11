@@ -52,6 +52,7 @@ let package = Package(
                 "DSYMSymbolizer",
                 "XcodeBuildEnvironmentParametersParser",
                 "RemoteCachePreparer",
+                "BuildStepIntegrator",
                 "ArgumentsParser"
             ]
         ),
@@ -171,6 +172,15 @@ let package = Package(
             name: "XcodeBuildEnvironmentParametersParserTests",
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
+                "Toolkit"
+            ]
+        ),
+        // MARK: BuildStepIntegrator
+        .target(
+            name: "BuildStepIntegrator",
+            dependencies: [
+                "xcodeproj",
+                "ArgumentsParser",
                 "Toolkit"
             ]
         ),
