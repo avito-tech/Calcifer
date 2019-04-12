@@ -1,5 +1,6 @@
 import Foundation
 import Checksum
+import Toolkit
 
 public final class BuildParametersChecksumProducer: ChecksumProducer {
     
@@ -16,7 +17,11 @@ public final class BuildParametersChecksumProducer: ChecksumProducer {
             input.swiftVersion,
             input.configuration,
         ]
-        return try importantParams.map({ BaseChecksum($0) }).aggregate()
+        let paramsChecksum = try importantParams.map({ BaseChecksum($0) }).aggregate()
+        Logger.info(
+            "Build parameters checksum: \(paramsChecksum.stringValue) from \(importantParams)"
+        )
+        return paramsChecksum
     }
     
 }

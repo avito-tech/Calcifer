@@ -1,5 +1,6 @@
 import Foundation
 import Checksum
+import Toolkit
 
 public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildProductCacheStorage {
     

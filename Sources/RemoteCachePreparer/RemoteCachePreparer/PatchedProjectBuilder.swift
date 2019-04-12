@@ -103,6 +103,8 @@ final class PatchedProjectBuilder {
                     at: cacheBuildPath
                 )
             }
+        } else {
+            Logger.info("Nothing to build")
         }
     }
     

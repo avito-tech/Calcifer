@@ -26,6 +26,8 @@ final class RemoteCachePreparer {
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
         let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
         
+        try params.save(to: buildEnvironmentParametersPath())
+        
         // TODO: save xcodeproj as json and if hash of xml same use json instead xcodeproj
         let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
             try createBuildTargetChecksumProvider(
@@ -33,6 +35,7 @@ final class RemoteCachePreparer {
                 checksumProducer: checksumProducer
             )
         }
+        try targetChecksumProvider.saveChecksumToFile()
         
         let cacheStorage = try createCacheStorage()
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
@@ -80,7 +83,8 @@ final class RemoteCachePreparer {
             let dsymPatcher = createDSYMPatcher()
             try dsymPatcher.patchDSYM(
                 for: integrated,
-                sourcePath: sourcePath
+                sourcePath: sourcePath,
+                fullProductName: params.fullProductName
             )
         }
         
@@ -102,7 +106,8 @@ final class RemoteCachePreparer {
         throws -> TargetInfoProvider<BaseChecksum>
     {
         let frameworkChecksumProviderFactory = TargetInfoProviderFactory(
-            checksumProducer: checksumProducer
+            checksumProducer: checksumProducer,
+            fileManager: fileManager
         )
         let frameworkChecksumProvider = try frameworkChecksumProviderFactory.targetChecksumProvider(
             projectPath: podsProjectPath
@@ -172,6 +177,12 @@ final class RemoteCachePreparer {
             remoteCacheStorage: remoteStorage,
             shouldUpload: true
         )
+    }
+    
+    func buildEnvironmentParametersPath() -> String {
+        return fileManager
+            .calciferDirectory()
+            .appendingPathComponent("calciferenv.json")
     }
     
 }

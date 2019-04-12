@@ -4,9 +4,14 @@ import Checksum
 public final class TargetInfoProvider<ChecksumType: Checksum> {
     
     private let checksumHolder: XcodeProjChecksumHolder<ChecksumType>
+    private let fileManager: FileManager
     
-    init(checksumHolder: XcodeProjChecksumHolder<ChecksumType>) {
+    init(
+        checksumHolder: XcodeProjChecksumHolder<ChecksumType>,
+        fileManager: FileManager)
+    {
         self.checksumHolder = checksumHolder
+        self.fileManager = fileManager
     }
     
     public func dependencies(
@@ -47,6 +52,14 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
             dependencies: checksumHolder.dependencies.map { $0.targetName },
             checksum: targeChecksum
         )
+    }
+    
+    public func saveChecksumToFile() throws {
+        let data = try checksumHolder.encode()
+        let outputFilePath = fileManager.calciferDirectory()
+            .appendingPathComponent("checkum.json")
+        let outputFileURL = URL(fileURLWithPath: outputFilePath)
+        try data.write(to: outputFileURL)
     }
 
     private func targetChecksumHolder(
