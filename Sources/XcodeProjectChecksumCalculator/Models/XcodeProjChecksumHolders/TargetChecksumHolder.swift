@@ -61,6 +61,7 @@ class TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(targetName, forKey: .targetName)
         try container.encode(productName, forKey: .productName)
+        try container.encode(productType.rawValue, forKey: .productType)
         try container.encode(checksum, forKey: .checksum)
         try container.encode(files, forKey: .files)
         // Performance issue
