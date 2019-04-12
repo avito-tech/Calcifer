@@ -56,8 +56,7 @@ public final class DSYMSymbolizer {
             binaryPath: binaryPath,
             sourcePath: sourcePath,
             buildSourcePath: buildSourcePath,
-            binaryUUIDs: binaryUUIDs,
-            fullProductName: fullProductName
+            binaryUUIDs: binaryUUIDs
         )
     }
     
