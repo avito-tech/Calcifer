@@ -19,7 +19,8 @@ final class DSYMPatcher {
     
     public func patchDSYM(
         for artifacts: [TargetBuildArtifact<BaseChecksum>],
-        sourcePath: String) throws
+        sourcePath: String,
+        fullProductName: String) throws
     {
         let artifactsArray = artifacts as NSArray
         var symbolizeError: Error?
@@ -27,14 +28,16 @@ final class DSYMPatcher {
             if let artifact = obj as? TargetBuildArtifact<BaseChecksum> {
                 do {
                     let dsymPath = artifact.dsymPath
-                    let binaryPath = try binaryPathProvider.obtainBinaryPath(
-                        from: artifact.productPath,
-                        targetInfo: artifact.targetInfo
+                    
+                    let pathToBinaryInApp = try obtainPathToBinaryInApp(
+                        artifact: artifact,
+                        fullProductName: fullProductName
                     )
+                    
                     try symbolizer.symbolize(
                         dsymPath: dsymPath,
                         sourcePath: sourcePath,
-                        binaryPath: binaryPath
+                        binaryPath: pathToBinaryInApp
                     )
                 } catch {
                     symbolizeError = error
@@ -46,5 +49,24 @@ final class DSYMPatcher {
         if let error = symbolizeError {
             throw error
         }
+    }
+    
+    private func obtainPathToBinaryInApp(
+        artifact: TargetBuildArtifact<BaseChecksum>,
+        fullProductName: String)
+        throws -> String {
+        let appProductPath = artifact.productPath
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent(fullProductName)
+        let frameworkName = artifact.productPath.lastPathComponent()
+        let frameworkPath = appProductPath
+            .appendingPathComponent("Frameworks")
+            .appendingPathComponent(frameworkName)
+        let binaryPath = try binaryPathProvider.obtainBinaryPath(
+            from: frameworkPath,
+            targetInfo: artifact.targetInfo
+        )
+        return binaryPath
     }
 }
