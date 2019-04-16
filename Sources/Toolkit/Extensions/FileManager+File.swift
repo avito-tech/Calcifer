@@ -19,7 +19,7 @@ public extension FileManager {
     }
     
     func calciferDirectory() -> String {
-        return home().appendingPathComponent(".calcifer")
+        return home().appendingPathComponent(".calcifer.noindex")
     }
     
     func directoryExist(at path: String) -> Bool {

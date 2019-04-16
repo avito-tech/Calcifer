@@ -3,6 +3,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import BuildArtifacts
 import Checksum
+import Toolkit
 
 final class ArtifactIntegrator {
     
@@ -24,34 +25,52 @@ final class ArtifactIntegrator {
         targetInfos: [TargetInfo<BaseChecksum>],
         to path: String) throws -> [TargetBuildArtifact<BaseChecksum>]
     {
-        let artifacts: [TargetBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
+        
+        let artifacts = ThreadSafeDictionary
+        <
+            TargetInfo<BaseChecksum>,
+            TargetBuildArtifact<BaseChecksum>
+        >()
+        
+        for targetInfo in targetInfos {
             
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
-            guard let frameworkCacheValue = try cacheStorage.cached(for: frameworkCacheKey) else {
-                throw RemoteCachePreparerError.unableToObtainCache(
-                    target: targetInfo.targetName,
-                    type: targetInfo.productType.rawValue,
-                    checksumValue: targetInfo.checksum.stringValue
-                )
-            }
-            
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
-            guard let dSYMCacheValue = try cacheStorage.cached(for: dSYMCacheKey) else {
+            
+            cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
+                let frameworkCacheValue = self.processCacheResult(frameworkResult, targetInfo: targetInfo)
+                cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
+                    let dSYMCacheValue = self.processCacheResult(dSYMResult, targetInfo: targetInfo)
+                    let artifact = TargetBuildArtifact(
+                        targetInfo: targetInfo,
+                        productPath: frameworkCacheValue.path,
+                        dsymPath: dSYMCacheValue.path
+                    )
+                    artifacts.write(artifact, for: targetInfo)
+                }
+            }
+        }
+        let destionations = try integrator.integrate(artifacts: artifacts.values, to: path)
+        return destionations
+    }
+    
+    private func processCacheResult(
+        _ result: BuildProductCacheResult<BaseChecksum>,
+        targetInfo: TargetInfo<BaseChecksum>)
+        -> BuildProductCacheValue<BaseChecksum>
+    {
+        switch result {
+        case let .result(value):
+            return value
+        case .notExist:
+            catchError {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
                     type: targetInfo.productType.rawValue,
                     checksumValue: targetInfo.checksum.stringValue
                 )
             }
-            
-            let artifact = TargetBuildArtifact(
-                targetInfo: targetInfo,
-                productPath: frameworkCacheValue.path,
-                dsymPath: dSYMCacheValue.path
-            )
-            return artifact
+            fatalError()
         }
-        let destionations = try integrator.integrate(artifacts: artifacts, to: path)
-        return destionations
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import FrameworkCacheStorage
+@testable import BuildProductCacheStorage
 
 public final class GradleBuildCacheClientTests: XCTestCase {
     
@@ -16,10 +16,16 @@ public final class GradleBuildCacheClientTests: XCTestCase {
         var downloadRequest: URLRequest?
         session.downloadStub = { request in
             downloadRequest = request
-            return (responseURL, nil, nil)
+            let response = HTTPURLResponse(
+                url: host,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )
+            return (responseURL, response, nil)
         }
         let client = GradleBuildCacheClientImpl(gradleHost: host, session: session)
-        var downloadResult: BuildCacheClientResult<URL?>?
+        var downloadResult: BuildCacheClientResult<URL>?
         let expectedDownloadURL = expectedURL(host: host, key: key)
         
         // When
@@ -34,7 +40,7 @@ public final class GradleBuildCacheClientTests: XCTestCase {
         }
         switch unwrappedResult {
         case let .failure(error):
-            XCTFail("Failed download cache item \(error)")
+            XCTFail("Failed download cache item \(error.debugDescription)")
         case let .success(url):
             XCTAssertEqual(url, responseURL)
         }
@@ -71,7 +77,7 @@ public final class GradleBuildCacheClientTests: XCTestCase {
         }
         switch unwrappedResult {
         case let .failure(error):
-            XCTFail("Failed download cache item \(error)")
+            XCTFail("Failed download cache item \(error.debugDescription)")
         case .success:
             XCTAssertEqual(uploadRequest?.url, expectedUploadURL)
             XCTAssertEqual(uploadRequest?.httpMethod, "PUT")

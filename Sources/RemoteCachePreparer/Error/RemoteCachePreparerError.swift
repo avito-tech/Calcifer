@@ -7,7 +7,6 @@ public enum RemoteCachePreparerError: Error, CustomStringConvertible {
     case unableToObtainCache(target: String, type: String, checksumValue: String)
     case unableToCreateRemoteCacheHostURL(string: String)
     case unableToFindDSYM(target: String, path: String)
-    case unableToBinaryInFramework(path: String, productName: String)
     
     public var description: String {
         switch self {
@@ -23,8 +22,6 @@ public enum RemoteCachePreparerError: Error, CustomStringConvertible {
             return "Unable to create remote cache host URL from \(string)"
         case let .unableToFindDSYM(target, path):
             return "Unable to find dSYM for target \(target) at path \(path)"
-        case let .unableToBinaryInFramework(path, productName):
-            return "Unable to find binary for product \(productName) at path \(path)"
         }
     }
 }

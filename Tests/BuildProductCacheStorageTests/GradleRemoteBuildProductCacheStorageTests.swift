@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 import Checksum
-@testable import FrameworkCacheStorage
+@testable import BuildProductCacheStorage
 
 public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     
@@ -10,14 +10,16 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     
     func test_add() {
         // Given
-        let storage = GradleRemoteFrameworkCacheStorage<BaseChecksum>(
+        let storage = GradleRemoteBuildProductCacheStorage<BaseChecksum>(
             gradleBuildCacheClient: client,
             fileManager: fileManager
         )
         let checksum = BaseChecksum(UUID().uuidString)
         let frameworkName = UUID().uuidString
-        let key = FrameworkCacheKey(
-            frameworkName: frameworkName,
+            .appendingPathComponent(".framework")
+        let key = BuildProductCacheKey(
+            productName: frameworkName,
+            productType: .framework,
             checksum: checksum
         )
         let fileURL = URL(
@@ -26,65 +28,70 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
         fileManager.createFile(atPath: fileURL.path, contents: nil)
         
         // When
-        XCTAssertNoThrow(try storage.add(cacheKey: key, at: fileURL.path))
-        
-        // Then
-        XCTAssertEqual(checksum.stringValue, client.key)
-        guard let uploadFileURL = client.uploadFileURL else {
-            XCTFail("UploadFileURL is nil")
-            return
+        storage.add(cacheKey: key, at: fileURL.path) { [weak self] in
+            // Then
+            guard let strongSelf = self else {
+                XCTFail("Failed unwrap self")
+                return
+            }
+            guard let uploadFileURL = strongSelf.client.uploadFileURL else {
+                XCTFail("UploadFileURL is nil")
+                return
+            }
+            XCTAssertFalse(strongSelf.fileManager.fileExists(atPath: uploadFileURL.path))
         }
-        XCTAssertFalse(fileManager.fileExists(atPath: uploadFileURL.path))
     }
     
     func test_cached() {
-        XCTAssertNoThrow(try {
-            // Given
-            let storage = GradleRemoteFrameworkCacheStorage<BaseChecksum>(
-                gradleBuildCacheClient: client,
-                fileManager: fileManager
-            )
-            let checksum = BaseChecksum(UUID().uuidString)
-            let frameworkName = UUID().uuidString
-            let key = FrameworkCacheKey(
-                frameworkName: frameworkName,
-                checksum: checksum
-            )
-            let zipFileURL = try createZipFile(key: checksum.stringValue)
-            client.downloadResultURL = zipFileURL
-            
-            // When
-            let cached = try storage.cached(for: key)
-            
+        // Given
+        let storage = GradleRemoteBuildProductCacheStorage<BaseChecksum>(
+            gradleBuildCacheClient: client,
+            fileManager: fileManager
+        )
+        let checksum = BaseChecksum(UUID().uuidString)
+        let productName = UUID().uuidString + ".framework"
+        let key = BuildProductCacheKey(
+            productName: productName,
+            productType: .framework,
+            checksum: checksum
+        )
+        let zipFileURL = createZipFile(key: key)
+        client.downloadResultURL = zipFileURL
+        
+        // When
+        storage.cached(for: key) { result in
             // Then
-            XCTAssertEqual(checksum.stringValue, client.key)
-            XCTAssertEqual(cached?.key.frameworkName, key.frameworkName)
-            XCTAssertEqual(cached?.key.checksum, key.checksum)
-            guard let resultPath = cached?.path else {
-                XCTFail("Result path is nil")
-                return
+            switch result {
+            case let .result(value):
+                XCTAssertEqual(value.key.productName, key.productName)
+                XCTAssertEqual(value.key.checksum, key.checksum)
+                XCTAssertTrue(FileManager.default.fileExists(atPath: value.path))
+                do {
+                    try FileManager.default.removeItem(atPath: value.path)
+                } catch {
+                    XCTFail("Failed to remote")
+                }
+            case .notExist:
+                XCTFail("Failed obtain cache value")
             }
-            XCTAssertTrue(fileManager.fileExists(atPath: resultPath))
-            try fileManager.removeItem(atPath: resultPath)
-        }(), "Caught exception")
+        }
     }
     
-    private func createZipFile(key: String) throws -> URL {
-        let fileDirecotry = URL(
-            fileURLWithPath: NSTemporaryDirectory()
-            ).appendingPathComponent(key)
-        try fileManager.createDirectory(
-            at: fileDirecotry,
-            withIntermediateDirectories: true
-        )
-        let fileURL = fileDirecotry.appendingPathComponent(UUID().uuidString)
-        fileManager.createFile(atPath: fileURL.path, contents: nil)
-        let zipFileURL = URL(
-            fileURLWithPath: NSTemporaryDirectory()
-            ).appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("zip")
-        try fileManager.zipItem(at: fileDirecotry, to: zipFileURL)
-        try fileManager.removeItem(at: fileDirecotry)
-        return zipFileURL
+    private func createZipFile(key: BuildProductCacheKey<BaseChecksum>) -> URL {
+        let fileDirecotry = URL(fileURLWithPath: NSTemporaryDirectory())
+        do {
+            let fileURL = fileDirecotry
+                .appendingPathComponent(key.productName)
+            fileManager.createFile(atPath: fileURL.path, contents: nil)
+            let zipFileURL = URL(fileURLWithPath: NSTemporaryDirectory())
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("zip")
+            try fileManager.zipItem(at: fileURL, to: zipFileURL)
+            try fileManager.removeItem(at: fileURL)
+            return zipFileURL
+        } catch {
+            XCTFail("Failed create zip")
+            fatalError()
+        }
     }
 }

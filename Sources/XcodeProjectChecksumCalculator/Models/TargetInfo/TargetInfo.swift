@@ -1,7 +1,7 @@
 import Foundation
 import Checksum
 
-public struct TargetInfo<ChecksumType: Checksum>: Equatable {
+public struct TargetInfo<ChecksumType: Checksum>: Equatable, Hashable {
     
     public let targetName: String
     public let productName: String

@@ -39,10 +39,18 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
                 targetInfo: targetInfo,
                 at: artifactsDirectoryPath
             )
+            let productPath = artifactsDirectoryPath
+                .appendingPathComponent(targetInfo.productName.deletingPathExtension())
+                .appendingPathComponent(targetInfo.productName)
+            var dsymPath = artifactsDirectoryPath
+                .appendingPathComponent(targetInfo.productName.deletingPathExtension())
+                .appendingPathComponent(targetInfo.productName)
+            dsymPath.append(".dSYM")
             let artifacts = [
-                ProductBuildArtifact(
+                TargetBuildArtifact(
                     targetInfo: targetInfo,
-                    path: artifactsDirectoryPath
+                    productPath: productPath,
+                    dsymPath: dsymPath
                 )
             ]
             let expectedPath = obtainExpectedPath(for: targetInfo)

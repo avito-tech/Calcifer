@@ -3,7 +3,7 @@ import Checksum
 import Toolkit
 
 public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildProductCacheStorage {
-    
+
     private let fileManager: FileManager
     private let cacheDirectoryPath: String
     
@@ -13,28 +13,40 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
     }
     
     // MARK: - FrameworkCacheStorage
-    public func cached(for cacheKey: BuildProductCacheKey<ChecksumType>) throws -> BuildProductCacheValue<ChecksumType>? {
+    public func cached(
+        for cacheKey: BuildProductCacheKey<ChecksumType>,
+        completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
+    {
         let entryURL = url(to: cacheKey)
         if fileManager.directoryExist(at: entryURL) {
-            return BuildProductCacheValue(key: cacheKey, path: entryURL.path)
+            let value = BuildProductCacheValue(key: cacheKey, path: entryURL.path)
+            completion(.result(value))
+            return
         }
-        return nil
+        completion(.notExist)
     }
     
-    public func add(cacheKey: BuildProductCacheKey<ChecksumType>, at artifactPath: String) throws {
-        let artifactURL = URL(fileURLWithPath: artifactPath)
+    public func add(
+        cacheKey: BuildProductCacheKey<ChecksumType>,
+        at path: String,
+        completion: @escaping () -> ())
+    {
+        let artifactURL = URL(fileURLWithPath: path)
         let entryURL = url(to: cacheKey)
         
         let entryFolderURL = entryURL.deletingLastPathComponent()
-        if fileManager.directoryExist(at: entryFolderURL) {
-            try fileManager.removeItem(at: entryFolderURL)
+        catchError {
+            if fileManager.directoryExist(at: entryFolderURL) {
+                try fileManager.removeItem(at: entryFolderURL)
+            }
+            try fileManager.createDirectory(
+                at: entryFolderURL,
+                withIntermediateDirectories: true
+            )
+            
+            try fileManager.copyItem(at: artifactURL, to: entryURL)
         }
-        try fileManager.createDirectory(
-            at: entryFolderURL,
-            withIntermediateDirectories: true
-        )
-        
-        try fileManager.copyItem(at: artifactURL, to: entryURL)
+        completion()
     }
     
     @inline(__always) private func url(

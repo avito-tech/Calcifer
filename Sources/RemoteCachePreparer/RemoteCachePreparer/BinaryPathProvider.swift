@@ -12,8 +12,7 @@ final class BinaryPathProvider {
     
     public func obtainBinaryPath(
         from productPath: String,
-        targetInfo: TargetInfo<BaseChecksum>)
-        throws -> String
+        targetInfo: TargetInfo<BaseChecksum>) -> String
     {
         var path = productPath
             .appendingPathComponent(targetInfo.productName.deletingPathExtension())
@@ -25,13 +24,6 @@ final class BinaryPathProvider {
         if fileManager.fileExists(atPath: path) {
             return path
         }
-        path = productPath.appendingPathComponent(targetInfo.targetName)
-        if fileManager.fileExists(atPath: path) {
-            return path
-        }
-        throw RemoteCachePreparerError.unableToBinaryInFramework(
-            path: path,
-            productName: targetInfo.productName
-        )
+        return productPath.appendingPathComponent(targetInfo.targetName)
     }
 }

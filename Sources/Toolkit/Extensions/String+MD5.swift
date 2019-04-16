@@ -1,9 +1,10 @@
 import Foundation
 
 public extension String {
-    public func md5() throws -> String? {
+    public func md5() -> String {
         guard let data = data(using: .utf8) else {
-           return nil
+            Logger.error("Can't calculate md5")
+            fatalError()
         }
         return data.md5()
     }

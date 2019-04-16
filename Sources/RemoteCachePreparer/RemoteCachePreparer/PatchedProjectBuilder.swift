@@ -114,12 +114,9 @@ final class PatchedProjectBuilder {
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
-        let allTargetForBuild = try requiredFrameworks.filter { targetInfo in
-            let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
-            let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
-            let frameworkCacheValue = try cacheStorage.cached(for: frameworkCacheKey)
-            let dSYMCacheKeyCacheValue = try cacheStorage.cached(for: dSYMCacheKey)
-            return frameworkCacheValue == nil || dSYMCacheKeyCacheValue == nil
+        let cachedTargets = obtainCachedTargets(targetInfos: requiredFrameworks)
+        let allTargetForBuild = requiredFrameworks.filter { targetInfo in
+            cachedTargets.read(targetInfo) == nil
         }
         let frameworkTargets = allTargetForBuild.filter { targetInfo in
             if case .bundle = targetInfo.productType {
@@ -210,12 +207,58 @@ final class PatchedProjectBuilder {
         at path: String) throws
     {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
-        try artifacts.forEach { artifact in
+        let dispatchGroup = DispatchGroup()
+        let array = NSArray(array: artifacts)
+        array.enumerateObjects(options: .concurrent) { obj, key, stop in
+            guard let artifact = obj as? TargetBuildArtifact<BaseChecksum> else {
+                return
+            }
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: artifact.targetInfo)
-            try cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath)
-            
             let dsymCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: artifact.targetInfo)
-            try cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath)
+            dispatchGroup.enter()
+            cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath) {
+                cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath) {
+                    dispatchGroup.leave()
+                }
+            }
         }
+        dispatchGroup.wait()
+    }
+    
+    private func obtainCachedTargets(
+        targetInfos: [TargetInfo<BaseChecksum>])
+        -> ThreadSafeDictionary<TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>>
+    {
+        let cachedTargets = ThreadSafeDictionary<
+            TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>
+            >()
+        let dispatchGroup = DispatchGroup()
+        let array = NSArray(array: targetInfos)
+        array.enumerateObjects(options: .concurrent) { obj, key, stop in
+            dispatchGroup.enter()
+            guard let targetInfo = obj as? TargetInfo<BaseChecksum> else {
+                return
+            }
+            let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
+            let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
+            cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
+                switch frameworkResult {
+                case .result(_):
+                    self.cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
+                        switch dSYMResult {
+                        case .result(_):
+                            cachedTargets.write(targetInfo, for: targetInfo)
+                        case .notExist:
+                            break
+                        }
+                        dispatchGroup.leave()
+                    }
+                case .notExist:
+                    dispatchGroup.leave()
+                }
+            }
+        }
+        dispatchGroup.wait()
+        return cachedTargets
     }
 }

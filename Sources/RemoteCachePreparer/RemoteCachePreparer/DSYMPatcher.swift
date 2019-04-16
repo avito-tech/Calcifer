@@ -63,7 +63,7 @@ final class DSYMPatcher {
         let frameworkPath = appProductPath
             .appendingPathComponent("Frameworks")
             .appendingPathComponent(frameworkName)
-        let binaryPath = try binaryPathProvider.obtainBinaryPath(
+        let binaryPath = binaryPathProvider.obtainBinaryPath(
             from: frameworkPath,
             targetInfo: artifact.targetInfo
         )

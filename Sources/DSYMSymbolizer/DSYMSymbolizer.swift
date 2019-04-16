@@ -233,7 +233,7 @@ public final class DSYMSymbolizer {
             // 0000000000000000 - 00 0000    SO /Users/user/Rep/Pods/Target Support Files/Unbox/
             // 0000000000000000 - 00 0000    SO /Users/user/Rep/Pods/Unbox/Sources/
             let components = line.split(separator: " ")
-            if components.count >= 5, components[4] == "SO" {
+            if components.count >= 5, components[4] == " SO" {
                 let path = components[5...].joined(separator: " ")
                 // filter pathes from build folder and from some system
                 if path.contains(".build") == false &&
