@@ -36,7 +36,7 @@ public final class CommandRunner {
             exitCode = 0
         } catch {
             exitCode = 1
-            Logger.error("error: \(error)")
+            Logger.error("error: \(error) \(error.localizedDescription)")
             // `error` for xcode log highlighting
             print("error: \(error)")
         }

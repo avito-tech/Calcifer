@@ -2,7 +2,7 @@ import Foundation
 import XcodeProjectChecksumCalculator
 import Checksum
 
-public struct TargetBuildArtifact<ChecksumType: Checksum> {
+public struct TargetBuildArtifact<ChecksumType: Checksum>: Hashable {
     
     public let targetInfo: TargetInfo<ChecksumType>
     public let productPath: String

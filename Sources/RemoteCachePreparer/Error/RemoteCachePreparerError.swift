@@ -24,4 +24,8 @@ public enum RemoteCachePreparerError: Error, CustomStringConvertible {
             return "Unable to find dSYM for target \(target) at path \(path)"
         }
     }
+    
+    public var localizedDescription: String {
+        return description
+    }
 }

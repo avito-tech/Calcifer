@@ -44,7 +44,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
                 completion(.result(value))
                 break
             case let .failure(error):
-                Logger.verbose("Download cache error \(error?.localizedDescription ?? "-")")
+                Logger.verbose("Download cache for \(cacheKey) error \(error?.localizedDescription ?? "-")")
                 completion(.notExist)
                 break
             }
