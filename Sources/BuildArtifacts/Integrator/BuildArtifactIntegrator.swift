@@ -1,5 +1,6 @@
 import Foundation
 import Checksum
+import Toolkit
 
 public final class BuildArtifactIntegrator {
     
@@ -19,26 +20,41 @@ public final class BuildArtifactIntegrator {
         artifacts: [TargetBuildArtifact<ChecksumType>],
         to path: String) throws -> [TargetBuildArtifact<ChecksumType>]
     {
-        var destinations = [TargetBuildArtifact<ChecksumType>]()
-        try artifacts.forEach { artifact in
-            
-            let productCurrentURL = URL(fileURLWithPath: artifact.productPath)
-            let productDestinationURL = obtainProductDestination(for: artifact, at: path)
-            try integrate(at: productCurrentURL, to: productDestinationURL)
-            
-            let dsymCurrentURL = URL(fileURLWithPath: artifact.dsymPath)
-            let dsymDestinationURL = obtainDSYMDestination(for: artifact, at: path)
-            try integrate(at: dsymCurrentURL, to: dsymDestinationURL)
+        let destinations = ThreadSafeDictionary<
+            TargetBuildArtifact<ChecksumType>,
+            TargetBuildArtifact<ChecksumType>
+        >()
+        let artifactsArray = artifacts as NSArray
+        var intagrateError: Error?
+        artifactsArray.enumerateObjects(options: .concurrent) { obj, key, stop in
+            if let artifact = obj as? TargetBuildArtifact<ChecksumType> {
+                let productCurrentURL = URL(fileURLWithPath: artifact.productPath)
+                let productDestinationURL = obtainProductDestination(for: artifact, at: path)
+                do {
+                    try integrate(at: productCurrentURL, to: productDestinationURL)
+                    
+                    let dsymCurrentURL = URL(fileURLWithPath: artifact.dsymPath)
+                    let dsymDestinationURL = obtainDSYMDestination(for: artifact, at: path)
+                    try integrate(at: dsymCurrentURL, to: dsymDestinationURL)
 
-            destinations.append(
-                TargetBuildArtifact(
-                    targetInfo: artifact.targetInfo,
-                    productPath: productDestinationURL.path,
-                    dsymPath: dsymDestinationURL.path
-                )
-            )
+                    let destination = TargetBuildArtifact(
+                        targetInfo: artifact.targetInfo,
+                        productPath: productDestinationURL.path,
+                        dsymPath: dsymDestinationURL.path
+                    )
+                    
+                    destinations.write(destination, for: artifact)
+                } catch {
+                    intagrateError = error
+                    stop.pointee = true
+                    return
+                }
+            }
         }
-        return destinations
+        if let error = intagrateError {
+            throw error
+        }
+        return destinations.values
     }
     
     private func integrate(at path: URL, to destination: URL) throws {
