@@ -8,13 +8,16 @@ final class DSYMPatcher {
     
     private let symbolizer: DSYMSymbolizer
     private let binaryPathProvider: BinaryPathProvider
+    private let buildSourcePathProvider: BuildSourcePathProvider
     
     public init(
         symbolizer: DSYMSymbolizer,
-        binaryPathProvider: BinaryPathProvider)
+        binaryPathProvider: BinaryPathProvider,
+        buildSourcePathProvider: BuildSourcePathProvider)
     {
         self.symbolizer = symbolizer
         self.binaryPathProvider = binaryPathProvider
+        self.buildSourcePathProvider = buildSourcePathProvider
     }
     
     public func patchDSYM(
@@ -34,10 +37,28 @@ final class DSYMPatcher {
                         fullProductName: fullProductName
                     )
                     
+                    let binaryPath = binaryPathProvider.obtainBinaryPath(
+                        from: artifact.productPath,
+                        targetInfo: artifact.targetInfo
+                    )
+                    
+                    let buildSourcePath = try buildSourcePathProvider.obtainBuildSourcePath(
+                        sourcePath: sourcePath,
+                        binaryPath: binaryPath
+                    )
+                    
+                    if buildSourcePath == sourcePath {
+                        return
+                    }
+                    
+                    Logger.verbose("Symbolize dSYM \(dsymPath) buildSourcePath \(buildSourcePath) sourcePath \(sourcePath) for \(pathToBinaryInApp)")
+                    
                     try symbolizer.symbolize(
                         dsymPath: dsymPath,
                         sourcePath: sourcePath,
-                        binaryPath: pathToBinaryInApp
+                        buildSourcePath: buildSourcePath,
+                        binaryPath: binaryPath,
+                        binaryPathInApp: pathToBinaryInApp
                     )
                 } catch {
                     symbolizeError = error

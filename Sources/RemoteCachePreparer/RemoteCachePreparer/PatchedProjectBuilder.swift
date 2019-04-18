@@ -49,7 +49,7 @@ final class PatchedProjectBuilder {
         let podsProjectPath = params.podsProjectPath
         let patchedProjectPath = params.patchedProjectPath
         
-        let targetsForBuild = try TimeProfiler.measure("Obtain cache") {
+        let targetsForBuild = try TimeProfiler.measure("Obtain targets for build") {
             try obtainTargetsForBuild(
                 cacheStorage: cacheStorage,
                 requiredFrameworks: requiredTargets
@@ -114,19 +114,20 @@ final class PatchedProjectBuilder {
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
-        let cachedTargets = obtainCachedTargets(targetInfos: requiredFrameworks)
-        let allTargetForBuild = requiredFrameworks.filter { targetInfo in
-            cachedTargets.read(targetInfo) == nil
-        }
-        let frameworkTargets = allTargetForBuild.filter { targetInfo in
+        let frameworkTargets = requiredFrameworks.filter { targetInfo in
             if case .bundle = targetInfo.productType {
                 return false
             }
             return true
         }
-        let connectedBundleTargets = allTargetForBuild.filter { targetInfo in
+        let cachedFrameworkTargets = obtainCachedTargets(targetInfos: frameworkTargets)
+        let frameworkTargetForBuild = frameworkTargets.filter { targetInfo in
+            cachedFrameworkTargets.read(targetInfo) == nil
+        }
+
+        let connectedBundleTargets = requiredFrameworks.filter { targetInfo in
             if case .bundle = targetInfo.productType {
-                let connectedFrameworkTarget = frameworkTargets.first(
+                let connectedFrameworkTarget = frameworkTargetForBuild.first(
                     where: { frameworkTargetInfo -> Bool in
                         frameworkTargetInfo.dependencies.contains(targetInfo.targetName)
                     }
@@ -136,7 +137,7 @@ final class PatchedProjectBuilder {
             return false
         }
         // The bundle is already in the framework (this is done by cocoapods)
-        return frameworkTargets + connectedBundleTargets
+        return frameworkTargetForBuild + connectedBundleTargets
     }
     
     private func targetInfosForIntegrationToPatchedProject(

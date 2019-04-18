@@ -93,9 +93,17 @@ final class RemoteCachePreparer {
     private func createDSYMPatcher() -> DSYMPatcher {
         let symbolizer = createDSYMSymbolizer()
         let binaryPathProvider = BinaryPathProvider(fileManager: fileManager)
+        let symbolTableProvider = SymbolTableProviderImpl(
+            shellCommandExecutor: shellCommandExecutor
+        )
+        let buildSourcePathProvider = BuildSourcePathProviderImpl(
+            symbolTableProvider: symbolTableProvider,
+            fileManager: fileManager
+        )
         let dsymPatcher = DSYMPatcher(
             symbolizer: symbolizer,
-            binaryPathProvider: binaryPathProvider
+            binaryPathProvider: binaryPathProvider,
+            buildSourcePathProvider: buildSourcePathProvider
         )
         return dsymPatcher
     }
@@ -116,9 +124,9 @@ final class RemoteCachePreparer {
     }
     
     private func createDSYMSymbolizer() -> DSYMSymbolizer {
+        let dwarfUUIDProvider = DWARFUUIDProviderImpl(shellCommandExecutor: shellCommandExecutor)
         let symbolizer = DSYMSymbolizer(
-            symbolTableProvider: SymbolTableProviderImpl(shellCommandExecutor: shellCommandExecutor),
-            dwarfUUIDProvider: DWARFUUIDProviderImpl(shellCommandExecutor: shellCommandExecutor),
+            dwarfUUIDProvider: dwarfUUIDProvider,
             fileManager: fileManager
         )
         return symbolizer
