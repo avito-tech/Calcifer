@@ -18,30 +18,27 @@ public final class DSYMSymbolizer {
     // Some lldb related source https://github.com/llvm-mirror/lldb/blob/master/source/Plugins/SymbolVendor/MacOSX/SymbolVendorMacOSX.cpp
     // Post about patching https://medium.com/@maxraskin/background-1b4b6a9c65be
     public func symbolize(
-        dsymPath: String,
+        dsymBundlePath: String,
         sourcePath: String,
         buildSourcePath: String,
         binaryPath: String,
         binaryPathInApp: String)
         throws
     {
-        if try shouldPatchDSYM(dsymPath: dsymPath, sourcePath: sourcePath) == false {
-            return
-        }
-        let binaryUUIDs = try dwarfUUIDProvider.obtainDwarfUUID(path: binaryPath)
-        let dsymUUIDs = try dwarfUUIDProvider.obtainDwarfUUID(path: dsymPath)
-        let valid = try validateUUID(
-            binaryUUIDs: binaryUUIDs,
-            dsymUUIDs: dsymUUIDs
-        )
-        if valid == false {
-            throw DSYMSymbolizerError.uuidMismatch(
-                dsymPath: dsymPath,
-                binaryPath: binaryPath
-            )
-        }
+        guard try shouldPatchDSYM(dsymBundlePath: dsymBundlePath, sourcePath: sourcePath) == true
+            else { return }
+        let binaryUUIDs = try dwarfUUIDProvider.obtainDwarfUUIDs(path: binaryPath)
+        let dsymUUIDs = try dwarfUUIDProvider.obtainDwarfUUIDs(path: dsymBundlePath)
+        
+        guard try validateUUID(binaryUUIDs: binaryUUIDs, dsymUUIDs: dsymUUIDs) == true
+            else {
+                throw DSYMSymbolizerError.uuidMismatch(
+                    dsymPath: dsymBundlePath,
+                    binaryPath: binaryPath
+                )
+            }
         try generatePlist(
-            dsymPath: dsymPath,
+            dsymBundlePath: dsymBundlePath,
             binaryPathInApp: binaryPathInApp,
             sourcePath: sourcePath,
             buildSourcePath: buildSourcePath,
@@ -63,8 +60,8 @@ public final class DSYMSymbolizer {
         return true
     }
     
-    func shouldPatchDSYM(dsymPath: String, sourcePath: String) throws -> Bool {
-        let plistDirectory = dsymPath
+    public func shouldPatchDSYM(dsymBundlePath: String, sourcePath: String) throws -> Bool {
+        let plistDirectory = dsymBundlePath
             .appendingPathComponent("Contents")
             .appendingPathComponent("Resources")
         let directoryFiles = try fileManager.contentsOfDirectory(atPath: plistDirectory)
@@ -85,7 +82,7 @@ public final class DSYMSymbolizer {
     }
     
     private func generatePlist(
-        dsymPath: String,
+        dsymBundlePath: String,
         binaryPathInApp: String,
         sourcePath: String,
         buildSourcePath: String,
@@ -93,11 +90,11 @@ public final class DSYMSymbolizer {
     {
         for uuid in binaryUUIDs {
             let plistName = uuid.uuid.uuidString + ".plist"
-            let plistPath = dsymPath
+            let plistPath = dsymBundlePath
                 .appendingPathComponent("Contents")
                 .appendingPathComponent("Resources")
                 .appendingPathComponent(plistName)
-            let dwarfFilePath = try obtainDSYMBinaryPath(dsymPath: dsymPath)
+            let dwarfFilePath = try obtainDSYMBinaryPath(dsymBundlePath: dsymBundlePath)
             let content : [String: String] = [
                 "DBGArchitecture": uuid.architecture,
                 "DBGBuildSourcePath": buildSourcePath,
@@ -124,18 +121,22 @@ public final class DSYMSymbolizer {
         }
     }
     
-    private func obtainDSYMBinaryPath(dsymPath: String) throws -> String {
+    private func obtainDSYMBinaryPath(dsymBundlePath: String) throws -> String {
         // Some.framework.dSYM/Contents/Resources/DWARF/Some
-        let dwarfDirectory = dsymPath
+        let dwarfDirectory = dsymBundlePath
             .appendingPathComponent("Contents")
             .appendingPathComponent("Resources")
             .appendingPathComponent("DWARF")
         let content = try fileManager.contentsOfDirectory(atPath: dwarfDirectory)
         if content.count > 1 {
-            throw DSYMSymbolizerError.multipleDWARFFileInDSYM(dsymPath: dsymPath)
+            throw DSYMSymbolizerError.multipleDWARFFileInDSYM(
+                dsymPath: dsymBundlePath
+            )
         }
         if content.count == 0 {
-            throw DSYMSymbolizerError.unableToFindDWARFFileInDSYM(dsymPath: dsymPath)
+            throw DSYMSymbolizerError.unableToFindDWARFFileInDSYM(
+                dsymPath: dsymBundlePath
+            )
         }
         let dwarfFilePath = dwarfDirectory.appendingPathComponent(content[0])
         return dwarfFilePath

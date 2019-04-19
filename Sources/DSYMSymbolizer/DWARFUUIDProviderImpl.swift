@@ -10,7 +10,7 @@ public final class DWARFUUIDProviderImpl: DWARFUUIDProvider {
         self.shellCommandExecutor = shellCommandExecutor
     }
     
-    public func obtainDwarfUUID(path: String) throws -> [DWARFUUID] {
+    public func obtainDwarfUUIDs(path: String) throws -> [DWARFUUID] {
         let command = ShellCommand(
             launchPath: "/usr/bin/dwarfdump",
             arguments: [

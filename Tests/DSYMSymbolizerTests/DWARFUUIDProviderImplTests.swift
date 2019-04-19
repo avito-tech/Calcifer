@@ -27,7 +27,7 @@ public final class DWARFUUIDProviderImplTests: XCTestCase {
             )
             
             // When
-            let uuids = try uuidProvider.obtainDwarfUUID(path: "path_to_binary")
+            let uuids = try uuidProvider.obtainDwarfUUIDs(path: "path_to_binary")
             
             // Then
             XCTAssertEqual(uuids.first?.uuid.uuidString, uuid)

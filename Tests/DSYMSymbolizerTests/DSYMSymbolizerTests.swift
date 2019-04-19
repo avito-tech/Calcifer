@@ -32,7 +32,7 @@ public final class DSYMSymbolizerTests: XCTestCase {
             
             // When
             try symbolizer.symbolize(
-                dsymPath: dSYMPath,
+                dsymBundlePath: dSYMPath,
                 sourcePath: sourcePath,
                 buildSourcePath: buildSourcePath,
                 binaryPath: binaryPath,
