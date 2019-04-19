@@ -32,6 +32,15 @@ final class DSYMPatcher {
                 do {
                     let dsymPath = artifact.dsymPath
                     
+                    let shouldPatch = try symbolizer.shouldPatchDSYM(
+                        dsymBundlePath: dsymPath,
+                        sourcePath: sourcePath
+                    )
+                    
+                    if shouldPatch == false {
+                        return
+                    }
+                    
                     let pathToBinaryInApp = try obtainPathToBinaryInApp(
                         artifact: artifact,
                         fullProductName: fullProductName
