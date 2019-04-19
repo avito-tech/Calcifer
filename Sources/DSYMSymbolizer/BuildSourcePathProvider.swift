@@ -31,16 +31,15 @@ public final class BuildSourcePathProviderImpl: BuildSourcePathProvider {
         if buildPath == sourceBuildPath {
             return sourcePath
         }
-        var buildPathComponents = buildPath.pathComponents()
-        for component in sourceBuildPath.pathComponents().reversed() {
-            if buildPathComponents.last == component {
-                buildPathComponents.removeLast()
-            } else {
-                let buildSourcePath = String.path(withComponents: buildPathComponents)
-                return buildSourcePath
-            }
-        }
-        throw DSYMSymbolizerError.unableToFindBuildSourcePath(binaryPath: binaryPath)
+        let relativeProductPath = sourceBuildPath.replacingOccurrences(
+            of: sourcePath,
+            with: ""
+        )
+        let buildSourcePath = buildPath.replacingOccurrences(
+            of: relativeProductPath,
+            with: ""
+        )
+        return buildSourcePath
     }
     
     private func obtainSourceMap(
