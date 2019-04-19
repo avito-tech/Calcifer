@@ -6,7 +6,7 @@ import Toolkit
 
 public final class SymbolizeDSYMCommand: Command {
     
-    public let command = "symbolizeDSYM"
+    public let command = "appendSourcePathMapToDSYM"
     public let overview = "Change source path for dSYM"
     
     enum Arguments: String, CommandArgument {
@@ -82,7 +82,7 @@ public final class SymbolizeDSYMCommand: Command {
             fileManager: FileManager.default
         )
         try symbolizer.symbolize(
-            dsymPath: dsymPath,
+            dsymBundlePath: dsymPath,
             sourcePath: sourcePath,
             buildSourcePath: buildSourcePath,
             binaryPath: binaryPath,

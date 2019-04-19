@@ -63,7 +63,7 @@ final class DSYMPatcher {
                     Logger.verbose("Symbolize dSYM \(dsymPath) buildSourcePath \(buildSourcePath) sourcePath \(sourcePath) for \(pathToBinaryInApp)")
                     
                     try symbolizer.symbolize(
-                        dsymPath: dsymPath,
+                        dsymBundlePath: dsymPath,
                         sourcePath: sourcePath,
                         buildSourcePath: buildSourcePath,
                         binaryPath: binaryPath,
