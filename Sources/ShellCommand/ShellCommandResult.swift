@@ -6,7 +6,7 @@ public final class ShellCommandResult {
     public let output: String?
     public let error: String?
     
-    init(terminationStatus: Int32, output: String?, error: String?) {
+    public init(terminationStatus: Int32, output: String?, error: String?) {
         self.terminationStatus = terminationStatus
         self.output = output
         self.error = error

@@ -27,7 +27,15 @@ public final class XcodeProjectBuilder {
             ],
             environment: environment
         )
-        let result = shellExecutor.execute(command: command)
+        let result = shellExecutor.execute(
+            command: command,
+            onOutputData: { data in
+                FileHandle.standardOutput.write(data)
+            },
+            onErrorData: { data in
+                FileHandle.standardError.write(data)
+            }
+        )
         let statusCode = result.terminationStatus
         if statusCode != 0 {
             throw XcodeProjectBuilderError.failedExecuteXcodebuild(

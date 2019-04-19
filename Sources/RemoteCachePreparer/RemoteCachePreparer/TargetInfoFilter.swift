@@ -12,13 +12,12 @@ final class TargetInfoFilter {
     }
     
     public func obtainRequiredTargets(
-        buildParametersChecksum: BaseChecksum,
-        params: XcodeBuildEnvironmentParameters)
+        targetName: String,
+        buildParametersChecksum: BaseChecksum)
         throws -> [TargetInfo<BaseChecksum>]
     {
-        let mainTargetName = "Pods-\(params.targetName)"
         let targetInfos = try targetInfoProvider.dependencies(
-            for: mainTargetName,
+            for: targetName,
             buildParametersChecksum: buildParametersChecksum
         )
         return targetInfos

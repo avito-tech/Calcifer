@@ -84,7 +84,7 @@ public final class DSYMSymbolizer {
         return true
     }
     
-    func generatePlist(
+    private func generatePlist(
         dsymPath: String,
         binaryPathInApp: String,
         sourcePath: String,
@@ -124,7 +124,7 @@ public final class DSYMSymbolizer {
         }
     }
     
-    func obtainDSYMBinaryPath(dsymPath: String) throws -> String {
+    private func obtainDSYMBinaryPath(dsymPath: String) throws -> String {
         // Some.framework.dSYM/Contents/Resources/DWARF/Some
         let dwarfDirectory = dsymPath
             .appendingPathComponent("Contents")

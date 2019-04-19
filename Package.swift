@@ -159,6 +159,14 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        .testTarget(
+            name: "DSYMSymbolizerTests",
+            dependencies: [
+                "DSYMSymbolizer",
+                "ShellCommand",
+                "Toolkit"
+            ]
+        ),
         // MARK: XcodeBuildEnvironmentParametersParser
         .target(
             name: "XcodeBuildEnvironmentParametersParser",

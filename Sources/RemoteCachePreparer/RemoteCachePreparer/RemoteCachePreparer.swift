@@ -39,11 +39,12 @@ final class RemoteCachePreparer {
         
         let cacheStorage = try createCacheStorage()
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
+        let podsTargetName = "Pods-\(params.targetName)"
         
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try targetInfoFilter.obtainRequiredTargets(
-                buildParametersChecksum: paramsChecksum,
-                params: params
+                targetName: podsTargetName,
+                buildParametersChecksum: paramsChecksum
             )
         }
         
