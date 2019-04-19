@@ -36,7 +36,7 @@ public final class MixedBuildProductCacheStorage<
         localCacheStorage.cached(for: cacheKey) { [weak self] result in
             switch result {
             case let .result(value):
-                Logger.verbose("Cache exist in local cache for \(cacheKey.productName) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
+                Logger.verbose("Cache exists in local cache for \(cacheKey.productName) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
                 completion(.result(value))
                 break
             case .notExist:
@@ -85,7 +85,7 @@ public final class MixedBuildProductCacheStorage<
         remoteCacheStorage.cached(for: cacheKey) { [weak self] result in
             switch result {
             case let .result(value):
-                Logger.verbose("Cache exist in remote cache for \(cacheKey.productName) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
+                Logger.verbose("Cache exists in remote cache for \(cacheKey.productName) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
                 self?.localCacheStorage.add(cacheKey: cacheKey, at: value.path) {
                     catchError {
                         try self?.fileManager.removeItem(atPath: value.path)
