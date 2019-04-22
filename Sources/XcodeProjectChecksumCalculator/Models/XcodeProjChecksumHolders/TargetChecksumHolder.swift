@@ -1,7 +1,7 @@
 import Foundation
 import Checksum
 
-struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
+class TargetChecksumHolder<C: Checksum>: ChecksumHolder {
     let targetName: String
     let productName: String
     let productType: TargetProductType
@@ -25,14 +25,21 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         self.dependencies = dependencies
     }
     
-    var allDependencies: [TargetChecksumHolder<C>] {
-        let all = dependencies + dependencies.flatMap { $0.allDependencies }
+    
+    private var cachedAllFlatDependencies: [TargetChecksumHolder<C>]?
+    
+    var allFlatDependencies: [TargetChecksumHolder<C>] {
+        if let cachedAllDependencies = cachedAllFlatDependencies {
+            return cachedAllDependencies
+        }
+        let all = dependencies + dependencies.flatMap { $0.allFlatDependencies }
         var uniq = [String: TargetChecksumHolder<C>]()
         for dependency in all {
             uniq[dependency.targetName] = dependency
         }
-        
-        return Array(uniq.values)
+        let result = Array(uniq.values)
+        cachedAllFlatDependencies = result
+        return result
     }
     
     // MARK: - CustomStringConvertible
@@ -54,6 +61,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(targetName, forKey: .targetName)
         try container.encode(productName, forKey: .productName)
+        try container.encode(productType.rawValue, forKey: .productType)
         try container.encode(checksum, forKey: .checksum)
         try container.encode(files, forKey: .files)
         // Performance issue
@@ -61,7 +69,7 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         try container.encode(dependenciesNames, forKey: .dependencies)
     }
     
-    init(from decoder: Decoder) throws {
+    required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         targetName = try container.decode(String.self, forKey: .targetName)
         productName = try container.decode(String.self, forKey: .productName)
@@ -70,6 +78,20 @@ struct TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         files = try container.decode([FileChecksumHolder<C>].self, forKey: .files)
         // Performance issue
         dependencies = [TargetChecksumHolder<C>]()
+    }
+    
+    static func == (lhs: TargetChecksumHolder<C>, rhs: TargetChecksumHolder<C>) -> Bool {
+        return lhs.targetName == rhs.targetName &&
+            lhs.productName == rhs.productName &&
+            lhs.productType == rhs.productType &&
+            lhs.checksum == rhs.checksum
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(targetName)
+        hasher.combine(productName)
+        hasher.combine(productType)
+        hasher.combine(checksum)
     }
 }
 

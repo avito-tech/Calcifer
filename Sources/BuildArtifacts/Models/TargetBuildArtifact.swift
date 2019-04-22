@@ -2,13 +2,19 @@ import Foundation
 import XcodeProjectChecksumCalculator
 import Checksum
 
-public struct TargetBuildArtifact<ChecksumType: Checksum> {
+public struct TargetBuildArtifact<ChecksumType: Checksum>: Hashable {
     
     public let targetInfo: TargetInfo<ChecksumType>
-    public let path: String
+    public let productPath: String
+    public let dsymPath: String
     
-    public init(targetInfo: TargetInfo<ChecksumType>, path: String) {
+    public init(
+        targetInfo: TargetInfo<ChecksumType>,
+        productPath: String,
+        dsymPath: String)
+    {
         self.targetInfo = targetInfo
-        self.path = path
+        self.productPath = productPath
+        self.dsymPath = dsymPath
     }
 }

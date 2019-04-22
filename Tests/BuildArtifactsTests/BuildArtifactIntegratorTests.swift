@@ -31,6 +31,7 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
                 targetName: "Some",
                 productName: "Some.framework",
                 productType: .framework,
+                dependencies: [],
                 checksum: BaseChecksum(UUID().uuidString)
             )
             try ArtifactFileBuilder().createArtifactFile(
@@ -38,13 +39,25 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
                 targetInfo: targetInfo,
                 at: artifactsDirectoryPath
             )
-            let targetBuildArtifacts = try TargetBuildArtifactProvider(fileManager: fileManager)
-                .artifacts(for: [targetInfo], at: artifactsDirectoryPath)
+            let productPath = artifactsDirectoryPath
+                .appendingPathComponent(targetInfo.productName.deletingPathExtension())
+                .appendingPathComponent(targetInfo.productName)
+            var dsymPath = artifactsDirectoryPath
+                .appendingPathComponent(targetInfo.productName.deletingPathExtension())
+                .appendingPathComponent(targetInfo.productName)
+            dsymPath.append(".dSYM")
+            let artifacts = [
+                TargetBuildArtifact(
+                    targetInfo: targetInfo,
+                    productPath: productPath,
+                    dsymPath: dsymPath
+                )
+            ]
             let expectedPath = obtainExpectedPath(for: targetInfo)
 
             // When
             try integrator.integrate(
-                artifacts: targetBuildArtifacts,
+                artifacts: artifacts,
                 to: artifactsDestination
             )
 

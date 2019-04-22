@@ -29,7 +29,7 @@ final class ArtifactFileBuilder {
             atPath: dSYMPath,
             withIntermediateDirectories: true
         )
-        return frameworkContainingFolderPath
+        return frameworkPath
     }
     
     private func obtainExpectedPath(

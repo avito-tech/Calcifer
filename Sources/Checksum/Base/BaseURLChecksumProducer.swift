@@ -28,6 +28,7 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
     
     private func checksum(for file: URL) throws -> BaseChecksum {
         do {
+            // TODO: Read file by сhunk ( Chunk.md5() + Chunk.md5() )
             let string = try Data(contentsOf: file).md5()
             return BaseChecksum(string)
         } catch {

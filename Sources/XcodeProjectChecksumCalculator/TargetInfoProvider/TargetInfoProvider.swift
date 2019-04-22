@@ -4,9 +4,14 @@ import Checksum
 public final class TargetInfoProvider<ChecksumType: Checksum> {
     
     private let checksumHolder: XcodeProjChecksumHolder<ChecksumType>
+    private let fileManager: FileManager
     
-    init(checksumHolder: XcodeProjChecksumHolder<ChecksumType>) {
+    init(
+        checksumHolder: XcodeProjChecksumHolder<ChecksumType>,
+        fileManager: FileManager)
+    {
         self.checksumHolder = checksumHolder
+        self.fileManager = fileManager
     }
     
     public func dependencies(
@@ -15,15 +20,18 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         guard let checksumHolder = targetChecksumHolder({ $0.targetName == target }) else {
             throw XcodeProjectChecksumCalculatorError.emptyTargetChecksum(targetName: target)
         }
-        return try checksumHolder.allDependencies.map({ targetChecksumHolder in
+        let allFlatDependencies = checksumHolder.allFlatDependencies
+        let result: [TargetInfo<ChecksumType>] = try allFlatDependencies.map({ targetChecksumHolder in
             let targeChecksum = try targetChecksumHolder.checksum + buildParametersChecksum
             return TargetInfo(
                 targetName: targetChecksumHolder.targetName,
                 productName: targetChecksumHolder.productName,
                 productType: targetChecksumHolder.productType,
+                dependencies: targetChecksumHolder.dependencies.map { $0.targetName },
                 checksum: targeChecksum
             )
         })
+        return result
     }
     
     public func targetInfo(
@@ -41,8 +49,17 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
             targetName: checksumHolder.targetName,
             productName: checksumHolder.productName,
             productType: checksumHolder.productType,
+            dependencies: checksumHolder.dependencies.map { $0.targetName },
             checksum: targeChecksum
         )
+    }
+    
+    public func saveChecksumToFile() throws {
+        let data = try checksumHolder.encode()
+        let outputFilePath = fileManager.calciferDirectory()
+            .appendingPathComponent("checkum.json")
+        let outputFileURL = URL(fileURLWithPath: outputFilePath)
+        try data.write(to: outputFileURL)
     }
 
     private func targetChecksumHolder(

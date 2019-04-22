@@ -4,9 +4,11 @@ import Checksum
 public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProducer> {
     
     private let checksumProducer: ChecksumProducer
+    private let fileManager: FileManager
     
-    public init(checksumProducer: ChecksumProducer) {
+    public init(checksumProducer: ChecksumProducer, fileManager: FileManager) {
         self.checksumProducer = checksumProducer
+        self.fileManager = fileManager
     }
     
     public func targetChecksumProvider(
@@ -17,9 +19,13 @@ public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProduc
             checksumProducer: checksumProducer
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
+        
         return TargetInfoProvider(
-            checksumHolder: checksumHolder
+            checksumHolder: checksumHolder,
+            fileManager: fileManager
         )
     }
+    
+    
     
 }

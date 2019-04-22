@@ -24,23 +24,36 @@ public final class TargetBuildArtifactProvider {
                     path: path
                 )
             }
-            try valideArtifact(at: artifactPath, targetInfo: targetInfo)
-            return TargetBuildArtifact(targetInfo: targetInfo, path: artifactPath)
+            let productPath = try obtainProductPath(at: artifactPath, targetInfo: targetInfo)
+            let dsymPath = try obtainDSYMPath(at: artifactPath, targetInfo: targetInfo)
+            return TargetBuildArtifact(
+                targetInfo: targetInfo,
+                productPath: productPath,
+                dsymPath: dsymPath
+            )
         }
     }
     
-    private func valideArtifact<ChecksumType: Checksum>(
+    private func obtainProductPath<ChecksumType: Checksum>(
         at path: String,
-        targetInfo: TargetInfo<ChecksumType>) throws
+        targetInfo: TargetInfo<ChecksumType>)
+        throws -> String
     {
         let frameworkPath = path.appendingPathComponent(targetInfo.productName)
         if fileManager.directoryExist(at: frameworkPath) == false {
-            throw BuildArtifactsError.frameworkDoesntExist(
+            throw BuildArtifactsError.productDoesntExist(
                 productName: targetInfo.targetName,
                 path: path
             )
         }
-        
+        return frameworkPath
+    }
+    
+    private func obtainDSYMPath<ChecksumType: Checksum>(
+        at path: String,
+        targetInfo: TargetInfo<ChecksumType>)
+        throws -> String
+    {
         let dsymName = "\(targetInfo.productName).dSYM"
         let dsymPath = path.appendingPathComponent(dsymName)
         if fileManager.directoryExist(at: dsymPath) == false {
@@ -49,6 +62,7 @@ public final class TargetBuildArtifactProvider {
                 path: path
             )
         }
+        return dsymPath
     }
     
 }

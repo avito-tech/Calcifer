@@ -26,6 +26,10 @@ let package = Package(
         .package(
             url: "https://github.com/weichsel/ZIPFoundation/",
             .exact("0.9.8")
+        ),
+        .package(
+            url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
+            .exact("1.6.2")
         )
     ],
     targets: [
@@ -45,8 +49,10 @@ let package = Package(
                 "XcodeProjectBuilder",
                 "XcodeProjectChecksumCalculator",
                 "XcodeProjectPatcher",
+                "DSYMSymbolizer",
                 "XcodeBuildEnvironmentParametersParser",
                 "RemoteCachePreparer",
+                "BuildStepIntegrator",
                 "ArgumentsParser"
             ]
         ),
@@ -63,10 +69,11 @@ let package = Package(
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
                 "XcodeProjectChecksumCalculator",
-                "FrameworkCacheStorage",
+                "BuildProductCacheStorage",
                 "BuildArtifacts",
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
+                "DSYMSymbolizer",
                 "Checksum",
                 "Toolkit"
             ]
@@ -77,9 +84,9 @@ let package = Package(
                 "RemoteCachePreparer"
             ]
         ),
-        // MARK: FrameworkCacheStorage
+        // MARK: BuildProductCacheStorage
         .target(
-            name: "FrameworkCacheStorage",
+            name: "BuildProductCacheStorage",
             dependencies: [
                 "XcodeProjectChecksumCalculator",
                 "ZIPFoundation",
@@ -88,9 +95,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "FrameworkCacheStorageTests",
+            name: "BuildProductCacheStorageTests",
             dependencies: [
-                "FrameworkCacheStorage"
+                "BuildProductCacheStorage"
             ]
         ),
         // MARK: BuildArtifacts
@@ -112,6 +119,7 @@ let package = Package(
         .target(
             name: "XcodeProjectBuilder",
             dependencies: [
+                "ShellCommand",
                 "ArgumentsParser",
                 "Toolkit"
             ]
@@ -142,6 +150,23 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: DSYMSymbolizer
+        .target(
+            name: "DSYMSymbolizer",
+            dependencies: [
+                "ShellCommand",
+                "ArgumentsParser",
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "DSYMSymbolizerTests",
+            dependencies: [
+                "DSYMSymbolizer",
+                "ShellCommand",
+                "Toolkit"
+            ]
+        ),
         // MARK: XcodeBuildEnvironmentParametersParser
         .target(
             name: "XcodeBuildEnvironmentParametersParser",
@@ -158,9 +183,25 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: BuildStepIntegrator
+        .target(
+            name: "BuildStepIntegrator",
+            dependencies: [
+                "xcodeproj",
+                "ArgumentsParser",
+                "Toolkit"
+            ]
+        ),
         // MARK: Checksum
         .target(
             name: "Checksum",
+            dependencies: [
+                "Toolkit"
+            ]
+        ),
+        // MARK: ShellCommand
+        .target(
+            name: "ShellCommand",
             dependencies: [
                 "Toolkit"
             ]
@@ -169,6 +210,7 @@ let package = Package(
         .target(
             name: "Toolkit",
             dependencies: [
+                "SwiftyBeaver",
                 "Utility"
             ]
         ),

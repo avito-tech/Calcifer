@@ -24,13 +24,17 @@ public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result) throws {
-        let outputPath = try ArgumentsReader.validateNotNil(
-            arguments.get(self.outputPathArgument),
-            name: Arguments.outputPath.rawValue
-        )
+        let outputPath: String
+        let fileManager = FileManager.default
+        if let outputPathArgumentValue = arguments.get(self.outputPathArgument) {
+            outputPath = outputPathArgumentValue
+        } else {
+            outputPath = fileManager
+                .calciferDirectory()
+                .appendingPathComponent("calciferenv.json")
+        }
         let params = try XcodeBuildEnvironmentParameters()
-        let data = try params.encode()
-        try data.write(to: URL(fileURLWithPath: outputPath))
+        try params.save(to: outputPath)
         print(outputPath)
     }
     

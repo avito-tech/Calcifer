@@ -1,150 +1,122 @@
 import Foundation
 import XcodeBuildEnvironmentParametersParser
 import XcodeProjectChecksumCalculator
+import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
 import BuildArtifacts
-import FrameworkCacheStorage
+import DSYMSymbolizer
+import ShellCommand
 import Checksum
 import Toolkit
 
 final class RemoteCachePreparer {
     
     private let fileManager: FileManager
+    private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
+    private let shellCommandExecutor = ShellCommandExecutorImpl()
     
     init(fileManager: FileManager) {
         self.fileManager = fileManager
     }
     
-    func prepare(params: XcodeBuildEnvironmentParameters) throws {
+    func prepare(params: XcodeBuildEnvironmentParameters, sourcePath: String) throws {
         let podsProjectPath = params.podsProjectPath
         
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
-    
         let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
-        let targetChecksumProvider = try buildTargetChecksumProvider(
-            podsProjectPath: podsProjectPath,
-            checksumProducer: checksumProducer
-        )
         
-        let cacheStorage = try createCacheStorage()
+        try params.save(to: buildEnvironmentParametersPath())
         
-        let requiredTargets = try obtainRequiredTargets(
-            checksumProvider: targetChecksumProvider,
-            buildParametersChecksum: paramsChecksum,
-            params: params
-        )
-
-        try prepareAndBuildPatchedProjectIfNeeded(
-            params: params,
-            requiredTargets: requiredTargets,
-            cacheStorage: cacheStorage,
-            checksumProducer: checksumProducer
-        )
-        
-        let targetInfosForIntegration = frameworkTargetInfos(requiredTargets)
-        try integrateArtifacts(
-            checksumProducer: checksumProducer,
-            cacheStorage: cacheStorage,
-            targetInfos: targetInfosForIntegration,
-            to: params.configurationBuildDirectory
-        )
-        
-    }
-    
-    private func obtainRequiredTargets(
-        checksumProvider: TargetInfoProvider<BaseChecksum>,
-        buildParametersChecksum: BaseChecksum,
-        params: XcodeBuildEnvironmentParameters)
-        throws -> [TargetInfo<BaseChecksum>]
-    {
-        let mainTargetName = "Pods-\(params.targetName)"
-        let targetInfos = try checksumProvider.dependencies(
-            for: mainTargetName,
-            buildParametersChecksum: buildParametersChecksum
-        )
-        return targetInfos
-    }
-    
-    private func prepareAndBuildPatchedProjectIfNeeded(
-        params: XcodeBuildEnvironmentParameters,
-        requiredTargets: [TargetInfo<BaseChecksum>],
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
-        checksumProducer: BaseURLChecksumProducer)
-        throws
-    {
-    
-        let podsProjectPath = params.podsProjectPath
-        let patchedProjectPath = params.patchedProjectPath
-        
-        let targetsForBuild = try obtainTargetsForBuild(
-            cacheStorage: cacheStorage,
-            requiredFrameworks: requiredTargets
-        )
-        let targetNamesForBuild = targetsForBuild.map { $0.targetName }
-        let targetInfosForStore = frameworkTargetInfos(targetsForBuild)
-        
-        // If we do not need to store an artifact, then we don’t need to build it.
-        // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
-        // If any file in the bundle has changed, then all dependencies will be rebuilded.
-        // Because their checksum has changed.
-        if targetInfosForStore.count > 0 {
-        
-            try patchProject(
+        // TODO: save xcodeproj as json and if hash of xml same use json instead xcodeproj
+        let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
+            try createBuildTargetChecksumProvider(
                 podsProjectPath: podsProjectPath,
-                patchedProjectPath: patchedProjectPath,
-                targets: targetNamesForBuild
-            )
-            
-            let cacheBuildPath = params.projectDirectory
-                .appendingPathComponent("build")
-                .appendingPathComponent("\(params.configuration)-\(params.platformName)")
-            
-            let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
-                requiredTargets: requiredTargets,
-                targetsForBuild: targetsForBuild
-            )
-            
-            try integrateArtifacts(
-                checksumProducer: checksumProducer,
-                cacheStorage: cacheStorage,
-                targetInfos: targetInfosForPatchedProjectIntegration,
-                to: cacheBuildPath
-            )
-            
-            try build(
-                params: params,
-                patchedProjectPath: patchedProjectPath
-            )
-            
-            try saveArtifacts(
-                cacheStorage: cacheStorage,
-                for: targetInfosForStore,
-                at: cacheBuildPath
+                checksumProducer: checksumProducer
             )
         }
-    }
-    
-    private func targetInfosForIntegrationToPatchedProject(
-        requiredTargets: [TargetInfo<BaseChecksum>],
-        targetsForBuild: [TargetInfo<BaseChecksum>])
-        -> [TargetInfo<BaseChecksum>]
-    {
-        let targetInfos = frameworkTargetInfos(
-            requiredTargets.filter { targetInfo in
-                targetsForBuild.contains(targetInfo) == false
-            }
+        try targetChecksumProvider.saveChecksumToFile()
+        
+        let cacheStorage = try createCacheStorage()
+        let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
+        let podsTargetName = "Pods-\(params.targetName)"
+        
+        let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
+            try targetInfoFilter.obtainRequiredTargets(
+                targetName: podsTargetName,
+                buildParametersChecksum: paramsChecksum
+            )
+        }
+        
+        let buildArtifactIntegrator = BuildArtifactIntegrator(
+            fileManager: fileManager,
+            checksumProducer: checksumProducer
         )
-        return targetInfos
+        let artifactIntegrator = ArtifactIntegrator(
+            integrator: buildArtifactIntegrator,
+            cacheKeyBuilder: cacheKeyBuilder
+        )
+
+        try TimeProfiler.measure("Prepare and build patched project if needed") {
+            let patchedProjectBuilder = createPatchedProjectBuilder(
+                targetInfoFilter: targetInfoFilter,
+                cacheStorage: cacheStorage,
+                checksumProducer: checksumProducer,
+                artifactIntegrator: artifactIntegrator
+            )
+            try patchedProjectBuilder.prepareAndBuildPatchedProjectIfNeeded(
+                params: params,
+                requiredTargets: requiredTargets
+            )
+        }
+        
+        let targetInfosForIntegration = targetInfoFilter.frameworkTargetInfos(requiredTargets)
+        let integrated = try TimeProfiler.measure("Integrate artifacts to Derived Data") {
+            try artifactIntegrator.integrateArtifacts(
+                checksumProducer: checksumProducer,
+                cacheStorage: cacheStorage,
+                targetInfos: targetInfosForIntegration,
+                to: params.configurationBuildDirectory
+            )
+        }
+        
+        try TimeProfiler.measure("Patch dSYM") {
+            let dsymPatcher = createDSYMPatcher()
+            try dsymPatcher.patchDSYM(
+                for: integrated,
+                sourcePath: sourcePath,
+                fullProductName: params.fullProductName
+            )
+        }
+        
     }
     
-    private func buildTargetChecksumProvider(
+    private func createDSYMPatcher() -> DSYMPatcher {
+        let symbolizer = createDSYMSymbolizer()
+        let binaryPathProvider = BinaryPathProvider(fileManager: fileManager)
+        let symbolTableProvider = SymbolTableProviderImpl(
+            shellCommandExecutor: shellCommandExecutor
+        )
+        let buildSourcePathProvider = BuildSourcePathProviderImpl(
+            symbolTableProvider: symbolTableProvider,
+            fileManager: fileManager
+        )
+        let dsymPatcher = DSYMPatcher(
+            symbolizer: symbolizer,
+            binaryPathProvider: binaryPathProvider,
+            buildSourcePathProvider: buildSourcePathProvider
+        )
+        return dsymPatcher
+    }
+    
+    private func createBuildTargetChecksumProvider(
         podsProjectPath: String,
         checksumProducer: BaseURLChecksumProducer)
         throws -> TargetInfoProvider<BaseChecksum>
     {
         let frameworkChecksumProviderFactory = TargetInfoProviderFactory(
-            checksumProducer: checksumProducer
+            checksumProducer: checksumProducer,
+            fileManager: fileManager
         )
         let frameworkChecksumProvider = try frameworkChecksumProviderFactory.targetChecksumProvider(
             projectPath: podsProjectPath
@@ -152,149 +124,49 @@ final class RemoteCachePreparer {
         return frameworkChecksumProvider
     }
     
-    private func obtainTargetsForBuild(
+    private func createDSYMSymbolizer() -> DSYMSymbolizer {
+        let dwarfUUIDProvider = DWARFUUIDProviderImpl(shellCommandExecutor: shellCommandExecutor)
+        let symbolizer = DSYMSymbolizer(
+            dwarfUUIDProvider: dwarfUUIDProvider,
+            fileManager: fileManager
+        )
+        return symbolizer
+    }
+    
+    private func createPatchedProjectBuilder(
+        targetInfoFilter: TargetInfoFilter,
         cacheStorage: DefaultMixedFrameworkCacheStorage,
-        requiredFrameworks: [TargetInfo<BaseChecksum>])
-        throws -> [TargetInfo<BaseChecksum>]
-    {
-        return try requiredFrameworks.filter { targetInfo in
-            let cacheKey = createCacheKey(from: targetInfo)
-            let cacheValue = try cacheStorage.cached(for: cacheKey)
-            return cacheValue == nil
-        }
-    }
-    
-    private func patchProject(
-        podsProjectPath: String,
-        patchedProjectPath: String,
-        targets: [String]) throws
-    {
-        let patcher = XcodeProjectPatcher()
-        try patcher.patch(
-            projectPath: podsProjectPath,
-            outputPath: patchedProjectPath,
-            targets: targets
-        )
-    }
-    
-    private func build(
-        params: XcodeBuildEnvironmentParameters,
-        patchedProjectPath: String) throws
-    {
-        let config = try createTargetBuildConfig(
-            params: params,
-            patchedProjectPath: patchedProjectPath
-        )
-        let builder = XcodeProjectBuilder(
-            shellExecutor: ShellCommandExecutorImpl()
-        )
-        try builder.build(
-            config: config,
-            environment: ["PATH": params.userBinaryPath]
-        )
-    }
-    
-    private func createTargetBuildConfig(
-        params: XcodeBuildEnvironmentParameters,
-        patchedProjectPath: String)
-        throws -> XcodeProjectBuildConfig
-    {
-        guard let architecture = Architecture(rawValue: params.architectures) else {
-            throw RemoteCachePreparerError.unableToParseArchitecture(string: params.architectures)
-        }
-        guard let platform = Platform(rawValue: params.platformName) else {
-            throw RemoteCachePreparerError.unableToParsePlatform(string: params.platformName)
-        }
-        let config = XcodeProjectBuildConfig(
-            platform: platform,
-            architecture: architecture,
-            projectPath: patchedProjectPath,
-            targetName: "Aggregate",
-            configurationName: params.configuration,
-            onlyActiveArchitecture: true
-        )
-        return config
-    }
-    
-    private func saveArtifacts(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
-        for targetInfos: [TargetInfo<BaseChecksum>],
-        at path: String) throws
+        checksumProducer: BaseURLChecksumProducer,
+        artifactIntegrator: ArtifactIntegrator)
+        -> PatchedProjectBuilder
     {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager
         )
-        let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
-        
-        try artifacts.forEach { artifact in
-            let cacheKey = createCacheKey(from: artifact.targetInfo)
-            try cacheStorage.add(cacheKey: cacheKey, at: artifact.path)
-        }
-    }
-    
-    private func integrateArtifacts(
-        checksumProducer: BaseURLChecksumProducer,
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
-        targetInfos: [TargetInfo<BaseChecksum>],
-        to path: String) throws
-    {
-        let integrator = BuildArtifactIntegrator(
-            fileManager: fileManager,
-            checksumProducer: checksumProducer
+        let builder = XcodeProjectBuilder(
+            shellExecutor: shellCommandExecutor
         )
-        let buildArtifacts: [TargetBuildArtifact<BaseChecksum>] = try targetInfos.map { targetInfo in
-            let cacheKey = createCacheKey(from: targetInfo)
-            guard let cacheValue = try cacheStorage.cached(for: cacheKey) else {
-                throw RemoteCachePreparerError.unableToObtainCache(
-                    target: targetInfo.targetName,
-                    checksumValue: targetInfo.checksum.stringValue
-                )
-            }
-            let buildArtifact = TargetBuildArtifact(
-                targetInfo: targetInfo,
-                path: cacheValue.path
-            )
-            return buildArtifact
-        }
-        try integrator.integrate(artifacts: buildArtifacts, to: path)
-    }
-    
-    private func createCacheKey(
-        from targetInfo: TargetInfo<BaseChecksum>)
-        -> FrameworkCacheKey<BaseChecksum>
-    {
-        return FrameworkCacheKey<BaseChecksum>(
-            frameworkName: targetInfo.targetName,
-            checksum: targetInfo.checksum
+        let patcher = XcodeProjectPatcher()
+        return PatchedProjectBuilder(
+            cacheStorage: cacheStorage,
+            checksumProducer: checksumProducer,
+            cacheKeyBuilder: cacheKeyBuilder,
+            patcher: patcher,
+            builder: builder,
+            artifactIntegrator: artifactIntegrator,
+            targetInfoFilter: targetInfoFilter,
+            artifactProvider: artifactProvider
         )
     }
-    
-    private func frameworkTargetInfos(
-        _ targetInfos: [TargetInfo<BaseChecksum>])
-        -> [TargetInfo<BaseChecksum>]
-    {
-        // The bundle is already in the framework (this is done by cocoapods)
-        return targetInfos.filter { targetInfo in
-            if case .bundle = targetInfo.productType {
-                return false
-            }
-            return true
-        }
-    }
-    
-    typealias DefaultMixedFrameworkCacheStorage = MixedFrameworkCacheStorage<
-        BaseChecksum,
-        LocalFrameworkCacheStorage<BaseChecksum>,
-        GradleRemoteFrameworkCacheStorage<BaseChecksum>>
     
     private func createCacheStorage() throws -> DefaultMixedFrameworkCacheStorage {
         let localCacheDirectoryPath = fileManager.calciferDirectory()
             .appendingPathComponent("localCache")
-        let localStorage = LocalFrameworkCacheStorage<BaseChecksum>(
+        let localStorage = LocalBuildProductCacheStorage<BaseChecksum>(
             fileManager: fileManager,
             cacheDirectoryPath: localCacheDirectoryPath
         )
-        let gradleHost = "http://localhost:5071"
+        let gradleHost = "http://gradle-remote-cache-ios.k.avito.ru"
         guard let gradleHostURL = URL(string: gradleHost) else {
             throw RemoteCachePreparerError.unableToCreateRemoteCacheHostURL(
                 string: gradleHost
@@ -304,7 +176,7 @@ final class RemoteCachePreparer {
             gradleHost: gradleHostURL,
             session: URLSession.shared
         )
-        let remoteStorage = GradleRemoteFrameworkCacheStorage<BaseChecksum>(
+        let remoteStorage = GradleRemoteBuildProductCacheStorage<BaseChecksum>(
             gradleBuildCacheClient: gradleClient,
             fileManager: fileManager
         )
@@ -316,20 +188,10 @@ final class RemoteCachePreparer {
         )
     }
     
-}
-
-extension XcodeBuildEnvironmentParameters {
-    
-    var podsProjectPath: String {
-        let podsProjectFileName = "Pods.xcodeproj"
-        let podsProjectPath = podsRoot + "/" + podsProjectFileName
-        return podsProjectPath
-    }
-    
-    var patchedProjectPath: String {
-        let patchedProjectFileName = "Pods2.xcodeproj"
-        let patchedProjectPath = podsRoot + "/" + patchedProjectFileName
-        return patchedProjectPath
+    func buildEnvironmentParametersPath() -> String {
+        return fileManager
+            .calciferDirectory()
+            .appendingPathComponent("calciferenv.json")
     }
     
 }

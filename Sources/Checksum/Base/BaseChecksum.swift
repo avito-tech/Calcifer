@@ -18,10 +18,7 @@ public final class BaseChecksum: Checksum {
     }
     
     public static func + (left: BaseChecksum, right: BaseChecksum) throws -> BaseChecksum {
-        guard let string = try (left.stringValue + right.stringValue).md5() else {
-            assertionFailure("Empty md5 result")
-            return .zero
-        }
+        let string = (left.stringValue + right.stringValue).md5()
         return BaseChecksum(string)
     }
     
