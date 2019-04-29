@@ -17,7 +17,7 @@ public final class BuildStepIntegrator {
                     target: target,
                     pbxproj: pbxproj
                 )
-                try updateCalciferBuildPhasese(
+                try updateCalciferBuildPhases(
                     target: target,
                     pbxproj: pbxproj,
                     binaryPath: binaryPath
@@ -42,7 +42,7 @@ public final class BuildStepIntegrator {
         }
     }
     
-    private func updateCalciferBuildPhasese(
+    private func updateCalciferBuildPhases(
         target: PBXTarget,
         pbxproj: PBXProj,
         binaryPath: String)
