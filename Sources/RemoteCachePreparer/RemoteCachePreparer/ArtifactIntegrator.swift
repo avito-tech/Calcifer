@@ -37,6 +37,7 @@ final class ArtifactIntegrator {
         array.enumerateObjects(options: .concurrent) { obj, key, stop in
             dispatchGroup.enter()
             guard let targetInfo = obj as? TargetInfo<BaseChecksum> else {
+                dispatchGroup.leave()
                 return
             }
             

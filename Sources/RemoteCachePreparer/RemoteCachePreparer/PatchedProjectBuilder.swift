@@ -233,6 +233,7 @@ final class PatchedProjectBuilder {
         array.enumerateObjects(options: .concurrent) { obj, key, stop in
             dispatchGroup.enter()
             guard let targetInfo = obj as? TargetInfo<BaseChecksum> else {
+                dispatchGroup.leave()
                 return
             }
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
