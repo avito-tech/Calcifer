@@ -3,7 +3,7 @@ import ZIPFoundation
 import Checksum
 import Toolkit
 
-public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>: BuildProductCacheStorage {
+public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorage {
     
     private let gradleBuildCacheClient: GradleBuildCacheClient
     private let fileManager: FileManager
@@ -18,7 +18,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
     }
     
     // MARK: - FrameworkCacheStorage
-    public func cached(
+    public func cached<ChecksumType: Checksum>(
         for cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
     {
@@ -32,7 +32,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         }
     }
     
-    public func add(
+    public func add<ChecksumType: Checksum>(
         cacheKey: BuildProductCacheKey<ChecksumType>,
         at path: String,
         completion: @escaping () -> ())
@@ -51,7 +51,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         }
     }
     
-    private func processDownloadResult(
+    private func processDownloadResult<ChecksumType: Checksum>(
         result: BuildCacheClientResult<URL>,
         cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
@@ -77,7 +77,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         }
     }
     
-    private func unzipArtifact(
+    private func unzipArtifact<ChecksumType: Checksum>(
         url: URL,
         cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
@@ -111,7 +111,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         }
     }
     
-    private func gradleKey(for cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
+    private func gradleKey<ChecksumType: Checksum>(for cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
         let string = cacheKey.productType.rawValue + "-" +
             cacheKey.productName + "-" +
             cacheKey.checksum.stringValue

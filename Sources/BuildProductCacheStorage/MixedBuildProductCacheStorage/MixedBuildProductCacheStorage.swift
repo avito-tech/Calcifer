@@ -2,24 +2,17 @@ import Foundation
 import Checksum
 import Toolkit
 
-public final class MixedBuildProductCacheStorage<
-    ChecksumType,
-    LocalCacheStorage: BuildProductCacheStorage,
-    RemoteCacheStorage: BuildProductCacheStorage>: BuildProductCacheStorage
-    where
-    LocalCacheStorage.ChecksumType == ChecksumType,
-    RemoteCacheStorage.ChecksumType == ChecksumType
-{
+public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
     
     private let fileManager: FileManager
-    private let localCacheStorage: LocalCacheStorage
-    private let remoteCacheStorage: RemoteCacheStorage
+    private let localCacheStorage: BuildProductCacheStorage
+    private let remoteCacheStorage: BuildProductCacheStorage
     private let shouldUpload: Bool
     
     public init(
         fileManager: FileManager,
-        localCacheStorage: LocalCacheStorage,
-        remoteCacheStorage: RemoteCacheStorage,
+        localCacheStorage: BuildProductCacheStorage,
+        remoteCacheStorage: BuildProductCacheStorage,
         shouldUpload: Bool)
     {
         self.fileManager = fileManager
@@ -29,7 +22,7 @@ public final class MixedBuildProductCacheStorage<
     }
     
     // MARK: - FrameworkCacheStorage
-    public func cached(
+    public func cached<ChecksumType: Checksum>(
         for cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
     {
@@ -49,7 +42,7 @@ public final class MixedBuildProductCacheStorage<
         }
     }
     
-    public func add(
+    public func add<ChecksumType: Checksum>(
         cacheKey: BuildProductCacheKey<ChecksumType>,
         at path: String,
         completion: @escaping () -> ())
@@ -78,7 +71,7 @@ public final class MixedBuildProductCacheStorage<
         }
     }
     
-    private func obtainFromRemoteCache(
+    private func obtainFromRemoteCache<ChecksumType: Checksum>(
         cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
     {

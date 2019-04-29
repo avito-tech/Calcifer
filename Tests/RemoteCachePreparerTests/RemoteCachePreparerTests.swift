@@ -5,7 +5,7 @@ import XcodeBuildEnvironmentParametersParser
 
 public final class RemoteCachePreparerTests: XCTestCase {
     
-    let parser = RemoteCachePreparer(fileManager: FileManager.default)
+//    let parser = RemoteCachePreparer(fileManager: FileManager.default, buildTargetChecksumProviderFactory: <#BuildTargetChecksumProviderFactory#>)
     
     // MARK: - Lifecycle
     

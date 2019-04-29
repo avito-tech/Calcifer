@@ -11,7 +11,7 @@ import Toolkit
 
 final class PatchedProjectBuilder {
     
-    private let cacheStorage: DefaultMixedFrameworkCacheStorage
+    private let cacheStorage: BuildProductCacheStorage
     private let checksumProducer: BaseURLChecksumProducer
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
     private let patcher: XcodeProjectPatcher
@@ -21,7 +21,7 @@ final class PatchedProjectBuilder {
     private let artifactProvider: TargetBuildArtifactProvider
     
     init(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
+        cacheStorage: BuildProductCacheStorage,
         checksumProducer: BaseURLChecksumProducer,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         patcher: XcodeProjectPatcher,
@@ -110,12 +110,12 @@ final class PatchedProjectBuilder {
     
     
     private func obtainTargetsForBuild(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
+        cacheStorage: BuildProductCacheStorage,
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
         let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredFrameworks)
-        let cachedFrameworkTargets = obtainCachedTargets(targetInfos: frameworkTargets)
+        let cachedFrameworkTargets = try obtainCachedTargets(targetInfos: frameworkTargets)
         let frameworkTargetsForBuild = frameworkTargets.filter { targetInfo in
             cachedFrameworkTargets.read(targetInfo) == nil
         }
@@ -198,44 +198,31 @@ final class PatchedProjectBuilder {
     }
     
     private func saveArtifacts(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
+        cacheStorage: BuildProductCacheStorage,
         for targetInfos: [TargetInfo<BaseChecksum>],
         at path: String) throws
     {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
-        let dispatchGroup = DispatchGroup()
-        let array = NSArray(array: artifacts)
-        array.enumerateObjects(options: .concurrent) { obj, key, stop in
-            guard let artifact = obj as? TargetBuildArtifact<BaseChecksum> else {
-                return
-            }
+        try artifacts.asyncConcurrentEnumerated { (artifact, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: artifact.targetInfo)
             let dsymCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: artifact.targetInfo)
-            dispatchGroup.enter()
             cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath) {
                 cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath) {
-                    dispatchGroup.leave()
+                    completion()
                 }
             }
         }
-        dispatchGroup.wait()
     }
     
     private func obtainCachedTargets(
         targetInfos: [TargetInfo<BaseChecksum>])
-        -> ThreadSafeDictionary<TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>>
+        throws -> ThreadSafeDictionary<TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>>
     {
         let cachedTargets = ThreadSafeDictionary<
             TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>
             >()
-        let dispatchGroup = DispatchGroup()
-        let array = NSArray(array: targetInfos)
-        array.enumerateObjects(options: .concurrent) { obj, key, stop in
-            dispatchGroup.enter()
-            guard let targetInfo = obj as? TargetInfo<BaseChecksum> else {
-                dispatchGroup.leave()
-                return
-            }
+        
+        try targetInfos.asyncConcurrentEnumerated { (targetInfo, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
@@ -248,14 +235,13 @@ final class PatchedProjectBuilder {
                         case .notExist:
                             break
                         }
-                        dispatchGroup.leave()
+                        completion()
                     }
                 case .notExist:
-                    dispatchGroup.leave()
+                    completion()
                 }
             }
         }
-        dispatchGroup.wait()
         return cachedTargets
     }
 }

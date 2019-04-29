@@ -5,26 +5,19 @@ import ShellCommand
 import Utility
 import Toolkit
 
-public final class PrepareRemoteCacheCommand: Command {
+public final class UploadRemoteCacheCommand: Command {
     
-    public let command = "prepareRemoteCache"
-    public let overview = "Prepare remote cache"
+    public let command = "uploadRemoteCache"
+    public let overview = "Upload remote cache"
     
     enum Arguments: String, CommandArgument {
-        case sourcePath
         case environmentFilePath
     }
     
     private let environmentFilePathArgument: OptionArgument<String>
-    private let sourcePathArgument: OptionArgument<String>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
-        sourcePathArgument = subparser.add(
-            option: Arguments.sourcePath.optionString,
-            kind: String.self,
-            usage: "Specify source path"
-        )
         environmentFilePathArgument = subparser.add(
             option: Arguments.environmentFilePath.optionString,
             kind: String.self,
@@ -33,13 +26,6 @@ public final class PrepareRemoteCacheCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result) throws {
-        
-        let sourcePath: String
-        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
-            sourcePath = sourcePathArgumentValue
-        } else {
-            sourcePath = try obtainSourcePath()
-        }
         
         let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
             "Parse environment parameters"
@@ -58,39 +44,16 @@ public final class PrepareRemoteCacheCommand: Command {
         )
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let cacheStorageFactory = CacheStorageFactoryImpl(fileManager: fileManager)
-        let preparer = RemoteCachePreparer(
+        let uploader = RemoteCacheUploader(
             fileManager: fileManager,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory
         )
-        
-        try TimeProfiler.measure("Prepare remote cache") {
-            try preparer.prepare(
-                params: params,
-                sourcePath: sourcePath
-            )
+
+        try TimeProfiler.measure("Upload remote cache") {
+            try uploader.upload(params: params)
         }
     }
-    
-    private func obtainSourcePath() throws -> String {
-        let command = ShellCommand(
-            launchPath: "/usr/bin/git",
-            arguments: [
-                "rev-parse",
-                "--show-toplevel"
-            ],
-            environment: [:]
-        )
-        let shellCommandExecutor = ShellCommandExecutorImpl()
-        let result = shellCommandExecutor.execute(command: command)
-        guard let output = result.output,
-            result.terminationStatus == 0
-            else
-        {
-            throw RemoteCachePreparerError.unableToObtainSourcePath
-        }
-        // Remove trailing new line
-        return output.chop()
-    }
+
 }

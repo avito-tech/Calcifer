@@ -225,7 +225,8 @@ let package = Package(
             name: "Mock",
             dependencies: [
                 "ShellCommand"
-            ]
+            ],
+            path: "Tests/Mock/"
         ),
     ]
 )

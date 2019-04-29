@@ -3,7 +3,7 @@ import XcodeBuildEnvironmentParametersParser
 import XcodeProjectChecksumCalculator
 import Checksum
 
-final class TargetInfoFilter {
+public final class TargetInfoFilter {
     
     private let targetInfoProvider: TargetInfoProvider<BaseChecksum>
     
