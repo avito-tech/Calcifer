@@ -57,8 +57,8 @@ final class PatchedProjectBuilder {
         }
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
         // If we do not need to store an artifact, then we don’t need to build it.
-        // The bundle targates are filtered out because they are already inside some framework (cocoapods does this)
-        // If any file in the bundle has changed, then all dependencies will be rebuilded.
+        // The bundle targets are filtered out because they are already inside some framework (cocoapods does this)
+        // If any file in the bundle has changed, then all dependencies will be rebuilt.
         // Because their checksum has changed.
         if targetNamesForBuild.count > 0 {
             Logger.verbose("Target for build: \(targetNamesForBuild)")
@@ -114,20 +114,15 @@ final class PatchedProjectBuilder {
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
-        let frameworkTargets = requiredFrameworks.filter { targetInfo in
-            if case .bundle = targetInfo.productType {
-                return false
-            }
-            return true
-        }
+        let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredFrameworks)
         let cachedFrameworkTargets = obtainCachedTargets(targetInfos: frameworkTargets)
-        let frameworkTargetForBuild = frameworkTargets.filter { targetInfo in
+        let frameworkTargetsForBuild = frameworkTargets.filter { targetInfo in
             cachedFrameworkTargets.read(targetInfo) == nil
         }
 
         let connectedBundleTargets = requiredFrameworks.filter { targetInfo in
             if case .bundle = targetInfo.productType {
-                let connectedFrameworkTarget = frameworkTargetForBuild.first(
+                let connectedFrameworkTarget = frameworkTargetsForBuild.first(
                     where: { frameworkTargetInfo -> Bool in
                         frameworkTargetInfo.dependencies.contains(targetInfo.targetName)
                     }
@@ -137,7 +132,7 @@ final class PatchedProjectBuilder {
             return false
         }
         // The bundle is already in the framework (this is done by cocoapods)
-        return frameworkTargetForBuild + connectedBundleTargets
+        return frameworkTargetsForBuild + connectedBundleTargets
     }
     
     private func targetInfosForIntegrationToPatchedProject(
@@ -244,10 +239,10 @@ final class PatchedProjectBuilder {
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
                 switch frameworkResult {
-                case .result(_):
+                case .result:
                     self.cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
                         switch dSYMResult {
-                        case .result(_):
+                        case .result:
                             cachedTargets.write(targetInfo, for: targetInfo)
                         case .notExist:
                             break

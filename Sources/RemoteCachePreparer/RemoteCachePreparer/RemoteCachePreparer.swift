@@ -20,7 +20,12 @@ final class RemoteCachePreparer {
         self.fileManager = fileManager
     }
     
-    func prepare(params: XcodeBuildEnvironmentParameters, sourcePath: String) throws {
+    func prepare(
+        params: XcodeBuildEnvironmentParameters,
+        sourcePath: String,
+        uploadCache: Bool)
+        throws
+    {
         let podsProjectPath = params.podsProjectPath
         
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
@@ -37,13 +42,13 @@ final class RemoteCachePreparer {
         }
         try targetChecksumProvider.saveChecksumToFile()
         
-        let cacheStorage = try createCacheStorage()
+        let cacheStorage = try createCacheStorage(shouldUploadCache: uploadCache)
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
-        let podsTargetName = "Pods-\(params.targetName)"
         
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
-            try targetInfoFilter.obtainRequiredTargets(
-                targetName: podsTargetName,
+            try obtainRequiredTargets(
+                params: params,
+                targetInfoFilter: targetInfoFilter,
                 buildParametersChecksum: paramsChecksum
             )
         }
@@ -159,7 +164,9 @@ final class RemoteCachePreparer {
         )
     }
     
-    private func createCacheStorage() throws -> DefaultMixedFrameworkCacheStorage {
+    private func createCacheStorage(shouldUploadCache: Bool)
+        throws -> DefaultMixedFrameworkCacheStorage
+    {
         let localCacheDirectoryPath = fileManager.calciferDirectory()
             .appendingPathComponent("localCache")
         let localStorage = LocalBuildProductCacheStorage<BaseChecksum>(
@@ -184,8 +191,30 @@ final class RemoteCachePreparer {
             fileManager: fileManager,
             localCacheStorage: localStorage,
             remoteCacheStorage: remoteStorage,
-            shouldUpload: true
+            shouldUpload: shouldUploadCache
         )
+    }
+    
+    private func obtainRequiredTargets(
+        params: XcodeBuildEnvironmentParameters,
+        targetInfoFilter: TargetInfoFilter,
+        buildParametersChecksum: BaseChecksum)
+        throws -> [TargetInfo<BaseChecksum>]
+    {
+        let calciferPodsTargetName = "Pods-\(params.targetName)-Calcifer"
+        let calciferPodsTargetInfos = try targetInfoFilter.obtainRequiredTargets(
+            targetName: calciferPodsTargetName,
+            buildParametersChecksum: buildParametersChecksum
+        )
+        if calciferPodsTargetInfos.count > 0 {
+            return calciferPodsTargetInfos
+        }
+        let podsTargetName = "Pods-\(params.targetName)"
+        let targetInfos = try targetInfoFilter.obtainRequiredTargets(
+            targetName: podsTargetName,
+            buildParametersChecksum: buildParametersChecksum
+        )
+        return targetInfos
     }
     
     func buildEnvironmentParametersPath() -> String {

@@ -25,7 +25,7 @@ public final class BuildSourcePathProviderImpl: BuildSourcePathProvider {
         let sorted = sourceMap.keys.sorted { (first, second) -> Bool in
             first.pathComponents().count < second.pathComponents().count
         }
-        guard let buildPath = sorted.first,  let sourceBuildPath = sourceMap[buildPath] else {
+        guard let buildPath = sorted.first, let sourceBuildPath = sourceMap[buildPath] else {
             throw DSYMSymbolizerError.unableToFindBuildSourcePath(binaryPath: binaryPath)
         }
         if buildPath == sourceBuildPath {
@@ -103,7 +103,7 @@ public final class BuildSourcePathProviderImpl: BuildSourcePathProvider {
             let components = line.split(separator: " ")
             if components.count >= 5, components[4] == "SO" {
                 let path = components[5...].joined(separator: " ")
-                // filter pathes from build folder and from some system
+                // filter paths from build folder and from some system
                 if path.contains(".build") == false &&
                     path.contains("/Library/Caches/") == false &&
                         path.contains("Target Support Files") == false
@@ -118,6 +118,6 @@ public final class BuildSourcePathProviderImpl: BuildSourcePathProvider {
                 binaryPath: binaryPath
             )
         }
-        return Array(uniqPathList)
+        return uniqPathList
     }
 }

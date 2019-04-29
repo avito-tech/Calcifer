@@ -58,6 +58,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
     {
         switch result {
         case let .success(url):
+            // I move file because URLSession remove it after queue switch
             let newURL = url.deletingLastPathComponent()
                 .appendingPathComponent(UUID().uuidString)
             catchError { [weak self] in try self?.fileManager.moveItem(at: url, to: newURL) }
@@ -70,7 +71,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
             }
             break
         case let .failure(error):
-            Logger.verbose("Download cache for \(cacheKey) error \(error?.localizedDescription ?? "-")")
+            Logger.verbose("Download cache for \(cacheKey) failure \(error?.localizedDescription ?? "-")")
             completion(.notExist)
             break
         }
@@ -110,7 +111,7 @@ public final class GradleRemoteBuildProductCacheStorage<ChecksumType: Checksum>:
         }
     }
     
-    func gradleKey(for cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
+    private func gradleKey(for cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
         let string = cacheKey.productType.rawValue + "-" +
             cacheKey.productName + "-" +
             cacheKey.checksum.stringValue

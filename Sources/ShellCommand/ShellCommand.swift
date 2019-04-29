@@ -2,9 +2,9 @@ import Foundation
 
 public struct ShellCommand: CustomStringConvertible {
     
-    let launchPath: String
-    let arguments: [String]
-    let environment: [String: String]
+    public let launchPath: String
+    public let arguments: [String]
+    public let environment: [String: String]
     
     public var description: String {
         return "\(launchPath) \(arguments.joined(separator: " "))"

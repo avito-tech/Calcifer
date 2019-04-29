@@ -13,10 +13,12 @@ public final class PrepareRemoteCacheCommand: Command {
     enum Arguments: String, CommandArgument {
         case sourcePath
         case environmentFilePath
+        case uploadCache
     }
     
     private let environmentFilePathArgument: OptionArgument<String>
     private let sourcePathArgument: OptionArgument<String>
+    private let uploadCacheArgument: OptionArgument<Bool>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
@@ -29,6 +31,11 @@ public final class PrepareRemoteCacheCommand: Command {
             option: Arguments.environmentFilePath.optionString,
             kind: String.self,
             usage: "Specify environment file path"
+        )
+        uploadCacheArgument = subparser.add(
+            option: Arguments.uploadCache.optionString,
+            kind: Bool.self,
+            usage: "Should upload cache"
         )
     }
     
@@ -52,12 +59,20 @@ public final class PrepareRemoteCacheCommand: Command {
             }
         }
         
+        let uploadCache: Bool
+        if let uploadCacheArgumentValue = arguments.get(self.uploadCacheArgument) {
+            uploadCache = uploadCacheArgumentValue
+        } else {
+            uploadCache = false
+        }
+        
         let preparer = RemoteCachePreparer(fileManager: FileManager.default)
         
         try TimeProfiler.measure("Prepare remote cache") {
             try preparer.prepare(
                 params: params,
-                sourcePath: sourcePath
+                sourcePath: sourcePath,
+                uploadCache: uploadCache
             )
         }
     }

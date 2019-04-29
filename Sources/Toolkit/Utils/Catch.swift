@@ -5,6 +5,6 @@ public func catchError<T>(_ action: () throws -> (T)) -> T {
         return try action()
     } catch {
         Logger.error(error.localizedDescription)
-        fatalError()
+        fatalError(error.localizedDescription)
     }
 }
