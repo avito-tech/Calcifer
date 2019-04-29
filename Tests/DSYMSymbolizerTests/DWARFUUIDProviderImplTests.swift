@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 import ShellCommand
+import Mock
 @testable import DSYMSymbolizer
 
 public final class DWARFUUIDProviderImplTests: XCTestCase {

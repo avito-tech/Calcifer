@@ -1,5 +1,6 @@
 import Foundation
 import PathKit
+import Toolkit
 
 public protocol URLChecksumProducer: ChecksumProducer where Input == URL {}
 
@@ -12,56 +13,21 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
     }
     
     public func checksum(input: URL) throws -> BaseChecksum {
-        let path = input.path
-        let resultChecksum: BaseChecksum
-        let isFile = try checkIsFile(filePath: path)
-        if isFile {
-            resultChecksum = try checksum(for: input)
-        } else {
-            resultChecksum = try folderChecksum(path)
-        }
-        if resultChecksum == .zero {
+        let filesChecksum = try fileManager.files(at: input.path)
+            .map { URL(fileURLWithPath: $0) }
+            .map { checksum(for: $0) }
+            .aggregate()
+        if filesChecksum == .zero {
             throw ChecksumError.zeroChecksum(path: input.path)
         }
-        return resultChecksum
+        return filesChecksum
     }
     
-    private func checksum(for file: URL) throws -> BaseChecksum {
-        do {
-            // TODO: Read file by сhunk ( Chunk.md5() + Chunk.md5() )
-            let string = try Data(contentsOf: file).md5()
-            return BaseChecksum(string)
-        } catch {
-            throw error
-        }
-    }
-    
-    private func checkIsFile(filePath: String) throws -> Bool {
-        var isDirectory: ObjCBool = false
-        let fileExist = fileManager.fileExists(atPath: filePath, isDirectory: &isDirectory)
-        if fileExist == false {
-            throw ChecksumError.fileDoesntExist(path: filePath)
-        }
-        return !isDirectory.boolValue
-    }
-    
-    private func folderChecksum(_ path: String) throws -> BaseChecksum {
-        let enumerator = fileManager.enumerator(atPath: path)
-        var filesChecksums = [BaseChecksum]()
-        guard let allElements = enumerator?.allObjects as? [String] else {
-            throw ChecksumError.unableToEnumerateDirectory(path: path)
-        }
-        let sortedElements = allElements.sorted()
-        for element in sortedElements {
-            let elementPath = path.appendingPathComponent(element)
-            let isFile = try checkIsFile(filePath: elementPath)
-            if isFile {
-                let fileURL = URL(fileURLWithPath: elementPath)
-                let checksumValue = try checksum(for: fileURL)
-                filesChecksums.append(checksumValue)
-            }
-        }
-        return try filesChecksums.aggregate()
+    private func checksum(for file: URL) -> BaseChecksum {
+        // TODO: Read file by сhunk ( Chunk.md5() + Chunk.md5() )
+        let data = catchError { try Data(contentsOf: file) }
+        let string = data.md5()
+        return BaseChecksum(string)
     }
     
 }

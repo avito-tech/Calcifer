@@ -30,7 +30,7 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         let target = PBXObjectFactory.target()
         var cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
-        let expectedChecksum = target.filesPathes(sourceRoot: sourceRoot)
+        let expectedChecksum = target.filesPaths(sourceRoot: sourceRoot)
         let checksumHolder = try? builder.build(
             target: target,
             sourceRoot: sourceRoot,
@@ -48,8 +48,8 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         )
         var cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
-        let filesPathes = targetWithDependencies.filesPathes(sourceRoot: sourceRoot)
-        let expectedChecksum = target.filesPathes(sourceRoot: sourceRoot) + filesPathes
+        let filesPaths = targetWithDependencies.filesPaths(sourceRoot: sourceRoot)
+        let expectedChecksum = target.filesPaths(sourceRoot: sourceRoot) + filesPaths
 
         let checksumHolder = try? builder.build(
             target: targetWithDependencies,

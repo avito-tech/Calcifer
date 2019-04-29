@@ -60,7 +60,7 @@ final class PBXObjectFactory {
 }
 
 extension PBXTarget {
-    func filesPathes(sourceRoot: Path) -> String {
+    func filesPaths(sourceRoot: Path) -> String {
         return fileElements().compactMap({
             guard let filePath = $0.path else {
                 return sourceRoot.url.absoluteString

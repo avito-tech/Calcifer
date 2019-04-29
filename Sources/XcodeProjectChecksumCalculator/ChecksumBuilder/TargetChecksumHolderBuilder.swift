@@ -43,11 +43,12 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         
         let summarizedChecksum = try summarizedChecksums.aggregate()
         
-        guard let productTypeName = target.productType?.rawValue,
-            let productType = TargetProductType(rawValue: productTypeName) else {
-                throw XcodeProjectChecksumCalculatorError.emptyProductType(
-                    target: target.name
-                )
+        var productType: TargetProductType
+        if let productTypeName = target.productType?.rawValue,
+            let currentProductType = TargetProductType(rawValue: productTypeName) {
+             productType = currentProductType
+        } else {
+            productType = .none
         }
         
         let productName = try obtainProductName(for: target, type: productType)

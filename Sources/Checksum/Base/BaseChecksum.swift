@@ -18,8 +18,15 @@ public final class BaseChecksum: Checksum {
     }
     
     public static func + (left: BaseChecksum, right: BaseChecksum) throws -> BaseChecksum {
-        let string = (left.stringValue + right.stringValue).md5()
-        return BaseChecksum(string)
+        if left == .zero {
+            return right
+        }
+        if right == .zero {
+            return left
+        }
+        let stringValue = left.stringValue + right.stringValue
+        let stringCheckum = stringValue.md5()
+        return BaseChecksum(stringCheckum)
     }
     
     public static var zero: BaseChecksum {

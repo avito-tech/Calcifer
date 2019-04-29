@@ -28,4 +28,18 @@ public extension String {
     static func path(withComponents components: [String]) -> String {
         return NSString.path(withComponents: components)
     }
+    
+    func relativePath(to rootPath: String) -> String? {
+        let rootComponents = rootPath.pathComponents()
+        let components = pathComponents()
+        var equalIndex = 0
+        for (index, rootComponent) in rootComponents.enumerated() {
+            if components[index] == rootComponent {
+                equalIndex = index
+            } else {
+                return nil
+            }
+        }
+        return String.path(withComponents: Array(components.dropFirst(equalIndex)))
+    }
 }

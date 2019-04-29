@@ -124,6 +124,13 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        .testTarget(
+            name: "XcodeProjectBuilderTests",
+            dependencies: [
+                "XcodeProjectBuilder",
+                "Mock"
+            ]
+        ),
         // MARK: XcodeProjectChecksumCalculator
         .target(
             name: "XcodeProjectChecksumCalculator",
@@ -163,8 +170,7 @@ let package = Package(
             name: "DSYMSymbolizerTests",
             dependencies: [
                 "DSYMSymbolizer",
-                "ShellCommand",
-                "Toolkit"
+                "Mock"
             ]
         ),
         // MARK: XcodeBuildEnvironmentParametersParser
@@ -212,6 +218,13 @@ let package = Package(
             dependencies: [
                 "SwiftyBeaver",
                 "Utility"
+            ]
+        ),
+        // MARK: Mock
+        .target(
+            name: "Mock",
+            dependencies: [
+                "ShellCommand"
             ]
         ),
     ]

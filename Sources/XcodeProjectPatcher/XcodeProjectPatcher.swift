@@ -33,6 +33,9 @@ public final class XcodeProjectPatcher {
                 // (One inside the framework, the other in the source).
                 // Perhaps this can be corrected in another way.
                 let target = project.targets[index]
+                for buildPhase in target.buildPhases {
+                    pbxproj.delete(object: buildPhase)
+                }
                 removeGroup(for: target, pbxproj: pbxproj, project: project)
                 if let product = target.product {
                     pbxproj.delete(object: product)

@@ -85,12 +85,48 @@ public final class BuildArtifactIntegrator {
         if fileManager.fileExists(atPath: artifactDestination.path) == false {
             return false
         }
-        let artifactChecksum = try checksumProducer.checksum(input: artifactPath)
-        // We do not throw an exception if there is nothing along this path. Just overwrite. This is a valid case.
-        guard let destinationChecksum = try? checksumProducer.checksum(input: artifactDestination) else {
+        
+        let artifactFiles = fileManager.files(at: artifactPath.path)
+        var destinationFiles = fileManager.files(at: artifactDestination.path)
+        
+        // Filter patched dSYM plist
+        if artifactDestination.lastPathComponent.contains(".framework.dSYM") {
+            destinationFiles = destinationFiles.filter({ path -> Bool in
+                if path.contains("/Contents/Resources") {
+                    return path.pathExtension() != "plist"
+                }
+                return true
+            })
+        }
+        
+        if destinationFiles.count != artifactFiles.count {
             return false
         }
-        return artifactChecksum == destinationChecksum
+        
+        let destinationFilesDictionary = Dictionary(
+            uniqueKeysWithValues: destinationFiles.map {
+                ($0.relativePath(to: artifactDestination.path), $0)
+            }
+        )
+        
+        for artifactFile in artifactFiles {
+            let artifactFileRelativePath = artifactFile.relativePath(to: artifactPath.path)
+            guard let destinationFile = destinationFilesDictionary[artifactFileRelativePath]
+                else { return false }
+            let artifactFileSize = fileManager.fileSize(at: artifactFile)
+            let destinationFileSize = fileManager.fileSize(at: artifactFile)
+            if artifactFileSize != destinationFileSize {
+                return false
+            }
+            let artifactFileURL = URL(fileURLWithPath: artifactFile)
+            let destinationFileURL = URL(fileURLWithPath: destinationFile)
+            let artifactFileData = try Data(contentsOf: artifactFileURL)
+            let destinationFileData = try Data(contentsOf: destinationFileURL)
+            if artifactFileData != destinationFileData {
+                return false
+            }
+        }
+        return true
     }
     
     private func obtainProductDestination<ChecksumType: Checksum>(

@@ -32,7 +32,14 @@ final class ArtifactIntegrator {
             TargetBuildArtifact<BaseChecksum>
         >()
         
-        for targetInfo in targetInfos {
+        let dispatchGroup = DispatchGroup()
+        let array = NSArray(array: targetInfos)
+        array.enumerateObjects(options: .concurrent) { obj, key, stop in
+            dispatchGroup.enter()
+            guard let targetInfo = obj as? TargetInfo<BaseChecksum> else {
+                dispatchGroup.leave()
+                return
+            }
             
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
@@ -47,9 +54,12 @@ final class ArtifactIntegrator {
                         dsymPath: dSYMCacheValue.path
                     )
                     artifacts.write(artifact, for: targetInfo)
+                    dispatchGroup.leave()
                 }
             }
         }
+        dispatchGroup.wait()
+
         let destionations = try integrator.integrate(artifacts: artifacts.values, to: path)
         return destionations
     }

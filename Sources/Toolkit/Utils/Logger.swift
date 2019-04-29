@@ -10,12 +10,12 @@ public final class Logger {
         if let _ = ProcessInfo.processInfo.environment["VERBOSE"] {
             minLogLevel = .verbose
         } else {
-            minLogLevel = debugged ? .verbose : .info
+            minLogLevel = isDebuggerAttached ? .verbose : .info
         }
         
         let consoleDestination = ConsoleDestination()
         consoleDestination.asynchronously = false
-        consoleDestination.useTerminalColors = debugged == false
+        consoleDestination.useTerminalColors = isDebuggerAttached == false
         consoleDestination.minLevel = minLogLevel
         
         let fileDestination = FileDestination()
@@ -72,12 +72,12 @@ public final class Logger {
         return dateFormatter.string(from: date)
     }
     
-    private static var debugged: Bool = {
+    private static var isDebuggerAttached: Bool = {
         var info = kinfo_proc()
         var mib : [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
         var size = MemoryLayout<kinfo_proc>.stride
         let junk = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
-        return (info.kp_proc.p_flag & P_TRACED) != 0
+        return (info.kp_proc.p_flag & P_TRACED) == P_TRACED
     }()
     
 }

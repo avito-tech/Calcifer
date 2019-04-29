@@ -15,6 +15,7 @@ public final class DSYMSymbolizer {
         self.fileManager = fileManager
     }
     
+    // LLDB documentation https://jonasdevlieghere.com/static/lldb/use/symbols.html
     // Some lldb related source https://github.com/llvm-mirror/lldb/blob/master/source/Plugins/SymbolVendor/MacOSX/SymbolVendorMacOSX.cpp
     // Post about patching https://medium.com/@maxraskin/background-1b4b6a9c65be
     public func symbolize(
@@ -40,8 +41,8 @@ public final class DSYMSymbolizer {
         try generatePlist(
             dsymBundlePath: dsymBundlePath,
             binaryPathInApp: binaryPathInApp,
-            sourcePath: sourcePath,
-            buildSourcePath: buildSourcePath,
+            localSourcePath: sourcePath,
+            remoteSourcePath: buildSourcePath,
             binaryUUIDs: binaryUUIDs
         )
     }
@@ -84,8 +85,8 @@ public final class DSYMSymbolizer {
     private func generatePlist(
         dsymBundlePath: String,
         binaryPathInApp: String,
-        sourcePath: String,
-        buildSourcePath: String,
+        localSourcePath: String,
+        remoteSourcePath: String,
         binaryUUIDs: [DWARFUUID]) throws
     {
         for uuid in binaryUUIDs {
@@ -97,8 +98,8 @@ public final class DSYMSymbolizer {
             let dwarfFilePath = try obtainDSYMBinaryPath(dsymBundlePath: dsymBundlePath)
             let content : [String: String] = [
                 "DBGArchitecture": uuid.architecture,
-                "DBGBuildSourcePath": buildSourcePath,
-                "DBGSourcePath": sourcePath,
+                "DBGBuildSourcePath": remoteSourcePath,
+                "DBGSourcePath": localSourcePath,
                 "DBGDSYMPath": dwarfFilePath,
                 "DBGSymbolRichExecutable": binaryPathInApp
             ]

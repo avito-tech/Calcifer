@@ -17,7 +17,7 @@ public final class BuildStepIntegrator {
                     target: target,
                     pbxproj: pbxproj
                 )
-                try updateBuildPhases(
+                try updateCalciferBuildPhases(
                     target: target,
                     pbxproj: pbxproj,
                     binaryPath: binaryPath
@@ -33,16 +33,16 @@ public final class BuildStepIntegrator {
             let file = frameworkBuildPhase.files.first(where: {
                 $0.file?.path == podsFilePath
             })
-            if let podFile = file {
-                if let index = frameworkBuildPhase.files.firstIndex(of: podFile) {
+            if let frameworkFile = file {
+                if let index = frameworkBuildPhase.files.firstIndex(of: frameworkFile) {
                     frameworkBuildPhase.files.remove(at: index)
                 }
-                pbxproj.delete(object: podFile)
+                pbxproj.delete(object: frameworkFile)
             }
         }
     }
     
-    private func updateBuildPhases(
+    private func updateCalciferBuildPhases(
         target: PBXTarget,
         pbxproj: PBXProj,
         binaryPath: String)
