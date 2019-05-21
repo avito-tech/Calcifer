@@ -13,6 +13,8 @@ public final class XcodeProjectBuilder {
         let command = ShellCommand(
             launchPath: "/usr/bin/xcodebuild",
             arguments: [
+                "BUILD_DIR=\(config.buildDirectoryPath)",
+                "OBJROOT=\(config.buildDirectoryPath)",
                 "ARCHS=\(config.architecture.rawValue)",
                 "ONLY_ACTIVE_ARCH=\(config.onlyActiveArchitecture ? "YES" : "NO")",
                 "-project",

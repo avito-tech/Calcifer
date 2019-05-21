@@ -42,12 +42,15 @@ final class PatchedProjectBuilder {
     
     public func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
+        buildDirectoryPath: String,
         requiredTargets: [TargetInfo<BaseChecksum>])
         throws
     {
         
         let podsProjectPath = params.podsProjectPath
         let patchedProjectPath = params.patchedProjectPath
+        let cacheBuildPath = buildDirectoryPath
+            .appendingPathComponent("\(params.configuration)-\(params.platformName)")
         
         let targetsForBuild = try TimeProfiler.measure("Obtain targets for build") {
             try obtainTargetsForBuild(
@@ -56,6 +59,12 @@ final class PatchedProjectBuilder {
             )
         }
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
+        
+        let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
+            requiredTargets: requiredTargets,
+            targetsForBuild: targetsForBuild
+        )
+        
         // If we do not need to store an artifact, then we don’t need to build it.
         // The bundle targets are filtered out because they are already inside some framework (cocoapods does this)
         // If any file in the bundle has changed, then all dependencies will be rebuilt.
@@ -70,16 +79,7 @@ final class PatchedProjectBuilder {
                 )
             }
             
-            let cacheBuildPath = params.projectDirectory
-                .appendingPathComponent("build")
-                .appendingPathComponent("\(params.configuration)-\(params.platformName)")
-            
-            let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
-                requiredTargets: requiredTargets,
-                targetsForBuild: targetsForBuild
-            )
-            
-            try TimeProfiler.measure("Integrate artifacts to patched project") {
+            try TimeProfiler.measure("Integrate artifacts to build directory") {
                 try artifactIntegrator.integrateArtifacts(
                     checksumProducer: checksumProducer,
                     cacheStorage: cacheStorage,
@@ -92,6 +92,7 @@ final class PatchedProjectBuilder {
                 Logger.info("Started build project with \(targetNamesForBuild.count) targets")
                 try build(
                     params: params,
+                    buildDirectoryPath: buildDirectoryPath,
                     patchedProjectPath: patchedProjectPath
                 )
             }
@@ -105,6 +106,15 @@ final class PatchedProjectBuilder {
             }
         } else {
             Logger.info("Nothing to build")
+            // This is important for debugger work.
+            try TimeProfiler.measure("Integrate artifacts to build directory") {
+                try artifactIntegrator.integrateArtifacts(
+                    checksumProducer: checksumProducer,
+                    cacheStorage: cacheStorage,
+                    targetInfos: targetInfosForPatchedProjectIntegration,
+                    to: cacheBuildPath
+                )
+            }
         }
     }
     
@@ -162,6 +172,7 @@ final class PatchedProjectBuilder {
     
     private func createTargetBuildConfig(
         params: XcodeBuildEnvironmentParameters,
+        buildDirectoryPath: String,
         patchedProjectPath: String)
         throws -> XcodeProjectBuildConfig
     {
@@ -174,6 +185,7 @@ final class PatchedProjectBuilder {
         let config = XcodeProjectBuildConfig(
             platform: platform,
             architecture: architecture,
+            buildDirectoryPath: buildDirectoryPath,
             projectPath: patchedProjectPath,
             targetName: "Aggregate",
             configurationName: params.configuration,
@@ -184,10 +196,12 @@ final class PatchedProjectBuilder {
     
     private func build(
         params: XcodeBuildEnvironmentParameters,
+        buildDirectoryPath: String,
         patchedProjectPath: String) throws
     {
         let config = try createTargetBuildConfig(
             params: params,
+            buildDirectoryPath: buildDirectoryPath,
             patchedProjectPath: patchedProjectPath
         )
         // TODO: Get environment from /usr/bin/env
@@ -244,4 +258,5 @@ final class PatchedProjectBuilder {
         }
         return cachedTargets
     }
+    
 }

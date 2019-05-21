@@ -46,9 +46,7 @@ final class RemoteCacheUploader {
         try targetChecksumProvider.saveChecksumToFile()
         
         let localStorage = cacheStorageFactory.createLocalBuildProductCacheStorage()
-        let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
-            shouldUploadCache: true
-        )
+        let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage()
         
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {

@@ -10,6 +10,7 @@ public final class BuildXcodeProjectCommand: Command {
     public let overview = "Builds xcode project"
     
     enum Arguments: String, CommandArgument {
+        case buildDirectoryPath
         case projectPath
         case configuration
         case architecture
@@ -20,6 +21,7 @@ public final class BuildXcodeProjectCommand: Command {
         shellExecutor: ShellCommandExecutorImpl()
     )
     
+    private let buildDirectoryPathArgument: OptionArgument<String>
     private let projectPathArgument: OptionArgument<String>
     private let configurationArgument: OptionArgument<String>
     private let architectureArgument: OptionArgument<String>
@@ -27,6 +29,11 @@ public final class BuildXcodeProjectCommand: Command {
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
+        buildDirectoryPathArgument = subparser.add(
+            option: Arguments.buildDirectoryPath.optionString,
+            kind: String.self,
+            usage: "Specify build directory path"
+        )
         projectPathArgument = subparser.add(
             option: Arguments.projectPath.optionString,
             kind: String.self,
@@ -50,6 +57,10 @@ public final class BuildXcodeProjectCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result) throws {
+        let buildDirectoryPath = try ArgumentsReader.validateNotNil(
+            arguments.get(self.buildDirectoryPathArgument),
+            name: Arguments.buildDirectoryPath.rawValue
+        )
         let projectPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
@@ -80,6 +91,7 @@ public final class BuildXcodeProjectCommand: Command {
         let config = XcodeProjectBuildConfig(
             platform: platform,
             architecture: architecture,
+            buildDirectoryPath: buildDirectoryPath,
             projectPath: projectPath,
             targetName: "Aggregate",
             configurationName: configuration,

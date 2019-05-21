@@ -11,8 +11,7 @@ public protocol CacheStorageFactory {
     func createLocalBuildProductCacheStorage()
         -> BuildProductCacheStorage
     
-    func createRemoteBuildProductCacheStorage(shouldUploadCache: Bool)
-        throws -> BuildProductCacheStorage
+    func createRemoteBuildProductCacheStorage() throws -> BuildProductCacheStorage
 }
 
 public final class CacheStorageFactoryImpl: CacheStorageFactory {
@@ -27,9 +26,7 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
         throws -> BuildProductCacheStorage
     {
         let localStorage = createLocalBuildProductCacheStorage()
-        let remoteStorage = try createRemoteBuildProductCacheStorage(
-            shouldUploadCache: shouldUploadCache
-        )
+        let remoteStorage = try createRemoteBuildProductCacheStorage()
         return MixedBuildProductCacheStorage(
             fileManager: fileManager,
             localCacheStorage: localStorage,
@@ -50,7 +47,7 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
         return localStorage
     }
     
-    public func createRemoteBuildProductCacheStorage(shouldUploadCache: Bool)
+    public func createRemoteBuildProductCacheStorage()
         throws -> BuildProductCacheStorage
     {
         let gradleHost = "http://gradle-remote-cache-ios.k.avito.ru"

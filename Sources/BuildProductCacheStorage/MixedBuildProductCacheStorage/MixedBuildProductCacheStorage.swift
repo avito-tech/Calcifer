@@ -29,7 +29,7 @@ public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
         localCacheStorage.cached(for: cacheKey) { [weak self] result in
             switch result {
             case let .result(value):
-                Logger.verbose("Cache exists in local cache for \(cacheKey.productName) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
+                Logger.verbose("Cache exists in local cache for \(cacheKey.productName.deletingPathExtension()) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
                 completion(.result(value))
                 break
             case .notExist:

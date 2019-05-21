@@ -74,6 +74,8 @@ final class RemoteCachePreparer {
             integrator: buildArtifactIntegrator,
             cacheKeyBuilder: cacheKeyBuilder
         )
+        
+        let buildDirectoryPath = obtainBuildDirectoryPath()
 
         try TimeProfiler.measure("Prepare and build patched project if needed") {
             let patchedProjectBuilder = createPatchedProjectBuilder(
@@ -84,6 +86,7 @@ final class RemoteCachePreparer {
             )
             try patchedProjectBuilder.prepareAndBuildPatchedProjectIfNeeded(
                 params: params,
+                buildDirectoryPath: buildDirectoryPath,
                 requiredTargets: requiredTargets
             )
         }
@@ -104,6 +107,20 @@ final class RemoteCachePreparer {
                 for: integrated,
                 sourcePath: sourcePath,
                 fullProductName: params.fullProductName
+            )
+        }
+        
+        let intermediateFilesGenerator = IntermediateFilesGeneratorImpl(
+            fileManager: fileManager
+        )
+        try TimeProfiler.measure("Generate intermediate files") {
+            let targetsForIntermediateFiles = targetInfoFilter.frameworkTargetInfos(
+                requiredTargets
+            )
+            try intermediateFilesGenerator.generateIntermediateFiles(
+                params: params,
+                buildDirectoryPath: buildDirectoryPath,
+                requiredTargets: targetsForIntermediateFiles
             )
         }
         
@@ -166,6 +183,10 @@ final class RemoteCachePreparer {
         return fileManager
             .calciferDirectory()
             .appendingPathComponent("calciferenv.json")
+    }
+    
+    private func obtainBuildDirectoryPath() -> String {
+        return "/Users/Shared/remote-cache-build-folder.noindex/"
     }
     
 }
