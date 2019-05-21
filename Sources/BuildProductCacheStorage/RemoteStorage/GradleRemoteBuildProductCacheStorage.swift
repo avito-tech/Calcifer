@@ -7,13 +7,16 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
     
     private let gradleBuildCacheClient: GradleBuildCacheClient
     private let fileManager: FileManager
-    private let unzipQueue = DispatchQueue(label: "Queue for unzip")
+    private let unzip: Unzip
+    private let unzipQueue = DispatchQueue(label: "Queue for unzip", attributes: .concurrent)
     
     public init(
         gradleBuildCacheClient: GradleBuildCacheClient,
+        unzip: Unzip,
         fileManager: FileManager)
     {
         self.gradleBuildCacheClient = gradleBuildCacheClient
+        self.unzip = unzip
         self.fileManager = fileManager
     }
     
@@ -92,8 +95,10 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
                 if fileManager.fileExists(atPath: unzipResult.path) {
                     try fileManager.removeItem(at: unzipResult)
                 }
-                try TimeProfiler.measure("Unzip \(cacheKey.productName)") { [weak self] in
-                    try self?.fileManager.unzipItem(at: url, to: unzipURL)
+                try TimeProfiler.measure("Unzip with unzip util \(cacheKey.productName)") { [unzip] in
+                    // Duration of unzip with ZIPFoundation Some.framework is 1.23 s
+                    // Duration of unzip with /usr/bin/unzip Some.framework is 126.29 ms
+                    try unzip.unzip(url.path, to: unzipURL.path)
                 }
                 try fileManager.removeItem(at: url)
             }

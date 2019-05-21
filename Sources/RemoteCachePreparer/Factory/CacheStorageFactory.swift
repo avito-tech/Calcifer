@@ -17,9 +17,11 @@ public protocol CacheStorageFactory {
 public final class CacheStorageFactoryImpl: CacheStorageFactory {
     
     private let fileManager: FileManager
+    private let unzip: Unzip
     
-    init(fileManager: FileManager) {
+    init(fileManager: FileManager, unzip: Unzip) {
         self.fileManager = fileManager
+        self.unzip = unzip
     }
     
     public func createMixedCacheStorage(shouldUploadCache: Bool)
@@ -62,6 +64,7 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
         )
         let remoteStorage = GradleRemoteBuildProductCacheStorage(
             gradleBuildCacheClient: gradleClient,
+            unzip: unzip,
             fileManager: fileManager
         )
         return remoteStorage

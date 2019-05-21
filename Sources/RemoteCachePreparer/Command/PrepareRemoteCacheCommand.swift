@@ -1,4 +1,5 @@
 import XcodeBuildEnvironmentParametersParser
+import BuildProductCacheStorage
 import ArgumentsParser
 import Foundation
 import ShellCommand
@@ -57,9 +58,15 @@ public final class PrepareRemoteCacheCommand: Command {
             fileManager: fileManager
         )
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
-        let cacheStorageFactory = CacheStorageFactoryImpl(fileManager: fileManager)
+        let shellExecutor = ShellCommandExecutorImpl()
+        let unzip = Unzip(shellExecutor: shellExecutor)
+        let cacheStorageFactory = CacheStorageFactoryImpl(
+            fileManager: fileManager,
+            unzip: unzip
+        )
         let preparer = RemoteCachePreparer(
             fileManager: fileManager,
+            shellCommandExecutor: shellExecutor,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory

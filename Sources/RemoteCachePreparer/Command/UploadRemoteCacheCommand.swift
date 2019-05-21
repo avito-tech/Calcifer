@@ -1,4 +1,5 @@
 import XcodeBuildEnvironmentParametersParser
+import BuildProductCacheStorage
 import ArgumentsParser
 import Foundation
 import ShellCommand
@@ -39,11 +40,15 @@ public final class UploadRemoteCacheCommand: Command {
         }
         
         let fileManager = FileManager.default
+        let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(
             fileManager: fileManager
         )
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
-        let cacheStorageFactory = CacheStorageFactoryImpl(fileManager: fileManager)
+        let cacheStorageFactory = CacheStorageFactoryImpl(
+            fileManager: fileManager,
+            unzip: unzip
+        )
         let uploader = RemoteCacheUploader(
             fileManager: fileManager,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,

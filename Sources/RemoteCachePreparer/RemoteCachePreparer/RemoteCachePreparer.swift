@@ -14,7 +14,7 @@ final class RemoteCachePreparer {
     
     private let fileManager: FileManager
     private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
-    private let shellCommandExecutor = ShellCommandExecutorImpl()
+    private let shellCommandExecutor: ShellCommandExecutor
     private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
@@ -22,11 +22,13 @@ final class RemoteCachePreparer {
     
     init(
         fileManager: FileManager,
+        shellCommandExecutor: ShellCommandExecutor,
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory)
     {
         self.fileManager = fileManager
+        self.shellCommandExecutor = shellCommandExecutor
         self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
