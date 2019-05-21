@@ -20,6 +20,7 @@ public final class CommandRunner {
         )
         
         registry.register(command: PrepareRemoteCacheCommand.self)
+        registry.register(command: UploadRemoteCacheCommand.self)
         registry.register(command: ParseXcodeBuildEnvironmentParametersCommand.self)
         registry.register(command: CalculateXcodeProjectChecksumCommand.self)
         registry.register(command: CalculateXcodeProjectChecksumDiffCommand.self)

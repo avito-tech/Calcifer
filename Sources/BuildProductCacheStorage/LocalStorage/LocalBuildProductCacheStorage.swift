@@ -2,7 +2,7 @@ import Foundation
 import Checksum
 import Toolkit
 
-public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildProductCacheStorage {
+public final class LocalBuildProductCacheStorage: BuildProductCacheStorage {
 
     private let fileManager: FileManager
     private let cacheDirectoryPath: String
@@ -13,7 +13,7 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
     }
     
     // MARK: - FrameworkCacheStorage
-    public func cached(
+    public func cached<ChecksumType: Checksum>(
         for cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
     {
@@ -26,7 +26,7 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
         completion(.notExist)
     }
     
-    public func add(
+    public func add<ChecksumType: Checksum>(
         cacheKey: BuildProductCacheKey<ChecksumType>,
         at path: String,
         completion: @escaping () -> ())
@@ -49,14 +49,14 @@ public final class LocalBuildProductCacheStorage<ChecksumType: Checksum>: BuildP
         completion()
     }
     
-    @inline(__always) private func url(
+    @inline(__always) private func url<ChecksumType: Checksum>(
         to cacheKey: BuildProductCacheKey<ChecksumType>)
         -> URL
     {
         return URL(fileURLWithPath: path(to: cacheKey))
     }
     
-    private func path(to cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
+    private func path<ChecksumType: Checksum>(to cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
         var path = cacheDirectoryPath
             .appendingPathComponent(cacheKey.productType.rawValue)
             .appendingPathComponent(cacheKey.productName.deletingPathExtension())

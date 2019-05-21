@@ -10,7 +10,7 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     
     func test_add() {
         // Given
-        let storage = GradleRemoteBuildProductCacheStorage<BaseChecksum>(
+        let storage = GradleRemoteBuildProductCacheStorage(
             gradleBuildCacheClient: client,
             fileManager: fileManager
         )
@@ -44,7 +44,7 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     
     func test_cached() {
         // Given
-        let storage = GradleRemoteBuildProductCacheStorage<BaseChecksum>(
+        let storage = GradleRemoteBuildProductCacheStorage(
             gradleBuildCacheClient: client,
             fileManager: fileManager
         )

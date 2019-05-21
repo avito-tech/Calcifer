@@ -1,5 +1,6 @@
 import Foundation
 import Checksum
+import Toolkit
 
 public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProducer> {
     
@@ -19,6 +20,8 @@ public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProduc
             checksumProducer: checksumProducer
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
+        
+        Logger.info("XcodeProj checksum: \(checksumHolder.checksum.stringValue) for \(checksumHolder.description)")
         
         return TargetInfoProvider(
             checksumHolder: checksumHolder,

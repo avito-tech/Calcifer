@@ -11,7 +11,7 @@ import Toolkit
 
 final class PatchedProjectBuilder {
     
-    private let cacheStorage: DefaultMixedFrameworkCacheStorage
+    private let cacheStorage: BuildProductCacheStorage
     private let checksumProducer: BaseURLChecksumProducer
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
     private let patcher: XcodeProjectPatcher
@@ -21,7 +21,7 @@ final class PatchedProjectBuilder {
     private let artifactProvider: TargetBuildArtifactProvider
     
     init(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
+        cacheStorage: BuildProductCacheStorage,
         checksumProducer: BaseURLChecksumProducer,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         patcher: XcodeProjectPatcher,
@@ -42,12 +42,15 @@ final class PatchedProjectBuilder {
     
     public func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
+        buildDirectoryPath: String,
         requiredTargets: [TargetInfo<BaseChecksum>])
         throws
     {
         
         let podsProjectPath = params.podsProjectPath
         let patchedProjectPath = params.patchedProjectPath
+        let cacheBuildPath = buildDirectoryPath
+            .appendingPathComponent("\(params.configuration)-\(params.platformName)")
         
         let targetsForBuild = try TimeProfiler.measure("Obtain targets for build") {
             try obtainTargetsForBuild(
@@ -56,6 +59,12 @@ final class PatchedProjectBuilder {
             )
         }
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
+        
+        let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
+            requiredTargets: requiredTargets,
+            targetsForBuild: targetsForBuild
+        )
+        
         // If we do not need to store an artifact, then we don’t need to build it.
         // The bundle targets are filtered out because they are already inside some framework (cocoapods does this)
         // If any file in the bundle has changed, then all dependencies will be rebuilt.
@@ -70,16 +79,7 @@ final class PatchedProjectBuilder {
                 )
             }
             
-            let cacheBuildPath = params.projectDirectory
-                .appendingPathComponent("build")
-                .appendingPathComponent("\(params.configuration)-\(params.platformName)")
-            
-            let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
-                requiredTargets: requiredTargets,
-                targetsForBuild: targetsForBuild
-            )
-            
-            try TimeProfiler.measure("Integrate artifacts to patched project") {
+            try TimeProfiler.measure("Integrate artifacts to build directory") {
                 try artifactIntegrator.integrateArtifacts(
                     checksumProducer: checksumProducer,
                     cacheStorage: cacheStorage,
@@ -92,6 +92,7 @@ final class PatchedProjectBuilder {
                 Logger.info("Started build project with \(targetNamesForBuild.count) targets")
                 try build(
                     params: params,
+                    buildDirectoryPath: buildDirectoryPath,
                     patchedProjectPath: patchedProjectPath
                 )
             }
@@ -105,17 +106,26 @@ final class PatchedProjectBuilder {
             }
         } else {
             Logger.info("Nothing to build")
+            // This is important for debugger work.
+            try TimeProfiler.measure("Integrate artifacts to build directory") {
+                try artifactIntegrator.integrateArtifacts(
+                    checksumProducer: checksumProducer,
+                    cacheStorage: cacheStorage,
+                    targetInfos: targetInfosForPatchedProjectIntegration,
+                    to: cacheBuildPath
+                )
+            }
         }
     }
     
     
     private func obtainTargetsForBuild(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
+        cacheStorage: BuildProductCacheStorage,
         requiredFrameworks: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
         let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredFrameworks)
-        let cachedFrameworkTargets = obtainCachedTargets(targetInfos: frameworkTargets)
+        let cachedFrameworkTargets = try obtainCachedTargets(targetInfos: frameworkTargets)
         let frameworkTargetsForBuild = frameworkTargets.filter { targetInfo in
             cachedFrameworkTargets.read(targetInfo) == nil
         }
@@ -162,6 +172,7 @@ final class PatchedProjectBuilder {
     
     private func createTargetBuildConfig(
         params: XcodeBuildEnvironmentParameters,
+        buildDirectoryPath: String,
         patchedProjectPath: String)
         throws -> XcodeProjectBuildConfig
     {
@@ -174,6 +185,7 @@ final class PatchedProjectBuilder {
         let config = XcodeProjectBuildConfig(
             platform: platform,
             architecture: architecture,
+            buildDirectoryPath: buildDirectoryPath,
             projectPath: patchedProjectPath,
             targetName: "Aggregate",
             configurationName: params.configuration,
@@ -184,10 +196,12 @@ final class PatchedProjectBuilder {
     
     private func build(
         params: XcodeBuildEnvironmentParameters,
+        buildDirectoryPath: String,
         patchedProjectPath: String) throws
     {
         let config = try createTargetBuildConfig(
             params: params,
+            buildDirectoryPath: buildDirectoryPath,
             patchedProjectPath: patchedProjectPath
         )
         // TODO: Get environment from /usr/bin/env
@@ -198,44 +212,31 @@ final class PatchedProjectBuilder {
     }
     
     private func saveArtifacts(
-        cacheStorage: DefaultMixedFrameworkCacheStorage,
+        cacheStorage: BuildProductCacheStorage,
         for targetInfos: [TargetInfo<BaseChecksum>],
         at path: String) throws
     {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
-        let dispatchGroup = DispatchGroup()
-        let array = NSArray(array: artifacts)
-        array.enumerateObjects(options: .concurrent) { obj, key, stop in
-            guard let artifact = obj as? TargetBuildArtifact<BaseChecksum> else {
-                return
-            }
+        try artifacts.asyncConcurrentEnumerated { (artifact, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: artifact.targetInfo)
             let dsymCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: artifact.targetInfo)
-            dispatchGroup.enter()
             cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath) {
                 cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath) {
-                    dispatchGroup.leave()
+                    completion()
                 }
             }
         }
-        dispatchGroup.wait()
     }
     
     private func obtainCachedTargets(
         targetInfos: [TargetInfo<BaseChecksum>])
-        -> ThreadSafeDictionary<TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>>
+        throws -> ThreadSafeDictionary<TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>>
     {
         let cachedTargets = ThreadSafeDictionary<
             TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>
             >()
-        let dispatchGroup = DispatchGroup()
-        let array = NSArray(array: targetInfos)
-        array.enumerateObjects(options: .concurrent) { obj, key, stop in
-            dispatchGroup.enter()
-            guard let targetInfo = obj as? TargetInfo<BaseChecksum> else {
-                dispatchGroup.leave()
-                return
-            }
+        
+        try targetInfos.asyncConcurrentEnumerated { (targetInfo, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
@@ -248,14 +249,14 @@ final class PatchedProjectBuilder {
                         case .notExist:
                             break
                         }
-                        dispatchGroup.leave()
+                        completion()
                     }
                 case .notExist:
-                    dispatchGroup.leave()
+                    completion()
                 }
             }
         }
-        dispatchGroup.wait()
         return cachedTargets
     }
+    
 }

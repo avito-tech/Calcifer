@@ -49,6 +49,9 @@ public extension FileManager {
             }
             let sortedElements = allElements.sorted()
             for element in sortedElements {
+                if element.contains(".DS_Store") {
+                    continue
+                }
                 let elementPath = path.appendingPathComponent(element)
                 if isFile(elementPath) {
                     onFile(elementPath)

@@ -3,14 +3,12 @@ import Checksum
 
 public protocol BuildProductCacheStorage {
     
-    associatedtype ChecksumType: Checksum
-    
-    func cached(
+    func cached<ChecksumType: Checksum>(
         for cacheKey: BuildProductCacheKey<ChecksumType>,
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ()
     )
     
-    func add(
+    func add<ChecksumType: Checksum>(
         cacheKey: BuildProductCacheKey<ChecksumType>,
         at path: String,
         completion: @escaping () -> ()

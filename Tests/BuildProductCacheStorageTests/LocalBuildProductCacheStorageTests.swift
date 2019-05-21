@@ -20,7 +20,7 @@ public final class LocalBuildProductCacheStorageTests: XCTestCase {
     
     func test_addCache() {
         // Given
-        let storage = LocalBuildProductCacheStorage<BaseChecksum>(
+        let storage = LocalBuildProductCacheStorage(
             fileManager: fileManager,
             cacheDirectoryPath: cacheDirectoryPath
         )
