@@ -10,12 +10,13 @@ public final class XcodeProjectBuilder {
     }
     
     public func build(config: XcodeProjectBuildConfig, environment: [String: String]) throws {
+        let architectures = config.architectures.map { $0.rawValue }.joined(separator: " ")
         let command = ShellCommand(
             launchPath: "/usr/bin/xcodebuild",
             arguments: [
                 "BUILD_DIR=\(config.buildDirectoryPath)",
                 "OBJROOT=\(config.buildDirectoryPath)",
-                "ARCHS=\(config.architecture.rawValue)",
+                "ARCHS=\(architectures)",
                 "ONLY_ACTIVE_ARCH=\(config.onlyActiveArchitecture ? "YES" : "NO")",
                 "-project",
                 config.projectPath,

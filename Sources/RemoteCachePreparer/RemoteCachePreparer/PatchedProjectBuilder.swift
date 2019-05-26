@@ -176,15 +176,19 @@ final class PatchedProjectBuilder {
         patchedProjectPath: String)
         throws -> XcodeProjectBuildConfig
     {
-        guard let architecture = Architecture(rawValue: params.architectures) else {
-            throw RemoteCachePreparerError.unableToParseArchitecture(string: params.architectures)
+        let architectureStrins = params.architectures.split(separator: " ").map { String($0) }
+        let architectures: [Architecture] = try architectureStrins.map { architectureString in
+            guard let architecture = Architecture(rawValue: architectureString) else {
+                throw RemoteCachePreparerError.unableToParseArchitecture(string: architectureString)
+            }
+            return architecture
         }
         guard let platform = Platform(rawValue: params.platformName) else {
             throw RemoteCachePreparerError.unableToParsePlatform(string: params.platformName)
         }
         let config = XcodeProjectBuildConfig(
             platform: platform,
-            architecture: architecture,
+            architectures: architectures,
             buildDirectoryPath: buildDirectoryPath,
             projectPath: patchedProjectPath,
             targetName: "Aggregate",

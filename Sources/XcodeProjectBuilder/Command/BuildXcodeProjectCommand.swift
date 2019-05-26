@@ -90,7 +90,7 @@ public final class BuildXcodeProjectCommand: Command {
         
         let config = XcodeProjectBuildConfig(
             platform: platform,
-            architecture: architecture,
+            architectures: [architecture],
             buildDirectoryPath: buildDirectoryPath,
             projectPath: projectPath,
             targetName: "Aggregate",
