@@ -33,14 +33,7 @@ public final class PrepareRemoteCacheCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
-        
-        let sourcePath: String
-        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
-            sourcePath = sourcePathArgumentValue
-        } else {
-            sourcePath = try obtainSourcePath()
-        }
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
         let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
             "Parse environment parameters"
@@ -51,6 +44,13 @@ public final class PrepareRemoteCacheCommand: Command {
             } else {
                 return try XcodeBuildEnvironmentParameters()
             }
+        }
+        
+        let sourcePath: String
+        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
+            sourcePath = sourcePathArgumentValue
+        } else {
+            sourcePath = try obtainSourcePath(path: params.podsRoot)
         }
         
         let fileManager = FileManager.default
@@ -80,10 +80,12 @@ public final class PrepareRemoteCacheCommand: Command {
         }
     }
     
-    private func obtainSourcePath() throws -> String {
+    private func obtainSourcePath(path: String) throws -> String {
         let command = ShellCommand(
             launchPath: "/usr/bin/git",
             arguments: [
+                "-C",
+                "\(path)",
                 "rev-parse",
                 "--show-toplevel"
             ],

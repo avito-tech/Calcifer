@@ -2,7 +2,7 @@ import Foundation
 import Utility
 import Basic
 
-public struct CommandRegistry {
+public final class CommandRegistry {
     
     private let parser: ArgumentParser
     private var commands: [Command] = []
@@ -11,21 +11,21 @@ public struct CommandRegistry {
         parser = ArgumentParser(usage: usage, overview: overview)
     }
     
-    public mutating func register(command: Command.Type) {
+    public func register(command: Command.Type) {
         commands.append(command.init(parser: parser))
     }
     
-    public func run() throws {
-        let parsedArguments = try parse()
-        try process(arguments: parsedArguments)
+    public func command(for arguments: [String]) throws -> (Command, ArgumentParser.Result) {
+        let parsedArguments = try parse(arguments: arguments)
+        let command = try process(arguments: parsedArguments)
+        return (command, parsedArguments)
     }
     
-    private func parse() throws -> ArgumentParser.Result {
-        let arguments = Array(ProcessInfo.processInfo.arguments.dropFirst())
+    private func parse(arguments: [String]) throws -> ArgumentParser.Result {
         return try parser.parse(arguments)
     }
     
-    private func process(arguments: ArgumentParser.Result) throws {
+    private func process(arguments: ArgumentParser.Result) throws -> Command {
         guard let subparser = arguments.subparser(parser),
             let command = commands.first(where: { $0.command == subparser }) else {
                 let stream = BufferedOutputByteStream()
@@ -35,6 +35,6 @@ public struct CommandRegistry {
                 }
                 throw CommandExecutionError.incorrectUsage(usageDescription: description)
         }
-        try command.run(with: arguments)
+        return command
     }
 }

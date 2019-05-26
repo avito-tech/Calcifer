@@ -166,7 +166,8 @@ final class RemoteCachePreparer {
             fileManager: fileManager
         )
         let builder = XcodeProjectBuilder(
-            shellExecutor: shellCommandExecutor
+            shellExecutor: shellCommandExecutor,
+            fileManager: fileManager
         )
         let patcher = XcodeProjectPatcher()
         return PatchedProjectBuilder(

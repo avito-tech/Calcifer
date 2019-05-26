@@ -26,7 +26,7 @@ public final class UploadRemoteCacheCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
         let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
             "Parse environment parameters"

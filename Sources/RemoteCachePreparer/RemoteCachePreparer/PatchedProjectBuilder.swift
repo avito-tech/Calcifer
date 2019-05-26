@@ -186,6 +186,7 @@ final class PatchedProjectBuilder {
         guard let platform = Platform(rawValue: params.platformName) else {
             throw RemoteCachePreparerError.unableToParsePlatform(string: params.platformName)
         }
+        let onlyActiveArchitecture = architectures.count > 1 ? false : true
         let config = XcodeProjectBuildConfig(
             platform: platform,
             architectures: architectures,
@@ -193,7 +194,7 @@ final class PatchedProjectBuilder {
             projectPath: patchedProjectPath,
             targetName: "Aggregate",
             configurationName: params.configuration,
-            onlyActiveArchitecture: true
+            onlyActiveArchitecture: onlyActiveArchitecture
         )
         return config
     }

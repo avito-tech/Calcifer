@@ -24,7 +24,7 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let projectPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue

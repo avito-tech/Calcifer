@@ -5,29 +5,58 @@ public final class Logger {
     
     private static var logger: SwiftyBeaver.Type = {
         let swiftyBeaver = SwiftyBeaver.self
-        
+        addConsoleDestination()
+        addFileDestination()
+        return swiftyBeaver
+    }()
+    
+    public static var minLogLevel: SwiftyBeaver.Level {
         let minLogLevel: SwiftyBeaver.Level
         if let _ = ProcessInfo.processInfo.environment["VERBOSE"] {
             minLogLevel = .verbose
         } else {
             minLogLevel = isDebuggerAttached ? .verbose : .info
         }
-        
+        return minLogLevel
+    }
+    
+    public static func addConsoleDestination() {
+        let swiftyBeaver = SwiftyBeaver.self
         let consoleDestination = ConsoleDestination()
         consoleDestination.asynchronously = false
         consoleDestination.useTerminalColors = isDebuggerAttached == false
         consoleDestination.minLevel = minLogLevel
-        
+        swiftyBeaver.addDestination(consoleDestination)
+    }
+    
+    public static func addFileDestination() {
+        let swiftyBeaver = SwiftyBeaver.self
         let fileDestination = FileDestination()
         fileDestination.logFileURL = logFileURL()
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
-
-        swiftyBeaver.addDestination(consoleDestination)
         swiftyBeaver.addDestination(fileDestination)
-        
-        return swiftyBeaver
-    }()
+    }
+    
+    public static func addDestination(_ destination: BaseDestination) {
+        let swiftyBeaver = SwiftyBeaver.self
+        swiftyBeaver.addDestination(destination)
+    }
+    
+    public static func removeAllDestination() {
+        let swiftyBeaver = SwiftyBeaver.self
+        swiftyBeaver.removeAllDestinations()
+    }
+    
+    public static func disableFileLog() {
+        let swiftyBeaver = SwiftyBeaver.self
+        let destinations = swiftyBeaver.destinations
+        for destination in destinations {
+            if let fileDestination = destination as? FileDestination {
+                swiftyBeaver.removeDestination(fileDestination)
+            }
+        }
+    }
     
     public static func verbose(_ message: String) {
         logger.verbose(message)
@@ -59,17 +88,10 @@ public final class Logger {
             withIntermediateDirectories: true
         )
         let logFilePath = logDirectory
-            .appendingPathComponent(currentDateString())
+            .appendingPathComponent(Date().string())
             .appending(".txt")
         let logFile = URL(fileURLWithPath: logFilePath)
         return logFile
-    }
-    
-    private static func currentDateString() -> String {
-        let dateFormatter : DateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let date = Date()
-        return dateFormatter.string(from: date)
     }
     
     private static var isDebuggerAttached: Bool = {

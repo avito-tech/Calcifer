@@ -31,7 +31,7 @@ public final class CalculateXcodeProjectChecksumDiffCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let firstChecksumPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.firstChecksumPathArgument),
             name: Arguments.firstChecksumPath.rawValue
