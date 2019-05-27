@@ -29,7 +29,10 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
         )
-        let builder = XcodeProjChecksumHolderBuilderFactory().projChecksumHolderBuilder(
+        let factory = XcodeProjChecksumHolderBuilderFactory(
+            fullPathProvider: BaseFileElementFullPathProvider()
+        )
+        let builder = factory.projChecksumHolderBuilder(
             checksumProducer: BaseURLChecksumProducer(
                 fileManager: FileManager.default
             )

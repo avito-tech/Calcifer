@@ -54,9 +54,7 @@ public final class PrepareRemoteCacheCommand: Command {
         }
         
         let fileManager = FileManager.default
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(
-            fileManager: fileManager
-        )
+        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let shellExecutor = ShellCommandExecutorImpl()
         let unzip = Unzip(shellExecutor: shellExecutor)

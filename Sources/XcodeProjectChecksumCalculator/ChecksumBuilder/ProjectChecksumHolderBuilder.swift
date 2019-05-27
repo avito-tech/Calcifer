@@ -12,7 +12,12 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    func build(project: PBXProject, sourceRoot: Path) throws -> ProjectChecksumHolder<Builder.ChecksumType> {
+    func build(
+        project: PBXProject,
+        sourceRoot: Path)
+        throws
+        -> ProjectChecksumHolder<Builder.ChecksumType>
+    {
         let targets = NSArray(array: project.targets)
         var cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>()
         var buildError: Error?

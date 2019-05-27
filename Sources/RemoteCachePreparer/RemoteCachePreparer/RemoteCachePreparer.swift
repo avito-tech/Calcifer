@@ -46,11 +46,9 @@ final class RemoteCachePreparer {
         
         try params.save(to: buildEnvironmentParametersPath())
         
-        // TODO: save xcodeproj as json and if hash of xml same use json instead xcodeproj
         let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
             try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
-                podsProjectPath: podsProjectPath,
-                checksumProducer: checksumProducer
+                podsProjectPath: podsProjectPath
             )
         }
         try targetChecksumProvider.saveChecksumToFile()

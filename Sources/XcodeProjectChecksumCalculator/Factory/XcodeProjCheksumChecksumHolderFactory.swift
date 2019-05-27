@@ -1,13 +1,16 @@
 import Foundation
 import Checksum
 
-final class XcodeProjChecksumHolderBuilderFactory {
+public final class XcodeProjChecksumHolderBuilderFactory {
     
-    init() {}
+    private let fullPathProvider: FileElementFullPathProvider
+    
+    init(fullPathProvider: FileElementFullPathProvider) {
+        self.fullPathProvider = fullPathProvider
+    }
     
     func projChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer>(
-        checksumProducer: ChecksumProducer,
-        fullPathProvider: FileElementFullPathProvider = BaseFileElementFullPathProvider())
+        checksumProducer: ChecksumProducer)
         -> XcodeProjChecksumHolderBuilder<ChecksumProducer>
     {
         let fileChecksumBuilder = FileChecksumHolderBuilder(

@@ -41,9 +41,7 @@ public final class UploadRemoteCacheCommand: Command {
         
         let fileManager = FileManager.default
         let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(
-            fileManager: fileManager
-        )
+        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let cacheStorageFactory = CacheStorageFactoryImpl(
             fileManager: fileManager,

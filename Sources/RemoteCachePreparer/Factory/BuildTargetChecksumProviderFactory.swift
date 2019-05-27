@@ -4,32 +4,46 @@ import Checksum
 import Toolkit
 
 public protocol BuildTargetChecksumProviderFactory {
-    func createBuildTargetChecksumProvider(
-        podsProjectPath: String,
-        checksumProducer: BaseURLChecksumProducer)
+    func createBuildTargetChecksumProvider(podsProjectPath: String)
         throws -> TargetInfoProvider<BaseChecksum>
 }
 
 public class BuildTargetChecksumProviderFactoryImpl: BuildTargetChecksumProviderFactory {
     
     private let fileManager: FileManager
+    private let checksumProducer: BaseURLChecksumProducer
     
-    init(fileManager: FileManager) {
-        self.fileManager = fileManager
-    }
-    
-    public func createBuildTargetChecksumProvider(
-        podsProjectPath: String,
-        checksumProducer: BaseURLChecksumProducer)
-        throws -> TargetInfoProvider<BaseChecksum>
-    {
-        let frameworkChecksumProviderFactory = TargetInfoProviderFactory(
+    private lazy var targetInfoProviderFactory: TargetInfoProviderFactory<BaseURLChecksumProducer> = {
+        return TargetInfoProviderFactory(
             checksumProducer: checksumProducer,
             fileManager: fileManager
         )
-        let frameworkChecksumProvider = try frameworkChecksumProviderFactory.targetChecksumProvider(
+    }()
+    
+    public static let shared: BuildTargetChecksumProviderFactory = {
+        let fileManager = FileManager.default
+        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        return BuildTargetChecksumProviderFactoryImpl(
+            fileManager: fileManager,
+            checksumProducer: checksumProducer
+        )
+    }()
+    
+    private init(
+        fileManager: FileManager,
+        checksumProducer: BaseURLChecksumProducer)
+    {
+        self.fileManager = fileManager
+        self.checksumProducer = checksumProducer
+    }
+    
+    public func createBuildTargetChecksumProvider(
+        podsProjectPath: String)
+        throws -> TargetInfoProvider<BaseChecksum>
+    {
+        let targetChecksumProvider = try targetInfoProviderFactory.targetChecksumProvider(
             projectPath: podsProjectPath
         )
-        return frameworkChecksumProvider
+        return targetChecksumProvider
     }
 }
