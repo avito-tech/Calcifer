@@ -1,17 +1,20 @@
 import Foundation
 import XCTest
 import Checksum
+import ShellCommand
 @testable import BuildProductCacheStorage
 
 public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     
     private let fileManager = FileManager.default
     private let client = GradleBuildCacheClientMock()
+    private let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
     
     func test_add() {
         // Given
         let storage = GradleRemoteBuildProductCacheStorage(
             gradleBuildCacheClient: client,
+            unzip: unzip,
             fileManager: fileManager
         )
         let checksum = BaseChecksum(UUID().uuidString)
@@ -46,6 +49,7 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
         // Given
         let storage = GradleRemoteBuildProductCacheStorage(
             gradleBuildCacheClient: client,
+            unzip: unzip,
             fileManager: fileManager
         )
         let checksum = BaseChecksum(UUID().uuidString)
