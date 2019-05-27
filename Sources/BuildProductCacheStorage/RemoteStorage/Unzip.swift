@@ -10,8 +10,6 @@ public final class Unzip {
     }
     
     public func unzip(_ path: String, to destination: String) throws {
-        print("Thread \(Thread.current)")
-        
         let command = ShellCommand(
             launchPath: "/usr/bin/unzip",
             arguments: [
@@ -23,9 +21,6 @@ public final class Unzip {
             environment: [:]
         )
         let result = shellExecutor.execute(command: command)
-        
-        print("Thread \(Thread.current)")
-        
         if result.terminationStatus != 0 {
             throw BuildProductCacheStorageError.unableToUnzipFile(path: path)
         }
