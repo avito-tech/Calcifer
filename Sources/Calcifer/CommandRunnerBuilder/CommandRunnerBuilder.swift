@@ -27,7 +27,8 @@ final class CommandRunnerBuilder {
                 PatchXcodeProjectCommand.self,
                 SymbolizeDSYMCommand.self,
                 BuildStepIntegrateCommand.self,
-                StartDaemonCommand.self
+                StartDaemonCommand.self,
+                DaemonizeCommand.self
             ]
         )
         return runner

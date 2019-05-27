@@ -16,7 +16,7 @@ public final class Daemon {
     public func run() throws {
         Logger.disableFileLog()
         server["/daemon"] = websocket(text: { session, text in
-            let arguments = text.split(separator: "\n").map { String($0) }
+            let arguments = text.chop().split(separator: " ").map { String($0) }
             let config = CommandRunConfig(arguments: arguments)
             self.executeCommand(config: config, for: session)
         }, binary: { session, binary in
@@ -64,7 +64,6 @@ public final class Daemon {
             let message = StandardStreamMessage(source: .output, data: data)
             session.write(message)
         }
-        
         StandardStreamWrapper.shared.onErrorWrite = { data in
             let message = StandardStreamMessage(source: .error, data: data)
             session.write(message)
