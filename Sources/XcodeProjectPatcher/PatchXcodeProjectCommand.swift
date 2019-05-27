@@ -1,4 +1,5 @@
 import ArgumentsParser
+import XcodeProjCache
 import Foundation
 import Utility
 import Toolkit
@@ -50,7 +51,7 @@ public final class PatchXcodeProjectCommand: Command {
             arguments.get(self.targetsArgument),
             name: Arguments.targets.rawValue
         )
-        let patcher = XcodeProjectPatcher()
+        let patcher = XcodeProjectPatcher(xcodeProjCache: XcodeProjCacheImpl.shared)
         try patcher.patch(
             projectPath: projectPath,
             outputPath: outputPath,

@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
+import XcodeProjCache
 import BuildArtifacts
 import DSYMSymbolizer
 import ShellCommand
@@ -18,6 +19,7 @@ final class RemoteCachePreparer {
     private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
+    private let xcodeProjCache: XcodeProjCache
     
     
     init(
@@ -25,13 +27,15 @@ final class RemoteCachePreparer {
         shellCommandExecutor: ShellCommandExecutor,
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
-        cacheStorageFactory: CacheStorageFactory)
+        cacheStorageFactory: CacheStorageFactory,
+        xcodeProjCache: XcodeProjCache)
     {
         self.fileManager = fileManager
         self.shellCommandExecutor = shellCommandExecutor
         self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
+        self.xcodeProjCache = xcodeProjCache
     }
     
     func prepare(
@@ -167,7 +171,12 @@ final class RemoteCachePreparer {
             shellExecutor: shellCommandExecutor,
             fileManager: fileManager
         )
-        let patcher = XcodeProjectPatcher()
+        let patcher = XcodeProjectPatcher(
+            xcodeProjCache: xcodeProjCache
+        )
+        let xcodeCommandLineVersionProvider = XcodeCommandLineToolVersionProvider(
+            shellExecutor: shellCommandExecutor
+        )
         return PatchedProjectBuilder(
             cacheStorage: cacheStorage,
             checksumProducer: checksumProducer,
@@ -176,7 +185,8 @@ final class RemoteCachePreparer {
             builder: builder,
             artifactIntegrator: artifactIntegrator,
             targetInfoFilter: targetInfoFilter,
-            artifactProvider: artifactProvider
+            artifactProvider: artifactProvider,
+            xcodeCommandLineVersionProvider: xcodeCommandLineVersionProvider
         )
     }
     

@@ -1,6 +1,7 @@
 import XcodeBuildEnvironmentParametersParser
 import BuildProductCacheStorage
 import ArgumentsParser
+import XcodeProjCache
 import Foundation
 import ShellCommand
 import Utility
@@ -62,12 +63,14 @@ public final class PrepareRemoteCacheCommand: Command {
             fileManager: fileManager,
             unzip: unzip
         )
+        let xcodeProjCache = XcodeProjCacheImpl.shared
         let preparer = RemoteCachePreparer(
             fileManager: fileManager,
             shellCommandExecutor: shellExecutor,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
-            cacheStorageFactory: cacheStorageFactory
+            cacheStorageFactory: cacheStorageFactory,
+            xcodeProjCache: xcodeProjCache
         )
         
         try TimeProfiler.measure("Prepare remote cache") {

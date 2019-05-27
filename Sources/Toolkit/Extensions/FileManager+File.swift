@@ -74,4 +74,11 @@ public extension FileManager {
             else { return nil }
         return fileSize
     }
+    
+    func modificationDate(at path: String) -> Date? {
+        let attributes = catchError { try FileManager.default.attributesOfItem(atPath: path) }
+        guard let date = attributes[FileAttributeKey.modificationDate] as? Date
+            else { return nil }
+        return date
+    }
 }

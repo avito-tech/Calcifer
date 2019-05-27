@@ -1,14 +1,18 @@
 import Foundation
 import PathKit
 import xcodeproj
+import XcodeProjCache
 
 public final class XcodeProjectPatcher {
     
-    public init() {}
+    private let xcodeProjCache: XcodeProjCache
+    
+    public init(xcodeProjCache: XcodeProjCache) {
+        self.xcodeProjCache = xcodeProjCache
+    }
     
     public func patch(projectPath: String, outputPath: String, targets: [String]) throws {
-        let path = Path(projectPath)
-        let xcodeproject = try XcodeProj(path: path)
+        let xcodeproject = try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
         let pbxproj = xcodeproject.pbxproj
         guard let project = try pbxproj.rootProject() else { return }
         patchBuildSetting(in: project.buildConfigurationList)

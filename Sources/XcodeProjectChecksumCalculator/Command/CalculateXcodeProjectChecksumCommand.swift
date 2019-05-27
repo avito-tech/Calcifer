@@ -1,4 +1,5 @@
 import ArgumentsParser
+import XcodeProjCache
 import Foundation
 import Utility
 import Checksum
@@ -30,7 +31,8 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
             name: Arguments.projectPath.rawValue
         )
         let factory = XcodeProjChecksumHolderBuilderFactory(
-            fullPathProvider: BaseFileElementFullPathProvider()
+            fullPathProvider: BaseFileElementFullPathProvider(),
+            xcodeProjCache: XcodeProjCacheImpl.shared
         )
         let builder = factory.projChecksumHolderBuilder(
             checksumProducer: BaseURLChecksumProducer(

@@ -61,7 +61,7 @@ public final class XcodeProjectBuilder {
         }
     }
     
-    func buildLogFile() -> URL {
+    private func buildLogFile() -> URL {
         let fileManager = FileManager.default
         let logDirectory = fileManager.calciferDirectory()
             .appendingPathComponent("buildlogs")

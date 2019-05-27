@@ -15,8 +15,8 @@ public class BuildTargetChecksumProviderFactoryImpl: BuildTargetChecksumProvider
     
     private lazy var targetInfoProviderFactory: TargetInfoProviderFactory<BaseURLChecksumProducer> = {
         return TargetInfoProviderFactory(
-            checksumProducer: checksumProducer,
-            fileManager: fileManager
+            fileManager: fileManager,
+            checksumProducer: checksumProducer
         )
     }()
     

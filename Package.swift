@@ -139,9 +139,18 @@ let package = Package(
         ),
         // MARK: XcodeProjectChecksumCalculator
         .target(
+            name: "XcodeProjCache",
+            dependencies: [
+                "xcodeproj",
+                "Checksum"
+            ]
+        ),
+        // MARK: XcodeProjectChecksumCalculator
+        .target(
             name: "XcodeProjectChecksumCalculator",
             dependencies: [
                 "ArgumentsParser",
+                "XcodeProjCache",
                 "xcodeproj",
                 "Checksum"
             ]
@@ -149,9 +158,7 @@ let package = Package(
         .testTarget(
             name: "XcodeProjectChecksumCalculatorTests",
             dependencies: [
-                "XcodeProjectChecksumCalculator",
-                "xcodeproj",
-                "Toolkit"
+                "XcodeProjectChecksumCalculator"
             ]
         ),
         // MARK: XcodeProjectPatcher
@@ -159,6 +166,7 @@ let package = Package(
             name: "XcodeProjectPatcher",
             dependencies: [
                 "ArgumentsParser",
+                "XcodeProjCache",
                 "xcodeproj",
                 "Toolkit"
             ]
