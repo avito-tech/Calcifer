@@ -92,24 +92,7 @@ public final class XcodeProjectPatcher {
     func buildSettings() -> BuildSettings {
         return [
             "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym",
-            "GCC_GENERATE_DEBUGGING_SYMBOLS": "YES",
-            // Можно
-//            "CLANG_ENABLE_MODULE_DEBUGGING": "YES",
-//            "STRIP_INSTALLED_PRODUCT": "NO",
-//            "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
-//            "GCC_OPTIMIZATION_LEVEL": "0",
-//            "STRIP_SWIFT_SYMBOLS": "NO",
-//            "COPY_PHASE_STRIP": "NO",
-            
-            // Это не помогает
-//            "GCC_PRECOMPILE_PREFIX_HEADER": "NO",
-//            "SWIFT_PRECOMPILE_BRIDGING_HEADER": "NO",
-//            "PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR": "NO",
-//            "DEPLOYMENT_POSTPROCESSING": "NO",
-            
-            // Из за этого не билдится
-//            "SWIFT_INSTALL_OBJC_HEADER": "NO",
-//            "BUILD_VARIANTS": "debug"
+            "GCC_GENERATE_DEBUGGING_SYMBOLS": "YES"
         ]
     }
     
