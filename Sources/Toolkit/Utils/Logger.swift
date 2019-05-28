@@ -23,6 +23,7 @@ public final class Logger {
     public static func addConsoleDestination() {
         let swiftyBeaver = SwiftyBeaver.self
         let consoleDestination = ConsoleDestination()
+        consoleDestination.format = "$L: $M"
         consoleDestination.asynchronously = false
         consoleDestination.useTerminalColors = isDebuggerAttached == false
         consoleDestination.minLevel = minLogLevel
@@ -32,6 +33,7 @@ public final class Logger {
     public static func addFileDestination() {
         let swiftyBeaver = SwiftyBeaver.self
         let fileDestination = FileDestination()
+        fileDestination.format = "$L: $M"
         fileDestination.logFileURL = logFileURL()
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
