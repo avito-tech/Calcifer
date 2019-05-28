@@ -34,9 +34,7 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
                 .appendingPathComponent("\(params.configuration)-\(params.platformName)")
                 .appendingPathComponent(targetInfo.productName.deletingPathExtension() + ".build")
                 .appendingPathComponent("all-product-headers.yaml")
-            if fileManager.fileExists(atPath: allProductHeadersFilePath) {
-                continue
-            }
+            
             let content = [
                 "{",
                 "  'version': 0,",
@@ -44,6 +42,14 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
                 "  'roots': []",
                 "}"
             ].joined(separator: "\n")
+            
+            if fileManager.fileExists(atPath: allProductHeadersFilePath) {
+                let currentContent = try String(contentsOfFile: allProductHeadersFilePath)
+                if currentContent == content {
+                    continue
+                }
+            }
+            
             let directoryPath = allProductHeadersFilePath.deletingLastPathComponent()
             if fileManager.directoryExist(at: directoryPath) == false {
                 try fileManager.createDirectory(
