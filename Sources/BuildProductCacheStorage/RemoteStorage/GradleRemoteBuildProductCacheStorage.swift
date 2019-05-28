@@ -90,16 +90,15 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
         productName.append(cacheKey.productType.fileExtension)
         let unzipResult = unzipURL
             .appendingPathComponent(productName)
-        catchError { [weak self] in
+        catchError { [unzip, weak self] in
             if let fileManager = self?.fileManager {
                 if fileManager.fileExists(atPath: unzipResult.path) {
                     try fileManager.removeItem(at: unzipResult)
                 }
-                try TimeProfiler.measure("Unzip with unzip util \(cacheKey.productName)") { [unzip] in
-                    // Duration of unzip with ZIPFoundation Some.framework is 1.23 s
-                    // Duration of unzip with /usr/bin/unzip Some.framework is 126.29 ms
-                    try unzip.unzip(url.path, to: unzipURL.path)
-                }
+                // TODO: Migrate on tar ( should be faster )
+                // Duration of unzip with ZIPFoundation Some.framework is 1.23 s
+                // Duration of unzip with /usr/bin/unzip Some.framework is 126.29 ms
+                try unzip.unzip(url.path, to: unzipURL.path)
                 try fileManager.removeItem(at: url)
             }
             self?.validateArtifactExist(at: unzipResult.path)
