@@ -44,9 +44,16 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
             ].joined(separator: "\n")
             
             if fileManager.fileExists(atPath: allProductHeadersFilePath) {
-                let currentContent = try String(contentsOfFile: allProductHeadersFilePath)
-                if currentContent == content {
-                    continue
+                let stringSize = content.utf8.count
+                // Reading the contents of a file is very slow (large files).
+                if let fileSize = fileManager.fileSize(at: allProductHeadersFilePath),
+                    fileSize == stringSize {
+                    let currentContent = try String(contentsOfFile: allProductHeadersFilePath)
+                    if currentContent == content {
+                        continue
+                    }
+                } else {
+                    try fileManager.removeItem(atPath: allProductHeadersFilePath)
                 }
             }
             
