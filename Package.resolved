@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "Starscream",
+        "repositoryURL": "https://github.com/daltoniam/Starscream.git",
+        "state": {
+          "branch": null,
+          "revision": "9c03ef715d1bc9334b446c90df53586dd38cf849",
+          "version": "3.1.0"
+        }
+      },
+      {
         "package": "SwiftPM",
         "repositoryURL": "https://github.com/apple/swift-package-manager.git",
         "state": {
@@ -41,9 +50,9 @@
         "package": "Swifter",
         "repositoryURL": "https://github.com/httpswift/swifter.git",
         "state": {
-          "branch": "stable",
-          "revision": "56a73562d54182cf03f4b929e39a9a5f5b523efb",
-          "version": null
+          "branch": null,
+          "revision": "57faa5da31c02e035e43e8189f7ae7e8fb7ddc68",
+          "version": "1.4.6"
         }
       },
       {

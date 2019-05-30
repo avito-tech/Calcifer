@@ -68,10 +68,17 @@ public extension FileManager {
         return Array(filePathArray.values.sorted())
     }
     
-    func fileSize(at path: String) -> UInt64? {
+    func fileSize(at path: String) throws -> UInt64 {
         let attributes = catchError { try FileManager.default.attributesOfItem(atPath: path) }
         guard let fileSize = attributes[FileAttributeKey.size] as? UInt64
-            else { return nil }
+            else { throw FileManagerError.unableToObtainFileSize(path: path) }
         return fileSize
+    }
+    
+    func modificationDate(at path: String) throws -> Date {
+        let attributes = catchError { try FileManager.default.attributesOfItem(atPath: path) }
+        guard let date = attributes[FileAttributeKey.modificationDate] as? Date
+            else { throw FileManagerError.unableToObtainModificationDate(path: path) }
+        return date
     }
 }

@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
+import XcodeProjCache
 import BuildArtifacts
 import DSYMSymbolizer
 import ShellCommand
@@ -14,22 +15,27 @@ final class RemoteCachePreparer {
     
     private let fileManager: FileManager
     private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
-    private let shellCommandExecutor = ShellCommandExecutorImpl()
+    private let shellCommandExecutor: ShellCommandExecutor
     private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
+    private let xcodeProjCache: XcodeProjCache
     
     
     init(
         fileManager: FileManager,
+        shellCommandExecutor: ShellCommandExecutor,
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
-        cacheStorageFactory: CacheStorageFactory)
+        cacheStorageFactory: CacheStorageFactory,
+        xcodeProjCache: XcodeProjCache)
     {
         self.fileManager = fileManager
+        self.shellCommandExecutor = shellCommandExecutor
         self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
+        self.xcodeProjCache = xcodeProjCache
     }
     
     func prepare(
@@ -44,11 +50,9 @@ final class RemoteCachePreparer {
         
         try params.save(to: buildEnvironmentParametersPath())
         
-        // TODO: save xcodeproj as json and if hash of xml same use json instead xcodeproj
         let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
             try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
-                podsProjectPath: podsProjectPath,
-                checksumProducer: checksumProducer
+                podsProjectPath: podsProjectPath
             )
         }
         try targetChecksumProvider.saveChecksumToFile()
@@ -164,9 +168,15 @@ final class RemoteCachePreparer {
             fileManager: fileManager
         )
         let builder = XcodeProjectBuilder(
+            shellExecutor: shellCommandExecutor,
+            fileManager: fileManager
+        )
+        let patcher = XcodeProjectPatcher(
+            xcodeProjCache: xcodeProjCache
+        )
+        let xcodeCommandLineVersionProvider = XcodeCommandLineToolVersionProvider(
             shellExecutor: shellCommandExecutor
         )
-        let patcher = XcodeProjectPatcher()
         return PatchedProjectBuilder(
             cacheStorage: cacheStorage,
             checksumProducer: checksumProducer,
@@ -175,7 +185,8 @@ final class RemoteCachePreparer {
             builder: builder,
             artifactIntegrator: artifactIntegrator,
             targetInfoFilter: targetInfoFilter,
-            artifactProvider: artifactProvider
+            artifactProvider: artifactProvider,
+            xcodeCommandLineVersionProvider: xcodeCommandLineVersionProvider
         )
     }
     

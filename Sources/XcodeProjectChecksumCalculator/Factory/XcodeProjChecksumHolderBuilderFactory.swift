@@ -1,13 +1,22 @@
 import Foundation
+import XcodeProjCache
 import Checksum
 
 final class XcodeProjChecksumHolderBuilderFactory {
     
-    init() {}
+    private let fullPathProvider: FileElementFullPathProvider
+    private let xcodeProjCache: XcodeProjCache
+    
+    init(
+        fullPathProvider: FileElementFullPathProvider,
+        xcodeProjCache: XcodeProjCache)
+    {
+        self.fullPathProvider = fullPathProvider
+        self.xcodeProjCache = xcodeProjCache
+    }
     
     func projChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer>(
-        checksumProducer: ChecksumProducer,
-        fullPathProvider: FileElementFullPathProvider = BaseFileElementFullPathProvider())
+        checksumProducer: ChecksumProducer)
         -> XcodeProjChecksumHolderBuilder<ChecksumProducer>
     {
         let fileChecksumBuilder = FileChecksumHolderBuilder(
@@ -17,6 +26,6 @@ final class XcodeProjChecksumHolderBuilderFactory {
         let targetChecksumBuilder = TargetChecksumHolderBuilder(builder: fileChecksumBuilder)
         let projectChecksumBuilder = ProjectChecksumHolderBuilder(builder: targetChecksumBuilder)
         let projChecksumBuilder = ProjChecksumHolderBuilder(builder: projectChecksumBuilder)
-        return XcodeProjChecksumHolderBuilder(builder: projChecksumBuilder)
+        return XcodeProjChecksumHolderBuilder(builder: projChecksumBuilder, xcodeProjCache: xcodeProjCache)
     }
 }

@@ -19,6 +19,7 @@ final class PatchedProjectBuilder {
     private let artifactIntegrator: ArtifactIntegrator
     private let targetInfoFilter: TargetInfoFilter
     private let artifactProvider: TargetBuildArtifactProvider
+    private let xcodeCommandLineVersionProvider: XcodeCommandLineToolVersionProvider
     
     init(
         cacheStorage: BuildProductCacheStorage,
@@ -28,7 +29,8 @@ final class PatchedProjectBuilder {
         builder: XcodeProjectBuilder,
         artifactIntegrator: ArtifactIntegrator,
         targetInfoFilter: TargetInfoFilter,
-        artifactProvider: TargetBuildArtifactProvider)
+        artifactProvider: TargetBuildArtifactProvider,
+        xcodeCommandLineVersionProvider: XcodeCommandLineToolVersionProvider)
     {
         self.cacheStorage = cacheStorage
         self.checksumProducer = checksumProducer
@@ -38,6 +40,7 @@ final class PatchedProjectBuilder {
         self.artifactIntegrator = artifactIntegrator
         self.targetInfoFilter = targetInfoFilter
         self.artifactProvider = artifactProvider
+        self.xcodeCommandLineVersionProvider = xcodeCommandLineVersionProvider
     }
     
     public func prepareAndBuildPatchedProjectIfNeeded(
@@ -46,6 +49,7 @@ final class PatchedProjectBuilder {
         requiredTargets: [TargetInfo<BaseChecksum>])
         throws
     {
+        try validateVersion(params: params)
         
         let podsProjectPath = params.podsProjectPath
         let patchedProjectPath = params.patchedProjectPath
@@ -176,22 +180,38 @@ final class PatchedProjectBuilder {
         patchedProjectPath: String)
         throws -> XcodeProjectBuildConfig
     {
-        guard let architecture = Architecture(rawValue: params.architectures) else {
-            throw RemoteCachePreparerError.unableToParseArchitecture(string: params.architectures)
+        let architectureStrings = params.architectures.split(separator: " ").map { String($0) }
+        let architectures: [Architecture] = try architectureStrings.map { architectureString in
+            guard let architecture = Architecture(rawValue: architectureString) else {
+                throw RemoteCachePreparerError.unableToParseArchitecture(string: architectureString)
+            }
+            return architecture
         }
         guard let platform = Platform(rawValue: params.platformName) else {
             throw RemoteCachePreparerError.unableToParsePlatform(string: params.platformName)
         }
+        let onlyActiveArchitecture = architectures.count > 1 ? false : true
         let config = XcodeProjectBuildConfig(
             platform: platform,
-            architecture: architecture,
+            architectures: architectures,
             buildDirectoryPath: buildDirectoryPath,
             projectPath: patchedProjectPath,
             targetName: "Aggregate",
             configurationName: params.configuration,
-            onlyActiveArchitecture: true
+            onlyActiveArchitecture: onlyActiveArchitecture
         )
         return config
+    }
+    
+    private func validateVersion(params: XcodeBuildEnvironmentParameters) throws {
+        let commandLineVersion = try xcodeCommandLineVersionProvider.obtainXcodeCommandLineToolVersion()
+        let xcodeVersion = params.xcodeProductBuildVersion
+        if commandLineVersion != xcodeVersion {
+            throw RemoteCachePreparerError.xcodeCommandLineVersionMismatch(
+                xcodeVersion: xcodeVersion,
+                commandLineVersion: commandLineVersion
+            )
+        }
     }
     
     private func build(

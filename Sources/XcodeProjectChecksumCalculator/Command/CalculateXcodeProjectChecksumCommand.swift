@@ -1,4 +1,5 @@
 import ArgumentsParser
+import XcodeProjCache
 import Foundation
 import Utility
 import Checksum
@@ -24,12 +25,16 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let projectPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
         )
-        let builder = XcodeProjChecksumHolderBuilderFactory().projChecksumHolderBuilder(
+        let factory = XcodeProjChecksumHolderBuilderFactory(
+            fullPathProvider: BaseFileElementFullPathProvider(),
+            xcodeProjCache: XcodeProjCacheImpl.shared
+        )
+        let builder = factory.projChecksumHolderBuilder(
             checksumProducer: BaseURLChecksumProducer(
                 fileManager: FileManager.default
             )

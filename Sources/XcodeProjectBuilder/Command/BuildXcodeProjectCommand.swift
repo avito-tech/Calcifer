@@ -18,7 +18,8 @@ public final class BuildXcodeProjectCommand: Command {
     }
     
     private let builder = XcodeProjectBuilder(
-        shellExecutor: ShellCommandExecutorImpl()
+        shellExecutor: ShellCommandExecutorImpl(),
+        fileManager: FileManager.default
     )
     
     private let buildDirectoryPathArgument: OptionArgument<String>
@@ -56,7 +57,7 @@ public final class BuildXcodeProjectCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let buildDirectoryPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.buildDirectoryPathArgument),
             name: Arguments.buildDirectoryPath.rawValue
@@ -90,7 +91,7 @@ public final class BuildXcodeProjectCommand: Command {
         
         let config = XcodeProjectBuildConfig(
             platform: platform,
-            architecture: architecture,
+            architectures: [architecture],
             buildDirectoryPath: buildDirectoryPath,
             projectPath: projectPath,
             targetName: "Aggregate",

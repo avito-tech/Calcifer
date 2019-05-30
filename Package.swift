@@ -21,7 +21,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/httpswift/swifter.git",
-            .branch("stable")
+            .exact("1.4.6")
         ),
         .package(
             url: "https://github.com/weichsel/ZIPFoundation/",
@@ -30,7 +30,11 @@ let package = Package(
         .package(
             url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
             .exact("1.6.2")
-        )
+        ),
+        .package(
+            url: "https://github.com/daltoniam/Starscream.git",
+            .exact("3.1.0")
+        ),
     ],
     targets: [
         // MARK: Calcifer
@@ -38,14 +42,8 @@ let package = Package(
             name: "Calcifer",
             dependencies: [
                 "Toolkit",
-                "CommandRunner"
-            ]
-        ),
-        // MARK: CommandRunner
-        .target(
-            name: "CommandRunner",
-            dependencies: [
-                "Toolkit",
+                "ArgumentsParser",
+                "CommandRunner",
                 "XcodeProjectBuilder",
                 "XcodeProjectChecksumCalculator",
                 "XcodeProjectPatcher",
@@ -53,7 +51,15 @@ let package = Package(
                 "XcodeBuildEnvironmentParametersParser",
                 "RemoteCachePreparer",
                 "BuildStepIntegrator",
-                "ArgumentsParser"
+                "Daemon"
+            ]
+        ),
+        // MARK: CommandRunner
+        .target(
+            name: "CommandRunner",
+            dependencies: [
+                "Toolkit",
+                "ArgumentsParser",
             ]
         ),
         // MARK: ArgumentsParser
@@ -133,9 +139,18 @@ let package = Package(
         ),
         // MARK: XcodeProjectChecksumCalculator
         .target(
+            name: "XcodeProjCache",
+            dependencies: [
+                "xcodeproj",
+                "Checksum"
+            ]
+        ),
+        // MARK: XcodeProjectChecksumCalculator
+        .target(
             name: "XcodeProjectChecksumCalculator",
             dependencies: [
                 "ArgumentsParser",
+                "XcodeProjCache",
                 "xcodeproj",
                 "Checksum"
             ]
@@ -143,9 +158,7 @@ let package = Package(
         .testTarget(
             name: "XcodeProjectChecksumCalculatorTests",
             dependencies: [
-                "XcodeProjectChecksumCalculator",
-                "xcodeproj",
-                "Toolkit"
+                "XcodeProjectChecksumCalculator"
             ]
         ),
         // MARK: XcodeProjectPatcher
@@ -153,6 +166,7 @@ let package = Package(
             name: "XcodeProjectPatcher",
             dependencies: [
                 "ArgumentsParser",
+                "XcodeProjCache",
                 "xcodeproj",
                 "Toolkit"
             ]
@@ -187,6 +201,16 @@ let package = Package(
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
                 "Toolkit"
+            ]
+        ),
+        // MARK: Daemon
+        .target(
+            name: "Daemon",
+            dependencies: [
+                "RemoteCachePreparer",
+                "CommandRunner",
+                "ShellCommand",
+                "Swifter"
             ]
         ),
         // MARK: BuildStepIntegrator

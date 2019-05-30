@@ -1,4 +1,5 @@
 import XcodeBuildEnvironmentParametersParser
+import BuildProductCacheStorage
 import ArgumentsParser
 import Foundation
 import ShellCommand
@@ -25,7 +26,7 @@ public final class UploadRemoteCacheCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
         let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
             "Parse environment parameters"
@@ -39,11 +40,13 @@ public final class UploadRemoteCacheCommand: Command {
         }
         
         let fileManager = FileManager.default
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(
-            fileManager: fileManager
-        )
+        let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
+        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
-        let cacheStorageFactory = CacheStorageFactoryImpl(fileManager: fileManager)
+        let cacheStorageFactory = CacheStorageFactoryImpl(
+            fileManager: fileManager,
+            unzip: unzip
+        )
         let uploader = RemoteCacheUploader(
             fileManager: fileManager,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,

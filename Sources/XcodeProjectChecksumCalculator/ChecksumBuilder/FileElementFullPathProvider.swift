@@ -2,6 +2,6 @@ import Foundation
 import xcodeproj
 import PathKit
 
-protocol FileElementFullPathProvider {
+public protocol FileElementFullPathProvider {
     func fullPath(for fileElement: PBXFileElement, sourceRoot: Path) throws -> Path
 }

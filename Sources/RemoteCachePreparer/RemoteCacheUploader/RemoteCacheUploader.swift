@@ -39,8 +39,7 @@ final class RemoteCacheUploader {
         
         let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
             try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
-                podsProjectPath: podsProjectPath,
-                checksumProducer: checksumProducer
+                podsProjectPath: podsProjectPath
             )
         }
         try targetChecksumProvider.saveChecksumToFile()

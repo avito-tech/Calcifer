@@ -1,5 +1,7 @@
 import XcodeBuildEnvironmentParametersParser
+import BuildProductCacheStorage
 import ArgumentsParser
+import XcodeProjCache
 import Foundation
 import ShellCommand
 import Utility
@@ -32,14 +34,7 @@ public final class PrepareRemoteCacheCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
-        
-        let sourcePath: String
-        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
-            sourcePath = sourcePathArgumentValue
-        } else {
-            sourcePath = try obtainSourcePath()
-        }
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
         let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
             "Parse environment parameters"
@@ -52,17 +47,30 @@ public final class PrepareRemoteCacheCommand: Command {
             }
         }
         
+        let sourcePath: String
+        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
+            sourcePath = sourcePathArgumentValue
+        } else {
+            sourcePath = try obtainSourcePath(path: params.podsRoot)
+        }
+        
         let fileManager = FileManager.default
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(
-            fileManager: fileManager
-        )
+        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
-        let cacheStorageFactory = CacheStorageFactoryImpl(fileManager: fileManager)
+        let shellExecutor = ShellCommandExecutorImpl()
+        let unzip = Unzip(shellExecutor: shellExecutor)
+        let cacheStorageFactory = CacheStorageFactoryImpl(
+            fileManager: fileManager,
+            unzip: unzip
+        )
+        let xcodeProjCache = XcodeProjCacheImpl.shared
         let preparer = RemoteCachePreparer(
             fileManager: fileManager,
+            shellCommandExecutor: shellExecutor,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
-            cacheStorageFactory: cacheStorageFactory
+            cacheStorageFactory: cacheStorageFactory,
+            xcodeProjCache: xcodeProjCache
         )
         
         try TimeProfiler.measure("Prepare remote cache") {
@@ -73,10 +81,12 @@ public final class PrepareRemoteCacheCommand: Command {
         }
     }
     
-    private func obtainSourcePath() throws -> String {
+    private func obtainSourcePath(path: String) throws -> String {
         let command = ShellCommand(
             launchPath: "/usr/bin/git",
             arguments: [
+                "-C",
+                "\(path)",
                 "rev-parse",
                 "--show-toplevel"
             ],

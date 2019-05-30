@@ -52,7 +52,7 @@ public final class SymbolizeDSYMCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let dsymPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.dsymPathArgument),
             name: Arguments.dsymPath.rawValue

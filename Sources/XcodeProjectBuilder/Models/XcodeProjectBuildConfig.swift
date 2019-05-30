@@ -4,7 +4,7 @@ public struct XcodeProjectBuildConfig {
     
     public let platform: Platform
     
-    public let architecture: Architecture
+    public let architectures: [Architecture]
     
     public let buildDirectoryPath: String
     public let projectPath: String
@@ -14,7 +14,7 @@ public struct XcodeProjectBuildConfig {
     
     public init(
         platform: Platform,
-        architecture: Architecture,
+        architectures: [Architecture],
         buildDirectoryPath: String,
         projectPath: String,
         targetName: String,
@@ -22,7 +22,7 @@ public struct XcodeProjectBuildConfig {
         onlyActiveArchitecture: Bool)
     {
         self.platform = platform
-        self.architecture = architecture
+        self.architectures = architectures
         self.buildDirectoryPath = buildDirectoryPath
         self.projectPath = projectPath
         self.targetName = targetName

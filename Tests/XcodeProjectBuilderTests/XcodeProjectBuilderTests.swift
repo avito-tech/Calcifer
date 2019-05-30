@@ -20,15 +20,20 @@ public final class XcodeProjectBuilderTests: XCTestCase {
                     error: nil
                 )
             }
+            let architecture = Architecture.x86_64
             let config = XcodeProjectBuildConfig(
                 platform: .simulator,
-                architecture: .x86_64,
+                architectures: [architecture],
+                buildDirectoryPath: "/b",
                 projectPath: "projectPath",
                 targetName: "targetName",
                 configurationName: "Debug",
                 onlyActiveArchitecture: true
             )
-            let build = XcodeProjectBuilder(shellExecutor: shellCommandExecutor)
+            let build = XcodeProjectBuilder(
+                shellExecutor: shellCommandExecutor,
+                fileManager: FileManager.default
+            )
             
             // When
             try build.build(config: config, environment: [:])
@@ -45,8 +50,6 @@ public final class XcodeProjectBuilderTests: XCTestCase {
             XCTAssertEqual(
                 command.arguments,
                 [
-                    "ARCHS=\(config.architecture.rawValue)",
-                    "ONLY_ACTIVE_ARCH=\(config.onlyActiveArchitecture ? "YES" : "NO")",
                     "-project",
                     config.projectPath,
                     "-target",
@@ -55,7 +58,11 @@ public final class XcodeProjectBuilderTests: XCTestCase {
                     config.configurationName,
                     "-sdk",
                     config.platform.rawValue,
-                    "build"
+                    "build",
+                    "BUILD_DIR=\(config.buildDirectoryPath)",
+                    "OBJROOT=\(config.buildDirectoryPath)",
+                    "ONLY_ACTIVE_ARCH=\(config.onlyActiveArchitecture ? "YES" : "NO")",
+                    "ARCHS=\(architecture.rawValue)"
                 ]
             )
         }(), "Caught exception")

@@ -1,34 +1,39 @@
 import Foundation
+import XcodeProjCache
 import Checksum
 import Toolkit
 
 public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProducer> {
     
-    private let checksumProducer: ChecksumProducer
     private let fileManager: FileManager
+    private let checksumProducer: ChecksumProducer
+    private let factory = XcodeProjChecksumHolderBuilderFactory(
+        fullPathProvider: BaseFileElementFullPathProvider(),
+        xcodeProjCache: XcodeProjCacheImpl.shared
+    )
     
-    public init(checksumProducer: ChecksumProducer, fileManager: FileManager) {
-        self.checksumProducer = checksumProducer
+    public init(
+        fileManager: FileManager,
+        checksumProducer: ChecksumProducer)
+    {
         self.fileManager = fileManager
+        self.checksumProducer = checksumProducer
     }
     
     public func targetChecksumProvider(
         projectPath: String)
         throws -> TargetInfoProvider<ChecksumProducer.ChecksumType>
     {
-        let builder = XcodeProjChecksumHolderBuilderFactory().projChecksumHolderBuilder(
+        let builder = factory.projChecksumHolderBuilder(
             checksumProducer: checksumProducer
         )
         let checksumHolder = try builder.build(projectPath: projectPath)
-        
         Logger.info("XcodeProj checksum: \(checksumHolder.checksum.stringValue) for \(checksumHolder.description)")
-        
-        return TargetInfoProvider(
+        let provider = TargetInfoProvider(
             checksumHolder: checksumHolder,
             fileManager: fileManager
         )
+        return provider
     }
-    
-    
     
 }

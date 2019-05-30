@@ -1,4 +1,5 @@
 import ArgumentsParser
+import XcodeProjCache
 import Foundation
 import Utility
 import Toolkit
@@ -37,7 +38,7 @@ public final class PatchXcodeProjectCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let projectPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
@@ -50,7 +51,7 @@ public final class PatchXcodeProjectCommand: Command {
             arguments.get(self.targetsArgument),
             name: Arguments.targets.rawValue
         )
-        let patcher = XcodeProjectPatcher()
+        let patcher = XcodeProjectPatcher(xcodeProjCache: XcodeProjCacheImpl.shared)
         try patcher.patch(
             projectPath: projectPath,
             outputPath: outputPath,

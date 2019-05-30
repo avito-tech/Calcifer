@@ -23,7 +23,7 @@ public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
         )
     }
     
-    public func run(with arguments: ArgumentParser.Result) throws {
+    public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let outputPath: String
         let fileManager = FileManager.default
         if let outputPathArgumentValue = arguments.get(self.outputPathArgument) {

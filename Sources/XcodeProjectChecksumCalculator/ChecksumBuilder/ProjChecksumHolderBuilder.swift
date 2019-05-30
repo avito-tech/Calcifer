@@ -11,7 +11,12 @@ final class ProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
         self.builder = builder
     }
     
-    func build(pbxproj: PBXProj, sourceRoot: Path) throws -> ProjChecksumHolder<Builder.ChecksumType> {
+    func build(
+        pbxproj: PBXProj,
+        sourceRoot: Path)
+        throws
+        -> ProjChecksumHolder<Builder.ChecksumType>
+    {
         let projectsChecksums = try pbxproj.projects.map { project in
             try builder.build(project: project, sourceRoot: sourceRoot)
         }
