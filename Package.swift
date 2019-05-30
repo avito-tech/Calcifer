@@ -79,6 +79,7 @@ let package = Package(
                 "BuildArtifacts",
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
+                "CalciferConfig",
                 "DSYMSymbolizer",
                 "Checksum",
                 "Toolkit"
@@ -126,6 +127,7 @@ let package = Package(
             name: "XcodeProjectBuilder",
             dependencies: [
                 "ShellCommand",
+                "CalciferConfig",
                 "ArgumentsParser",
                 "Toolkit"
             ]
@@ -211,6 +213,13 @@ let package = Package(
                 "CommandRunner",
                 "ShellCommand",
                 "Swifter"
+            ]
+        ),
+        // MARK: CalciferConfig
+        .target(
+            name: "CalciferConfig",
+            dependencies: [
+                "Toolkit"
             ]
         ),
         // MARK: BuildStepIntegrator
