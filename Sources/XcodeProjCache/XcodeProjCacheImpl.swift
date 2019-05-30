@@ -30,13 +30,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     
     public func obtainXcodeProj(projectPath: String) throws -> XcodeProj {
         return try queue.sync {
-            
-            guard let modificationDate = obtainModificationDate(for: projectPath) else {
-                throw XcodeProjCacheError.emptyModificationDate(
-                    path: obtainPbxprojPath(for: projectPath)
-                )
-            }
-            
+            let modificationDate = try obtainModificationDate(for: projectPath)
             if let cacheValue = cache[projectPath],
                 cacheValue.modificationDate == modificationDate {
                 return cacheValue.xcodeProj
@@ -66,9 +60,9 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
         return checksum
     }
     
-    private func obtainModificationDate(for projectPath: String) -> Date? {
+    private func obtainModificationDate(for projectPath: String) throws -> Date {
         let pbxprojPath = obtainPbxprojPath(for: projectPath)
-        return fileManager.modificationDate(at: pbxprojPath)
+        return try fileManager.modificationDate(at: pbxprojPath)
     }
     
     private func obtainPbxprojPath(for projectPath: String) -> String {

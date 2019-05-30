@@ -113,8 +113,8 @@ public final class BuildArtifactIntegrator {
             let artifactFileRelativePath = artifactFile.relativePath(to: artifactPath.path)
             guard let destinationFile = destinationFilesDictionary[artifactFileRelativePath]
                 else { return false }
-            let artifactFileSize = fileManager.fileSize(at: artifactFile)
-            let destinationFileSize = fileManager.fileSize(at: artifactFile)
+            let artifactFileSize = try fileManager.fileSize(at: artifactFile)
+            let destinationFileSize = try fileManager.fileSize(at: artifactFile)
             if artifactFileSize != destinationFileSize {
                 return false
             }

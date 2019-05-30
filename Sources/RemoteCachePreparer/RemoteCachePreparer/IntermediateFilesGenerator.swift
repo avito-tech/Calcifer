@@ -46,8 +46,8 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
             if fileManager.fileExists(atPath: allProductHeadersFilePath) {
                 let stringSize = content.utf8.count
                 // Reading the contents of a file is very slow (large files).
-                if let fileSize = fileManager.fileSize(at: allProductHeadersFilePath),
-                    fileSize == stringSize {
+                let fileSize = try fileManager.fileSize(at: allProductHeadersFilePath)
+                if fileSize == stringSize {
                     let currentContent = try String(contentsOfFile: allProductHeadersFilePath)
                     if currentContent == content {
                         continue
