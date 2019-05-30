@@ -44,11 +44,11 @@ public final class XcodeProjectBuilder {
         let result = shellExecutor.execute(
             command: command,
             onOutputData: { [fileHandle] data in
-                StandardStreamWrapper.shared.writeOutput(data)
+                ObservableStandardStream.shared.writeOutput(data)
                 fileHandle?.write(data)
             },
             onErrorData: { [fileHandle] data in
-                StandardStreamWrapper.shared.writeError(data)
+                ObservableStandardStream.shared.writeError(data)
                 fileHandle?.write(data)
             }
         )

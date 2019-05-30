@@ -8,6 +8,7 @@ public final class Daemon {
     private let server = HttpServer()
     private let commandRunner: CommandRunner
     private let commandRunQueue = DispatchQueue(label: "DaemonCommandRunQueue")
+    private let serverPort = 9080
     
     public init(commandRunner: CommandRunner) {
         self.commandRunner = commandRunner
@@ -25,7 +26,7 @@ public final class Daemon {
             let config = catchError { try decoder.decode(CommandRunConfig.self, from: data) }
             self.executeCommand(config: config, for: session)
         })
-        try server.start(9080)
+        try server.start(in_port_t(serverPort))
         RunLoop.main.run()
     }
     
@@ -41,7 +42,7 @@ public final class Daemon {
             clearLogsRedirect()
             clearStandardStreamRedirect()
             
-            let codeMessage = CommandRunCodeMessage (code: code)
+            let codeMessage = CommandExitCodeMessage(code: code)
             session.write(codeMessage)
             session.writeCloseFrame()
         }
@@ -60,19 +61,19 @@ public final class Daemon {
     }
     
     private func redirectStandardStream(to session: WebSocketSession) {
-        StandardStreamWrapper.shared.onOutputWrite = { data in
+        ObservableStandardStream.shared.onOutputWrite = { data in
             let message = StandardStreamMessage(source: .output, data: data)
             session.write(message)
         }
-        StandardStreamWrapper.shared.onErrorWrite = { data in
+        ObservableStandardStream.shared.onErrorWrite = { data in
             let message = StandardStreamMessage(source: .error, data: data)
             session.write(message)
         }
     }
     
     private func clearStandardStreamRedirect() {
-        StandardStreamWrapper.shared.onOutputWrite = nil
-        StandardStreamWrapper.shared.onErrorWrite = nil
+        ObservableStandardStream.shared.onOutputWrite = nil
+        ObservableStandardStream.shared.onErrorWrite = nil
     }
     
 }
