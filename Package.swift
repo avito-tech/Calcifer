@@ -69,6 +69,29 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: IO
+        .target(
+            name: "IO",
+            dependencies: [
+                "Toolkit"
+            ]
+        ),
+        // MARK: Graphite
+        .target(
+            name: "Graphite",
+            dependencies: [
+                "IO"
+            ]
+        ),
+        // MARK: StatisticLogger
+        .target(
+            name: "StatisticLogger",
+            dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
+                "Graphite",
+                "Toolkit"
+            ]
+        ),
         // MARK: RemoteCachePreparer
         .target(
             name: "RemoteCachePreparer",
@@ -80,6 +103,7 @@ let package = Package(
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
                 "CalciferConfig",
+                "StatisticLogger",
                 "DSYMSymbolizer",
                 "Checksum",
                 "Toolkit"
