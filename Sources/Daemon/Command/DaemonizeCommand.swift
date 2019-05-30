@@ -11,10 +11,10 @@ import Toolkit
 public final class DaemonizeCommand: Command {
     
     public let command = "daemonize"
-    public let overview = "Create plist and pass to launchctl"
+    public let overview = "Generate a plist and pass it to launchctl that starts the server and will keep it up all the time."
     
     public required init(parser: ArgumentParser) {
-        let _ = parser.add(subparser: command, overview: overview)
+        parser.add(subparser: command, overview: overview)
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {

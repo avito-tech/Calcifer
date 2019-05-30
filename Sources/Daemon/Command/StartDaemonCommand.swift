@@ -14,11 +14,11 @@ public final class StartDaemonCommand: Command {
     public let overview = "Start daemon"
     
     public required init(parser: ArgumentParser) {
-        let _ = parser.add(subparser: command, overview: overview)
+        parser.add(subparser: command, overview: overview)
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
-        // If another process of daemon will be run then it die because socket already reserved
+        // If another daemon instance is already running, new instance will die because socket is already reserved/busy
         Logger.info("Run daemon pid \(getpid())")
         try Daemon(commandRunner: runner).run()
     }

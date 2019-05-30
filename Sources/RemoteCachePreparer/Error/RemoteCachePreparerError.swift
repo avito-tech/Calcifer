@@ -24,7 +24,7 @@ public enum RemoteCachePreparerError: Error, CustomStringConvertible {
         case let .unableToFindDSYM(target, path):
             return "Unable to find dSYM for target \(target) at path \(path)"
         case let .xcodeCommandLineVersionMismatch(xcodeVersion, commandLineVersion):
-            return "Xcode command line version mismatch! Xcode version \(xcodeVersion) command line version \(commandLineVersion)"
+            return "Xcode command line version mismatch! Current environment Xcode version: \(xcodeVersion), command line Xcode version: \(commandLineVersion)"
         }
     }
     
