@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CommandRunCodeMessage: Codable {
+public struct CommandExitCodeMessage: Codable {
     let code: Int32
     
     init(code: Int32) {

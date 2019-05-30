@@ -1,8 +1,8 @@
 import Foundation
 
-public final class StandardStreamWrapper {
+public final class ObservableStandardStream {
     
-    public static let shared = StandardStreamWrapper(
+    public static let shared = ObservableStandardStream(
         onOutputWrite: nil,
         onErrorWrite: nil
     )
