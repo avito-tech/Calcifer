@@ -8,7 +8,7 @@ extension Date {
         return dateFormatter
     }()
     
-    public func formatteString() -> String {
+    public func formattedString() -> String {
         let dateFormatter = Date.dateFormatter
         return dateFormatter.string(from: self)
     }

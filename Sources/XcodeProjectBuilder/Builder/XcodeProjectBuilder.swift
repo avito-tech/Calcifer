@@ -70,7 +70,7 @@ public final class XcodeProjectBuilder {
             withIntermediateDirectories: true
         )
         let logFilePath = logDirectory
-            .appendingPathComponent(Date().formatteString())
+            .appendingPathComponent(Date().formattedString())
             .appending(".txt")
         let logFile = URL(fileURLWithPath: logFilePath)
         return logFile
