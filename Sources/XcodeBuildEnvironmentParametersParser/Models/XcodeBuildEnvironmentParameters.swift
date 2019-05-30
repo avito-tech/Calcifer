@@ -88,7 +88,7 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     // "PLATFORM_NAME": "iphonesimulator"
     public let platformName: String
     // "SUPPORTED_PLATFORMS": "iphonesimulator iphoneos"
-    public let supportedPlatform: String
+    public let supportedPlatforms: String
     // "CONFIGURATION": "Debug"
     public let configuration: String
     // "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"
@@ -152,7 +152,7 @@ public final class XcodeBuildEnvironmentParameters: Codable {
         swiftOptimizationLevel = try environment.getValue("SWIFT_OPTIMIZATION_LEVEL")
         swiftCompilationMode = try environment.getValue("SWIFT_COMPILATION_MODE")
         platformName = try environment.getValue("PLATFORM_NAME")
-        supportedPlatform = try environment.getValue("SUPPORTED_PLATFORMS")
+        supportedPlatforms = try environment.getValue("SUPPORTED_PLATFORMS")
         configuration = try environment.getValue("CONFIGURATION")
         debugInformationFormat = try environment.getValue("DEBUG_INFORMATION_FORMAT")
         

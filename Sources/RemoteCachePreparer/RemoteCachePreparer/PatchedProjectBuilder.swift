@@ -180,8 +180,8 @@ final class PatchedProjectBuilder {
         patchedProjectPath: String)
         throws -> XcodeProjectBuildConfig
     {
-        let architectureStrins = params.architectures.split(separator: " ").map { String($0) }
-        let architectures: [Architecture] = try architectureStrins.map { architectureString in
+        let architectureStrings = params.architectures.split(separator: " ").map { String($0) }
+        let architectures: [Architecture] = try architectureStrings.map { architectureString in
             guard let architecture = Architecture(rawValue: architectureString) else {
                 throw RemoteCachePreparerError.unableToParseArchitecture(string: architectureString)
             }
