@@ -55,7 +55,7 @@ public final class Daemon {
     }
     
     private func clearLogsRedirect() {
-        Logger.removeAllDestination()
+        Logger.removeAllDestinations()
         Logger.addConsoleDestination()
     }
     

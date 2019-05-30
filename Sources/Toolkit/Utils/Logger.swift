@@ -45,7 +45,7 @@ public final class Logger {
         swiftyBeaver.addDestination(destination)
     }
     
-    public static func removeAllDestination() {
+    public static func removeAllDestinations() {
         let swiftyBeaver = SwiftyBeaver.self
         swiftyBeaver.removeAllDestinations()
     }
