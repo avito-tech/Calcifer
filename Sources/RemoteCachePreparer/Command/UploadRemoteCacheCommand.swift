@@ -1,8 +1,9 @@
 import XcodeBuildEnvironmentParametersParser
 import BuildProductCacheStorage
 import ArgumentsParser
-import Foundation
+import CalciferConfig
 import ShellCommand
+import Foundation
 import Utility
 import Toolkit
 
@@ -12,13 +13,20 @@ public final class UploadRemoteCacheCommand: Command {
     public let overview = "Upload remote cache"
     
     enum Arguments: String, CommandArgument {
+        case sourcePath
         case environmentFilePath
     }
     
     private let environmentFilePathArgument: OptionArgument<String>
+    private let sourcePathArgument: OptionArgument<String>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
+        sourcePathArgument = subparser.add(
+            option: Arguments.sourcePath.optionString,
+            kind: String.self,
+            usage: "Specify source path"
+        )
         environmentFilePathArgument = subparser.add(
             option: Arguments.environmentFilePath.optionString,
             kind: String.self,
@@ -39,6 +47,20 @@ public final class UploadRemoteCacheCommand: Command {
             }
         }
         
+        let shellExecutor = ShellCommandExecutorImpl()
+        
+        let sourcePath: String
+        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
+            sourcePath = sourcePathArgumentValue
+        } else {
+            let sourcePathProvider = SourcePathProviderImpl(
+                shellCommandExecutor: shellExecutor
+            )
+            sourcePath = try sourcePathProvider.obtainSourcePath(
+                podsRoot: params.podsRoot
+            )
+        }
+        
         let fileManager = FileManager.default
         let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
@@ -53,9 +75,12 @@ public final class UploadRemoteCacheCommand: Command {
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory
         )
+        
+        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let config = try configProvider.obtainConfig(path: sourcePath)
 
         try TimeProfiler.measure("Upload remote cache") {
-            try uploader.upload(params: params)
+            try uploader.upload(config: config, params: params)
         }
     }
 

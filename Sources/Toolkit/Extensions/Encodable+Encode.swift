@@ -18,3 +18,10 @@ public extension Encodable {
         try data.write(to: URL(fileURLWithPath: path))
     }
 }
+
+public extension Data {
+    public func decode<T: Decodable>(type: T.Type = T.self) throws -> T {
+        let decoder = JSONDecoder()
+        return try decoder.decode(type, from: self)
+    }
+}

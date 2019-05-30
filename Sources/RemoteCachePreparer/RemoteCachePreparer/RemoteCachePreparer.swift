@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
+import CalciferConfig
 import XcodeProjCache
 import BuildArtifacts
 import DSYMSymbolizer
@@ -39,6 +40,7 @@ final class RemoteCachePreparer {
     }
     
     func prepare(
+        config: CalciferConfig,
         params: XcodeBuildEnvironmentParameters,
         sourcePath: String)
         throws
@@ -158,11 +160,12 @@ final class RemoteCachePreparer {
     }
     
     private func createPatchedProjectBuilder(
+        config: CalciferConfig,
         targetInfoFilter: TargetInfoFilter,
         cacheStorage: BuildProductCacheStorage,
         checksumProducer: BaseURLChecksumProducer,
         artifactIntegrator: ArtifactIntegrator)
-        -> PatchedProjectBuilder
+        throws -> PatchedProjectBuilder
     {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager

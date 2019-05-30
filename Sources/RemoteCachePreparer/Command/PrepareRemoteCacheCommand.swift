@@ -2,6 +2,7 @@ import XcodeBuildEnvironmentParametersParser
 import BuildProductCacheStorage
 import ArgumentsParser
 import XcodeProjCache
+import CalciferConfig
 import Foundation
 import ShellCommand
 import Utility
@@ -47,17 +48,23 @@ public final class PrepareRemoteCacheCommand: Command {
             }
         }
         
+        let shellExecutor = ShellCommandExecutorImpl()
+        
         let sourcePath: String
         if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
             sourcePath = sourcePathArgumentValue
         } else {
-            sourcePath = try obtainSourcePath(path: params.podsRoot)
+            let sourcePathProvider = SourcePathProviderImpl(
+                shellCommandExecutor: shellExecutor
+            )
+            sourcePath = try sourcePathProvider.obtainSourcePath(
+                podsRoot: params.podsRoot
+            )
         }
         
         let fileManager = FileManager.default
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
-        let shellExecutor = ShellCommandExecutorImpl()
         let unzip = Unzip(shellExecutor: shellExecutor)
         let cacheStorageFactory = CacheStorageFactoryImpl(
             fileManager: fileManager,
@@ -72,35 +79,17 @@ public final class PrepareRemoteCacheCommand: Command {
             cacheStorageFactory: cacheStorageFactory,
             xcodeProjCache: xcodeProjCache
         )
+        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let localConfigPath = sourcePath.appendingPathComponent(configProvider.configFileName())
+        let config = try configProvider.obtainConfig(path: localConfigPath)
         
         try TimeProfiler.measure("Prepare remote cache") {
             try preparer.prepare(
+                config: config,
                 params: params,
                 sourcePath: sourcePath
             )
         }
     }
     
-    private func obtainSourcePath(path: String) throws -> String {
-        let command = ShellCommand(
-            launchPath: "/usr/bin/git",
-            arguments: [
-                "-C",
-                "\(path)",
-                "rev-parse",
-                "--show-toplevel"
-            ],
-            environment: [:]
-        )
-        let shellCommandExecutor = ShellCommandExecutorImpl()
-        let result = shellCommandExecutor.execute(command: command)
-        guard let output = result.output,
-            result.terminationStatus == 0
-            else
-        {
-            throw RemoteCachePreparerError.unableToObtainSourcePath
-        }
-        // Remove trailing new line
-        return output.chop()
-    }
 }
