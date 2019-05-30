@@ -11,7 +11,7 @@ import Toolkit
 public final class StartDaemonCommand: Command {
     
     public let command = "startDaemon"
-    public let overview = "Start daemon"
+    public let overview = "Start daemon with sever"
     
     public required init(parser: ArgumentParser) {
         parser.add(subparser: command, overview: overview)

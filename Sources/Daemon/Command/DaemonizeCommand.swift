@@ -11,6 +11,7 @@ import Toolkit
 public final class DaemonizeCommand: Command {
     
     public let command = "daemonize"
+    // Look on StartDaemonCommand
     public let overview = "Generate a plist and pass it to launchctl that starts the server and will keep it up all the time."
     
     public required init(parser: ArgumentParser) {
