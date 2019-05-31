@@ -76,10 +76,14 @@ final class PatchedProjectBuilder {
             targetsForBuild: targetsForBuild
         )
         
-        let statistic = CacheHitStatistic(
-            hit: targetInfosForPatchedProjectIntegration.map { $0.targetName },
-            miss: targetNamesForBuild,
-            all: requiredFramework.map { $0.targetName }
+        let entries = targetInfosForPatchedProjectIntegration.map {
+            CacheHitRationEntry(moduleName: $0.targetName, resolution: .hit)
+        } + targetNamesForBuild.map {
+            CacheHitRationEntry(moduleName: $0, resolution: .miss)
+        }
+        
+        let statistic = CacheHitRationStatistic(
+            entries: entries
         )
         try statisticLogger.logStatisticCache(
             statistic,
