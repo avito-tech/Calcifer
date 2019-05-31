@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
+import CalciferConfig
 import BuildArtifacts
 import DSYMSymbolizer
 import ShellCommand
@@ -30,11 +31,14 @@ final class RemoteCacheUploader {
         self.cacheStorageFactory = cacheStorageFactory
     }
     
-    func upload(params: XcodeBuildEnvironmentParameters) throws {
+    func upload(
+        config: CalciferConfig,
+        params: XcodeBuildEnvironmentParameters)
+        throws
+    {
         
         let podsProjectPath = params.podsProjectPath
         
-        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
         let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
         
         let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
@@ -44,8 +48,15 @@ final class RemoteCacheUploader {
         }
         try targetChecksumProvider.saveChecksumToFile()
         
+        guard let gradleHost = config.storageConfig?.gradleHost else {
+            Logger.error("Gradle host not setted")
+            return
+        }
+        
         let localStorage = cacheStorageFactory.createLocalBuildProductCacheStorage()
-        let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage()
+        let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
+            gradleHost: gradleHost
+        )
         
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {

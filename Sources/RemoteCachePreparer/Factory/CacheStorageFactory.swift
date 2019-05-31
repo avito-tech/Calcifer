@@ -6,12 +6,15 @@ import Toolkit
 
 public protocol CacheStorageFactory {
     
-    func createMixedCacheStorage(shouldUploadCache: Bool) throws -> BuildProductCacheStorage
+    func createMixedCacheStorage(
+        gradleHost: String,
+        shouldUploadCache: Bool
+    ) throws -> BuildProductCacheStorage
     
     func createLocalBuildProductCacheStorage()
         -> BuildProductCacheStorage
     
-    func createRemoteBuildProductCacheStorage() throws -> BuildProductCacheStorage
+    func createRemoteBuildProductCacheStorage(gradleHost: String) throws -> BuildProductCacheStorage
 }
 
 public final class CacheStorageFactoryImpl: CacheStorageFactory {
@@ -24,11 +27,15 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
         self.unzip = unzip
     }
     
-    public func createMixedCacheStorage(shouldUploadCache: Bool)
+    public func createMixedCacheStorage(
+        gradleHost: String,
+        shouldUploadCache: Bool)
         throws -> BuildProductCacheStorage
     {
         let localStorage = createLocalBuildProductCacheStorage()
-        let remoteStorage = try createRemoteBuildProductCacheStorage()
+        let remoteStorage = try createRemoteBuildProductCacheStorage(
+            gradleHost: gradleHost
+        )
         return MixedBuildProductCacheStorage(
             fileManager: fileManager,
             localCacheStorage: localStorage,
@@ -49,10 +56,9 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
         return localStorage
     }
     
-    public func createRemoteBuildProductCacheStorage()
+    public func createRemoteBuildProductCacheStorage(gradleHost: String)
         throws -> BuildProductCacheStorage
     {
-        let gradleHost = "http://gradle-remote-cache-ios.k.avito.ru"
         guard let gradleHostURL = URL(string: gradleHost) else {
             throw RemoteCachePreparerError.unableToCreateRemoteCacheHostURL(
                 string: gradleHost
