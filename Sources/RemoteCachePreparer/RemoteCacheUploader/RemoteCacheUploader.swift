@@ -49,7 +49,7 @@ final class RemoteCacheUploader {
         try targetChecksumProvider.saveChecksumToFile()
         
         guard let gradleHost = config.storageConfig?.gradleHost else {
-            Logger.error("Gradle host not setted")
+            Logger.error("Gradle host is not set")
             return
         }
         
