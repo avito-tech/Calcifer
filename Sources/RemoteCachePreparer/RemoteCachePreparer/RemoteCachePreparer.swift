@@ -89,14 +89,6 @@ final class RemoteCachePreparer {
         )
         
         let buildDirectoryPath = obtainBuildDirectoryPath()
-        
-        try TimeProfiler.measure("Remove XCBuildData Directory") {
-            let buildDataDirectoryPath = buildDirectoryPath
-                .appendingPathComponent("XCBuildData")
-            if fileManager.directoryExist(at: buildDataDirectoryPath) {
-                try fileManager.removeItem(atPath: buildDataDirectoryPath)
-            }
-        }
 
         try TimeProfiler.measure("Prepare and build patched project if needed") {
             let patchedProjectBuilder = try createPatchedProjectBuilder(
@@ -186,18 +178,9 @@ final class RemoteCachePreparer {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager
         )
-        let outputFilter = XcodeProjectBuilderOutputFilterImpl()
-        if let buildLogLevel = config.buildConfig?.buildLogLevel {
-            outputFilter.buildLogLevel = buildLogLevel
-        }
-        let outputHandler = XcodeProjectBuilderOutputHandlerImpl(
-            fileManager: fileManager,
-            observableStandardStream: ObservableStandardStream.shared,
-            outputFilter: outputFilter
-        )
         let builder = XcodeProjectBuilder(
             shellExecutor: shellCommandExecutor,
-            outputHandler: outputHandler
+            fileManager: fileManager
         )
         let patcher = XcodeProjectPatcher(
             xcodeProjCache: xcodeProjCache
