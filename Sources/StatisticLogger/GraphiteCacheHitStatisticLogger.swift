@@ -32,11 +32,11 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
     }
     
     public func logStatisticCache(
-        _ statistic: CacheHitStatistic,
+        _ statistic: CacheHitRationStatistic,
         params: XcodeBuildEnvironmentParameters)
         throws
     {
-        let hitValue = Double(statistic.hit.count / statistic.all.count)
+        let hitValue = statistic.hitRate
         let timestamp = Date()
         
         let shortKey = shortMetricKey(for: params)

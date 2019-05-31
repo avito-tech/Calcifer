@@ -3,7 +3,7 @@ import XcodeBuildEnvironmentParametersParser
 
 public protocol CacheHitStatisticLogger {
     func logStatisticCache(
-        _ statistic: CacheHitStatistic,
+        _ statistic: CacheHitRationStatistic,
         params: XcodeBuildEnvironmentParameters
     ) throws
 }

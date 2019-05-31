@@ -10,7 +10,7 @@ public final class AggregateCacheHitStatsticLogger: CacheHitStatisticLogger {
     }
     
     public func logStatisticCache(
-        _ statistic: CacheHitStatistic,
+        _ statistic: CacheHitRationStatistic,
         params: XcodeBuildEnvironmentParameters)
         throws
     {
