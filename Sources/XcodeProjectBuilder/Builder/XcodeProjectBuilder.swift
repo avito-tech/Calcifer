@@ -15,7 +15,9 @@ public final class XcodeProjectBuilder {
         self.fileManager = fileManager
     }
     
-    public func build(config: XcodeProjectBuildConfig, environment: [String: String]) throws {
+    public func build(
+        config: XcodeProjectBuildConfig,
+        environment: [String: String]) throws {
         let architectures = config.architectures.map { $0.rawValue }.joined(separator: " ")
         let onlyActiveArchitecture = config.onlyActiveArchitecture ? "YES" : "NO"
         let command = ShellCommand(

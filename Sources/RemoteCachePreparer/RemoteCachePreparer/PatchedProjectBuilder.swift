@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
+import StatisticLogger
 import BuildArtifacts
 import ShellCommand
 import Checksum
@@ -20,6 +21,7 @@ final class PatchedProjectBuilder {
     private let targetInfoFilter: TargetInfoFilter
     private let artifactProvider: TargetBuildArtifactProvider
     private let xcodeCommandLineVersionProvider: XcodeCommandLineToolVersionProvider
+    private let statisticLogger: CacheHitStatisticLogger
     
     init(
         cacheStorage: BuildProductCacheStorage,
@@ -30,7 +32,8 @@ final class PatchedProjectBuilder {
         artifactIntegrator: ArtifactIntegrator,
         targetInfoFilter: TargetInfoFilter,
         artifactProvider: TargetBuildArtifactProvider,
-        xcodeCommandLineVersionProvider: XcodeCommandLineToolVersionProvider)
+        xcodeCommandLineVersionProvider: XcodeCommandLineToolVersionProvider,
+        statisticLogger: CacheHitStatisticLogger)
     {
         self.cacheStorage = cacheStorage
         self.checksumProducer = checksumProducer
@@ -41,6 +44,7 @@ final class PatchedProjectBuilder {
         self.targetInfoFilter = targetInfoFilter
         self.artifactProvider = artifactProvider
         self.xcodeCommandLineVersionProvider = xcodeCommandLineVersionProvider
+        self.statisticLogger = statisticLogger
     }
     
     public func prepareAndBuildPatchedProjectIfNeeded(
@@ -56,10 +60,13 @@ final class PatchedProjectBuilder {
         let cacheBuildPath = buildDirectoryPath
             .appendingPathComponent("\(params.configuration)-\(params.platformName)")
         
+        let requiredFramework = targetInfoFilter.frameworkTargetInfos(requiredTargets)
+        
         let targetsForBuild = try TimeProfiler.measure("Obtain targets for build") {
             try obtainTargetsForBuild(
                 cacheStorage: cacheStorage,
-                requiredFrameworks: requiredTargets
+                allRequiredTargetInfos: requiredTargets,
+                requiredFramework: requiredFramework
             )
         }
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
@@ -67,6 +74,20 @@ final class PatchedProjectBuilder {
         let targetInfosForPatchedProjectIntegration = targetInfosForIntegrationToPatchedProject(
             requiredTargets: requiredTargets,
             targetsForBuild: targetsForBuild
+        )
+        
+        let entries = targetInfosForPatchedProjectIntegration.map {
+            CacheHitRationEntry(moduleName: $0.targetName, resolution: .hit)
+        } + targetNamesForBuild.map {
+            CacheHitRationEntry(moduleName: $0, resolution: .miss)
+        }
+        
+        let statistic = CacheHitRationStatistic(
+            entries: entries
+        )
+        try statisticLogger.logStatisticCache(
+            statistic,
+            params: params
         )
         
         // If we do not need to store an artifact, then we don’t need to build it.
@@ -125,16 +146,16 @@ final class PatchedProjectBuilder {
     
     private func obtainTargetsForBuild(
         cacheStorage: BuildProductCacheStorage,
-        requiredFrameworks: [TargetInfo<BaseChecksum>])
+        allRequiredTargetInfos: [TargetInfo<BaseChecksum>],
+        requiredFramework: [TargetInfo<BaseChecksum>])
         throws -> [TargetInfo<BaseChecksum>]
     {
-        let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredFrameworks)
-        let cachedFrameworkTargets = try obtainCachedTargets(targetInfos: frameworkTargets)
-        let frameworkTargetsForBuild = frameworkTargets.filter { targetInfo in
+        let cachedFrameworkTargets = try obtainCachedTargets(targetInfos: requiredFramework)
+        let frameworkTargetsForBuild = requiredFramework.filter { targetInfo in
             cachedFrameworkTargets.read(targetInfo) == nil
         }
 
-        let connectedBundleTargets = requiredFrameworks.filter { targetInfo in
+        let connectedBundleTargets = allRequiredTargetInfos.filter { targetInfo in
             if case .bundle = targetInfo.productType {
                 let connectedFrameworkTarget = frameworkTargetsForBuild.first(
                     where: { frameworkTargetInfo -> Bool in

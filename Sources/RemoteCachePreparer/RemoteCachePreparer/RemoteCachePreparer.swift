@@ -4,6 +4,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import XcodeProjectBuilder
 import XcodeProjectPatcher
+import StatisticLogger
 import CalciferConfig
 import XcodeProjCache
 import BuildArtifacts
@@ -84,7 +85,8 @@ final class RemoteCachePreparer {
         let buildDirectoryPath = obtainBuildDirectoryPath()
 
         try TimeProfiler.measure("Prepare and build patched project if needed") {
-            let patchedProjectBuilder = createPatchedProjectBuilder(
+            let patchedProjectBuilder = try createPatchedProjectBuilder(
+                config: config,
                 targetInfoFilter: targetInfoFilter,
                 cacheStorage: cacheStorage,
                 checksumProducer: checksumProducer,
@@ -180,6 +182,7 @@ final class RemoteCachePreparer {
         let xcodeCommandLineVersionProvider = XcodeCommandLineToolVersionProvider(
             shellExecutor: shellCommandExecutor
         )
+        let statisticLogger = try createStatisticLogger(config: config)
         return PatchedProjectBuilder(
             cacheStorage: cacheStorage,
             checksumProducer: checksumProducer,
@@ -189,8 +192,26 @@ final class RemoteCachePreparer {
             artifactIntegrator: artifactIntegrator,
             targetInfoFilter: targetInfoFilter,
             artifactProvider: artifactProvider,
-            xcodeCommandLineVersionProvider: xcodeCommandLineVersionProvider
+            xcodeCommandLineVersionProvider: xcodeCommandLineVersionProvider,
+            statisticLogger: statisticLogger
         )
+    }
+    
+    private func createStatisticLogger(config: CalciferConfig) throws -> CacheHitStatisticLogger {
+        var loggers = [CacheHitStatisticLogger]()
+        if let graphiteConfig = config.statisticLoggerConfig?.graphiteConfig {
+            let statisticLoggerFactory = CacheHitStatisticLoggerFactory()
+            let graphiteCacheHitStatisticLogger = try statisticLoggerFactory.createGraphiteCacheHitStatisticLogger(
+                host: graphiteConfig.host,
+                port: graphiteConfig.port,
+                rootKey: graphiteConfig.rootKey
+            )
+            loggers.append(graphiteCacheHitStatisticLogger)
+        }
+        let aggregateLogger = AggregateCacheHitStatsticLogger(
+            loggers: loggers
+        )
+        return aggregateLogger
     }
     
     func buildEnvironmentParametersPath() -> String {

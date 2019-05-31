@@ -105,6 +105,9 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     // "COMMAND_MODE": "legacy"
     public let commandMode: String
     
+    // "USER": "username"
+    public let user: String
+    
     public init(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
         targetName = try environment.getValue("TARGETNAME")
         project = try environment.getValue("PROJECT")
@@ -161,6 +164,8 @@ public final class XcodeBuildEnvironmentParameters: Codable {
         xcodeMinorVersion = try environment.getValue("XCODE_VERSION_MINOR")
         xcodeProductBuildVersion = try environment.getValue("XCODE_PRODUCT_BUILD_VERSION")
         commandMode = try environment.getValue("COMMAND_MODE")
+        
+        user = try environment.getValue("USER")
     }
 }
 

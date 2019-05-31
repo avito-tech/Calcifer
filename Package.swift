@@ -35,6 +35,10 @@ let package = Package(
             url: "https://github.com/daltoniam/Starscream.git",
             .exact("3.1.0")
         ),
+        .package(
+            url: "https://github.com/avito-tech/GraphiteClient.git",
+            .exact("0.1.0")
+        ),
     ],
     targets: [
         // MARK: Calcifer
@@ -69,6 +73,15 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: StatisticLogger
+        .target(
+            name: "StatisticLogger",
+            dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
+                "GraphiteClient",
+                "Toolkit"
+            ]
+        ),
         // MARK: RemoteCachePreparer
         .target(
             name: "RemoteCachePreparer",
@@ -80,6 +93,7 @@ let package = Package(
                 "XcodeProjectPatcher",
                 "XcodeProjectBuilder",
                 "CalciferConfig",
+                "StatisticLogger",
                 "DSYMSymbolizer",
                 "Checksum",
                 "Toolkit"
