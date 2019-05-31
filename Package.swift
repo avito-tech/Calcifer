@@ -35,6 +35,10 @@ let package = Package(
             url: "https://github.com/daltoniam/Starscream.git",
             .exact("3.1.0")
         ),
+        .package(
+            url: "https://github.com/avito-tech/GraphiteClient.git",
+            .exact("0.1.0")
+        ),
     ],
     targets: [
         // MARK: Calcifer
@@ -69,26 +73,12 @@ let package = Package(
                 "Toolkit"
             ]
         ),
-        // MARK: IO
-        .target(
-            name: "IO",
-            dependencies: [
-                "Toolkit"
-            ]
-        ),
-        // MARK: Graphite
-        .target(
-            name: "Graphite",
-            dependencies: [
-                "IO"
-            ]
-        ),
         // MARK: StatisticLogger
         .target(
             name: "StatisticLogger",
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
-                "Graphite",
+                "GraphiteClient",
                 "Toolkit"
             ]
         ),

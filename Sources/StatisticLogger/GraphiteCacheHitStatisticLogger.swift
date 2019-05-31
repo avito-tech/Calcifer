@@ -1,6 +1,6 @@
 import Foundation
 import XcodeBuildEnvironmentParametersParser
-import Graphite
+import GraphiteClient
 import Toolkit
 import IO
 
