@@ -13,11 +13,12 @@ public final class BuildParametersChecksumProducer: ChecksumProducer {
             String(input.enableBitcode),
             String(input.enableTestability),
             String(input.profilingCode),
-            input.currentArchitecture,
+            input.architectures,
             input.architectures,
             input.platformName,
             input.swiftVersion,
             input.configuration,
+            input.sdkActualVersion
         ]
         let paramsChecksum = try importantParams.map({ BaseChecksum($0) }).aggregate()
         Logger.info(
