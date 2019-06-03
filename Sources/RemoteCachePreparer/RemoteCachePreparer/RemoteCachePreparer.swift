@@ -89,6 +89,14 @@ final class RemoteCachePreparer {
         )
         
         let buildDirectoryPath = obtainBuildDirectoryPath()
+        
+        try TimeProfiler.measure("Remove XCBuildData Directory") {
+            let buildDataDirectoryPath = buildDirectoryPath
+                .appendingPathComponent("XCBuildData")
+            if fileManager.directoryExist(at: buildDataDirectoryPath) {
+                try fileManager.removeItem(atPath: buildDataDirectoryPath)
+            }
+        }
 
         try TimeProfiler.measure("Prepare and build patched project if needed") {
             let patchedProjectBuilder = try createPatchedProjectBuilder(
