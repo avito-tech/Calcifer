@@ -1,5 +1,5 @@
 import Foundation
-import xcodeproj
+import XcodeProj
 import Checksum
 import PathKit
 import Toolkit
@@ -114,6 +114,7 @@ extension PBXTarget {
 
 extension PBXBuildPhase {
     func fileElements() -> [PBXFileElement] {
+        guard let files = files else { return [PBXFileElement]() }
         return files.compactMap { $0.file }
     }
 }

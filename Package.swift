@@ -157,7 +157,7 @@ let package = Package(
         .target(
             name: "XcodeProjCache",
             dependencies: [
-                "xcodeproj",
+                "XcodeProj",
                 "Checksum"
             ]
         ),
@@ -167,7 +167,7 @@ let package = Package(
             dependencies: [
                 "ArgumentsParser",
                 "XcodeProjCache",
-                "xcodeproj",
+                "XcodeProj",
                 "Checksum"
             ]
         ),
@@ -183,7 +183,7 @@ let package = Package(
             dependencies: [
                 "ArgumentsParser",
                 "XcodeProjCache",
-                "xcodeproj",
+                "XcodeProj",
                 "Toolkit"
             ]
         ),
@@ -240,7 +240,7 @@ let package = Package(
         .target(
             name: "BuildStepIntegrator",
             dependencies: [
-                "xcodeproj",
+                "XcodeProj",
                 "ArgumentsParser",
                 "Toolkit"
             ]

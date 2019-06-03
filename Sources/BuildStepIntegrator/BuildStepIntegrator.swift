@@ -1,6 +1,6 @@
 import Foundation
 import PathKit
-import xcodeproj
+import XcodeProj
 
 public final class BuildStepIntegrator {
     
@@ -28,18 +28,15 @@ public final class BuildStepIntegrator {
     }
     
     private func removePodsFramework(target: PBXTarget, pbxproj: PBXProj) throws {
-        if let frameworkBuildPhase = try target.frameworksBuildPhase() {
-            let podsFilePath = "Pods_\(target.name).framework"
-            let file = frameworkBuildPhase.files.first(where: {
-                $0.file?.path == podsFilePath
-            })
-            if let frameworkFile = file {
-                if let index = frameworkBuildPhase.files.firstIndex(of: frameworkFile) {
-                    frameworkBuildPhase.files.remove(at: index)
-                }
-                pbxproj.delete(object: frameworkFile)
-            }
-        }
+        guard let frameworkBuildPhase = try target.frameworksBuildPhase() else { return }
+        let podsFilePath = "Pods_\(target.name).framework"
+        guard let frameworkBuildPhaseFiles = frameworkBuildPhase.files,
+            let frameworkFile = frameworkBuildPhaseFiles.first(where: { $0.file?.path == podsFilePath})
+            else { return }
+        guard let frameworkFileIndex = frameworkBuildPhaseFiles.firstIndex(of: frameworkFile)
+            else { return }
+        frameworkBuildPhase.files?.remove(at: frameworkFileIndex)
+        pbxproj.delete(object: frameworkFile)
     }
     
     private func updateCalciferBuildPhases(

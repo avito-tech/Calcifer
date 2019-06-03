@@ -1,6 +1,6 @@
 import Foundation
 @testable import XcodeProjectChecksumCalculator
-import xcodeproj
+import XcodeProj
 import PathKit
 
 final class TestFileElementFullPathProvider: FileElementFullPathProvider {

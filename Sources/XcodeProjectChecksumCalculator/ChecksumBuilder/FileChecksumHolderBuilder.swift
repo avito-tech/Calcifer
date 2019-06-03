@@ -1,5 +1,5 @@
 import Foundation
-import xcodeproj
+import XcodeProj
 import Checksum
 import PathKit
 

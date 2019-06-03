@@ -1,6 +1,6 @@
 import Foundation
 import XcodeProjCache
-import xcodeproj
+import XcodeProj
 import Checksum
 import PathKit
 

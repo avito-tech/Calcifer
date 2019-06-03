@@ -1,7 +1,7 @@
 import Foundation
 
 public extension Array {
-    public func asyncConcurrentEnumerated(
+    func asyncConcurrentEnumerated(
         each: (_ object: Element, _ completion: @escaping () -> (), _ stop: () -> ()) throws -> ()) throws
     {
         let dispatchGroup = DispatchGroup()

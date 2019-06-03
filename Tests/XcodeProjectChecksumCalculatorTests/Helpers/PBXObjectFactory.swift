@@ -1,6 +1,6 @@
 import Foundation
 @testable import XcodeProjectChecksumCalculator
-@testable import xcodeproj
+@testable import XcodeProj
 import PathKit
 
 final class PBXObjectFactory {
