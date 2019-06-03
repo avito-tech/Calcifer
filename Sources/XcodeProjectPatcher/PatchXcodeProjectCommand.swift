@@ -1,4 +1,5 @@
 import ArgumentsParser
+import XcodeBuildEnvironmentParametersParser
 import XcodeProjCache
 import Foundation
 import Utility
@@ -13,11 +14,14 @@ public final class PatchXcodeProjectCommand: Command {
         case projectPath
         case outputPath
         case targets
+        case environmentFilePath
     }
     
     private let projectPathArgument: OptionArgument<String>
     private let outputPathArgument: OptionArgument<String>
     private let targetsArgument: OptionArgument<[String]>
+    private let environmentFilePathArgument: OptionArgument<String>
+    
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
@@ -36,6 +40,11 @@ public final class PatchXcodeProjectCommand: Command {
             kind: [String].self,
             usage: "Specify targets name"
         )
+        environmentFilePathArgument = subparser.add(
+            option: Arguments.environmentFilePath.optionString,
+            kind: String.self,
+            usage: "Specify environment file path"
+        )
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
@@ -51,11 +60,25 @@ public final class PatchXcodeProjectCommand: Command {
             arguments.get(self.targetsArgument),
             name: Arguments.targets.rawValue
         )
-        let patcher = XcodeProjectPatcher(xcodeProjCache: XcodeProjCacheImpl.shared)
+        let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
+            "Parse environment parameters"
+        ) {
+            if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
+                let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
+                return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+            } else {
+                return try XcodeBuildEnvironmentParameters()
+            }
+        }
+        let patcher = XcodeProjectPatcher(
+            xcodeProjCache: XcodeProjCacheImpl.shared,
+            fileManager: FileManager.default
+        )
         try patcher.patch(
             projectPath: projectPath,
             outputPath: outputPath,
-            targets: targets
+            targets: targets,
+            params: params
         )
     }
 }

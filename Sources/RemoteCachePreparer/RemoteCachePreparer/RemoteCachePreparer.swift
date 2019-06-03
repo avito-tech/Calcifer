@@ -183,7 +183,8 @@ final class RemoteCachePreparer {
             fileManager: fileManager
         )
         let patcher = XcodeProjectPatcher(
-            xcodeProjCache: xcodeProjCache
+            xcodeProjCache: xcodeProjCache,
+            fileManager: fileManager
         )
         let xcodeCommandLineVersionProvider = XcodeCommandLineToolVersionProvider(
             shellExecutor: shellCommandExecutor

@@ -100,7 +100,8 @@ final class PatchedProjectBuilder {
                 try patchProject(
                     podsProjectPath: podsProjectPath,
                     patchedProjectPath: patchedProjectPath,
-                    targets: targetNamesForBuild
+                    targets: targetNamesForBuild,
+                    params: params
                 )
             }
             
@@ -186,12 +187,15 @@ final class PatchedProjectBuilder {
     private func patchProject(
         podsProjectPath: String,
         patchedProjectPath: String,
-        targets: [String]) throws
+        targets: [String],
+        params: XcodeBuildEnvironmentParameters)
+        throws
     {
         try patcher.patch(
             projectPath: podsProjectPath,
             outputPath: patchedProjectPath,
-            targets: targets
+            targets: targets,
+            params: params
         )
     }
     

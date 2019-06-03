@@ -9,7 +9,6 @@ public enum DSYMSymbolizerError: Error, CustomStringConvertible {
     case uuidMismatch(dsymPath: String, binaryPath: String)
     case multipleDWARFFileInDSYM(dsymPath: String)
     case unableToFindDWARFFileInDSYM(dsymPath: String)
-    case unableToWritePlist(path: String, content: [String: String])
     case unableToFindBuildSourcePath(binaryPath: String)
     
     public var description: String {
@@ -44,8 +43,6 @@ public enum DSYMSymbolizerError: Error, CustomStringConvertible {
             return "Found more than one dwarf file in dsym \(dsymPath)"
         case let .unableToFindDWARFFileInDSYM(dsymPath):
             return "Unable to find dwarf file in dsym \(dsymPath)"
-        case let .unableToWritePlist(path, content):
-            return "Unable to write plist at path \(path) with content \(content)"
         case let .unableToFindBuildSourcePath(binaryPath):
             return "Unable to find build source path for binary path \(binaryPath)"
         }

@@ -181,6 +181,7 @@ let package = Package(
         .target(
             name: "XcodeProjectPatcher",
             dependencies: [
+                "XcodeBuildEnvironmentParametersParser"
                 "ArgumentsParser",
                 "XcodeProjCache",
                 "XcodeProj",

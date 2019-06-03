@@ -96,29 +96,17 @@ public final class DSYMSymbolizer {
                 .appendingPathComponent("Resources")
                 .appendingPathComponent(plistName)
             let dwarfFilePath = try obtainDSYMBinaryPath(dsymBundlePath: dsymBundlePath)
-            let content : [String: String] = [
+            let content: [String: String] = [
                 "DBGArchitecture": uuid.architecture,
                 "DBGBuildSourcePath": remoteSourcePath,
                 "DBGSourcePath": localSourcePath,
                 "DBGDSYMPath": dwarfFilePath,
                 "DBGSymbolRichExecutable": binaryPathInApp
             ]
-            let dictionary = NSDictionary(dictionary: content)
-            
-            if fileManager.fileExists(atPath: plistPath) {
-                let plistContent = NSDictionary(contentsOfFile: plistPath)
-                if plistContent == dictionary {
-                    return
-                }
-            }
-            
-            let isWritten = dictionary.write(toFile: plistPath, atomically: true)
-            if isWritten == false {
-                throw DSYMSymbolizerError.unableToWritePlist(
-                    path: plistPath,
-                    content: content
-                )
-            }
+            try fileManager.write(
+                content,
+                to: plistPath
+            )
         }
     }
     
