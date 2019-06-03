@@ -5,14 +5,14 @@ import Toolkit
 public final class XcodeProjectBuilder {
     
     private let shellExecutor: ShellCommandExecutor
-    private let fileManager: FileManager
+    private let outputHandler: XcodeProjectBuilderOutputHandler
     
     public init(
         shellExecutor: ShellCommandExecutor,
-        fileManager: FileManager)
+        outputHandler: XcodeProjectBuilderOutputHandler)
     {
         self.shellExecutor = shellExecutor
-        self.fileManager = fileManager
+        self.outputHandler = outputHandler
     }
     
     public func build(
@@ -40,18 +40,14 @@ public final class XcodeProjectBuilder {
             environment: environment
         )
         Logger.verbose("Execute build command \(command.launchPath) \(command.arguments.joined(separator: " ")) with environment \(command.environment)")
-        let logFile = buildLogFile()
-        fileManager.createFile(atPath: logFile.path, contents: nil)
-        let fileHandle = FileHandle(forWritingAtPath: logFile.path)
+        outputHandler.setupFileWrite()
         let result = shellExecutor.execute(
             command: command,
-            onOutputData: { [fileHandle] data in
-                ObservableStandardStream.shared.writeOutput(data)
-                fileHandle?.write(data)
+            onOutputData: { [outputHandler] data in
+                outputHandler.writeOutput(data)
             },
-            onErrorData: { [fileHandle] data in
-                ObservableStandardStream.shared.writeError(data)
-                fileHandle?.write(data)
+            onErrorData: { [outputHandler] data in
+                outputHandler.writeError(data)
             }
         )
         let statusCode = result.terminationStatus
@@ -62,20 +58,4 @@ public final class XcodeProjectBuilder {
             )
         }
     }
-    
-    private func buildLogFile() -> URL {
-        let fileManager = FileManager.default
-        let logDirectory = fileManager.calciferDirectory()
-            .appendingPathComponent("buildlogs")
-        try? fileManager.createDirectory(
-            atPath: logDirectory,
-            withIntermediateDirectories: true
-        )
-        let logFilePath = logDirectory
-            .appendingPathComponent(Date().formattedString())
-            .appending(".txt")
-        let logFile = URL(fileURLWithPath: logFilePath)
-        return logFile
-    }
-    
 }

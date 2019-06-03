@@ -30,9 +30,10 @@ public final class XcodeProjectBuilderTests: XCTestCase {
                 configurationName: "Debug",
                 onlyActiveArchitecture: true
             )
+            let outputHandler = XcodeProjectBuilderOutputHandlerStub()
             let build = XcodeProjectBuilder(
                 shellExecutor: shellCommandExecutor,
-                fileManager: FileManager.default
+                outputHandler: outputHandler
             )
             
             // When
