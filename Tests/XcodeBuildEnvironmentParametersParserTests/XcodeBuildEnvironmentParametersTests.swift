@@ -60,7 +60,8 @@ public final class XcodeBuildEnvironmentParametersTests: XCTestCase {
             "XCODE_VERSION_MAJOR": "1000",
             "XCODE_VERSION_MINOR": "1010",
             "XCODE_PRODUCT_BUILD_VERSION": "10B61",
-            "COMMAND_MODE": "legacy"
+            "COMMAND_MODE": "legacy",
+            "USER": "username"
         ]
     }
     
