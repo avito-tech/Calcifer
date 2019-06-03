@@ -60,7 +60,13 @@ final class RemoteCachePreparer {
         }
         try targetChecksumProvider.saveChecksumToFile()
         
+        guard let gradleHost = config.storageConfig?.gradleHost else {
+            Logger.error("Gradle host is not set")
+            return
+        }
+        
         let cacheStorage = try cacheStorageFactory.createMixedCacheStorage(
+            gradleHost: gradleHost,
             shouldUploadCache: false
         )
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
