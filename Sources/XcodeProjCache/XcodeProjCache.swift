@@ -1,5 +1,5 @@
 import Foundation
-import xcodeproj
+import XcodeProj
 
 public protocol XcodeProjCache {
     func obtainXcodeProj(projectPath: String) throws -> XcodeProj

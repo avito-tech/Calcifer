@@ -2,7 +2,7 @@ import Foundation
 import CommonCrypto
 
 public extension Data {
-    public func md5() -> String {
+    func md5() -> String {
         let length = Int(CC_MD5_DIGEST_LENGTH)
         var digest = [UInt8](repeating: 0, count: length)
         _ = withUnsafeBytes { (body: UnsafePointer<UInt8>) in

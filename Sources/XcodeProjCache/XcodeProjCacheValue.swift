@@ -1,6 +1,6 @@
 import Foundation
 import Checksum
-import xcodeproj
+import XcodeProj
 
 struct XcodeProjCacheValue<ChecksumType: Checksum> {
     let xcodeProj: XcodeProj

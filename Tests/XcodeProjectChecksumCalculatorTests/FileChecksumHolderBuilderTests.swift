@@ -1,7 +1,7 @@
 import Foundation
 import XCTest
 @testable import XcodeProjectChecksumCalculator
-import xcodeproj
+import XcodeProj
 import PathKit
 
 public final class FileChecksumHolderBuilderTests: XCTestCase {
