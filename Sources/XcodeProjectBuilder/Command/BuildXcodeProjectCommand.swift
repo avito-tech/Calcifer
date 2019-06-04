@@ -19,7 +19,11 @@ public final class BuildXcodeProjectCommand: Command {
     
     private let builder = XcodeProjectBuilder(
         shellExecutor: ShellCommandExecutorImpl(),
-        fileManager: FileManager.default
+        outputHandler: XcodeProjectBuilderOutputHandlerImpl(
+            fileManager: FileManager.default,
+            observableStandardStream: ObservableStandardStream.shared,
+            outputFilter: XcodeProjectBuilderOutputFilterImpl()
+        )
     )
     
     private let buildDirectoryPathArgument: OptionArgument<String>
