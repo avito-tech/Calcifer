@@ -40,7 +40,7 @@ public final class XcodeProjectBuilder {
             environment: environment
         )
         Logger.verbose("Execute build command \(command.launchPath) \(command.arguments.joined(separator: " ")) with environment \(command.environment)")
-        outputHandler.setupFileWrite()
+        try outputHandler.setup()
         let result = shellExecutor.execute(
             command: command,
             onOutputData: { [outputHandler] data in

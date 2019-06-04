@@ -6,7 +6,7 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
     private let fileManager: FileManager
     private let observableStandardStream: ObservableStandardStream
     private let outputFilter: XcodeProjectBuilderOutputFilter
-    private var fileHandle: FileHandle?
+    private var fileHandle: FileHandle? = nil
     
     public init(
         fileManager: FileManager,
@@ -18,10 +18,12 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
         self.outputFilter = outputFilter
     }
     
-    public func setupFileWrite() {
-        let logFile = buildLogFile()
-        fileManager.createFile(atPath: logFile.path, contents: nil)
-        let fileHandle = FileHandle(forWritingAtPath: logFile.path)
+    public func setup() throws {
+        let logFilePath = buildLogFile().path
+        fileManager.createFile(atPath: logFilePath, contents: nil)
+        guard let fileHandle = FileHandle(forWritingAtPath: logFilePath) else {
+            throw XcodeProjectBuilderError.failedCreateBuildLogFile(path: logFilePath)
+        }
         self.fileHandle = fileHandle
     }
     

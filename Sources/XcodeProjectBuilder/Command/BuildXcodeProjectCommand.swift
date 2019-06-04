@@ -22,7 +22,9 @@ public final class BuildXcodeProjectCommand: Command {
         outputHandler: XcodeProjectBuilderOutputHandlerImpl(
             fileManager: FileManager.default,
             observableStandardStream: ObservableStandardStream.shared,
-            outputFilter: XcodeProjectBuilderOutputFilterImpl()
+            outputFilter: XcodeProjectBuilderOutputFilterImpl(
+                buildLogLevel: .verbose
+            )
         )
     )
     

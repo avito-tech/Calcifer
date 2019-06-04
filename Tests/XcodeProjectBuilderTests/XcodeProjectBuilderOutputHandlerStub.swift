@@ -5,9 +5,9 @@ final class XcodeProjectBuilderOutputHandlerStub: XcodeProjectBuilderOutputHandl
     
     public init() {}
     
-    public var onSetupFileWrite: (() -> ())?
-    func setupFileWrite() {
-        onSetupFileWrite?()
+    public var onSetup: (() -> ())?
+    func setup() throws {
+        onSetup?()
     }
     
     public var onWriteOutput: ((Data) -> ())?
