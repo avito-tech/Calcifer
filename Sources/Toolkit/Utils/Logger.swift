@@ -78,7 +78,6 @@ public final class Logger {
     
     public static func error(_ message: String) {
         logger.error(message)
-        fatalError(message)
     }
     
     private static func logFileURL() -> URL {
