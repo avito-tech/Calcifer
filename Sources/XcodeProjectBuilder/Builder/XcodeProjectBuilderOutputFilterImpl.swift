@@ -3,9 +3,11 @@ import CalciferConfig
 
 public final class XcodeProjectBuilderOutputFilterImpl: XcodeProjectBuilderOutputFilter {
     
-    public var buildLogLevel: BuildLogLevel = .info
+    public let buildLogLevel: BuildLogLevel
     
-    public init() {}
+    public init(buildLogLevel: BuildLogLevel) {
+        self.buildLogLevel = buildLogLevel
+    }
     
     private enum Filter: String {
         case note = "note:"

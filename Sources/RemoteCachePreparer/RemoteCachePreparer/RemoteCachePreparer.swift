@@ -186,10 +186,10 @@ final class RemoteCachePreparer {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager
         )
-        let outputFilter = XcodeProjectBuilderOutputFilterImpl()
-        if let buildLogLevel = config.buildConfig?.buildLogLevel {
-            outputFilter.buildLogLevel = buildLogLevel
-        }
+        let buildLogLevel: BuildLogLevel = config.buildConfig?.buildLogLevel ?? .info
+        let outputFilter = XcodeProjectBuilderOutputFilterImpl(
+            buildLogLevel: buildLogLevel
+        )
         let outputHandler = XcodeProjectBuilderOutputHandlerImpl(
             fileManager: fileManager,
             observableStandardStream: ObservableStandardStream.shared,
