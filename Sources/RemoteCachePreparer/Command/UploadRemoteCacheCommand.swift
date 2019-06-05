@@ -77,7 +77,7 @@ public final class UploadRemoteCacheCommand: Command {
         )
         
         let configProvider = CalciferConfigProvider(fileManager: fileManager)
-        let config = try configProvider.obtainConfig(path: sourcePath)
+        let config = try configProvider.obtainConfig(projectDirectoryPath: params.projectDirectory)
 
         try TimeProfiler.measure("Upload remote cache") {
             try uploader.upload(config: config, params: params)
