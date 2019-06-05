@@ -9,6 +9,13 @@ public extension FileManager {
                 return
             }
         }
+        let directoryPath = filePath.deletingLastPathComponent()
+        if directoryExist(at: directoryPath) == false {
+            try createDirectory(
+                atPath: directoryPath,
+                withIntermediateDirectories: true
+            )
+        }
         let isWritten = dictionary.write(toFile: filePath, atomically: true)
         if isWritten == false {
             throw FileManagerError.unableToWriteFile(
