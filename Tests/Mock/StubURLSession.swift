@@ -1,11 +1,13 @@
 import Foundation
 
-final class StubURLSession: URLSession {
+public final class StubURLSession: URLSession {
+    
+    public override init() {}
     
     public var downloadStub: ((URLRequest) -> (URL?, URLResponse?, Error?))?
     public var uploadStub: ((URLRequest, URL) -> (Data?, URLResponse?, Error?))?
     
-    override func downloadTask(
+    override public func downloadTask(
         with request: URLRequest,
         completionHandler: @escaping (URL?, URLResponse?, Error?) -> Void)
         -> URLSessionDownloadTask
@@ -19,7 +21,7 @@ final class StubURLSession: URLSession {
         return task
     }
     
-    override func uploadTask(
+    override public func uploadTask(
         with request: URLRequest,
         fromFile fileURL: URL,
         completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void)

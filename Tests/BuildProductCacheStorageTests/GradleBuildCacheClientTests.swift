@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import Mock
 @testable import BuildProductCacheStorage
 
 public final class GradleBuildCacheClientTests: XCTestCase {

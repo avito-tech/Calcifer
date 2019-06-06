@@ -45,18 +45,13 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
             timeoutInterval: 60
         )
         request.httpMethod = "PUT"
-        let task = session.uploadTask(
-            with: request,
-            fromFile: fileURL
-            )
-        { _, _, error in
+        session.uploadTask(with: request, fromFile: fileURL) { _, _, error in
             guard let error = error else {
                 completion(BuildCacheClientResult<Void>.success(()))
                 return
             }
             completion(BuildCacheClientResult.failure(error))
-        }
-        task.resume()
+        }.resume()
     }
     
     private func downloadFile(
@@ -68,9 +63,7 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
             cachePolicy: .useProtocolCachePolicy,
             timeoutInterval: 60
         )
-        let task = session.downloadTask(
-            with: request)
-        { localURL, response, error in
+        session.downloadTask(with: request) { localURL, response, error in
             guard let response = response as? HTTPURLResponse,
                 response.statusCode == 200,
                 let fileURL = localURL
@@ -80,8 +73,7 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
                 return
             }
             completion(BuildCacheClientResult.success(fileURL))
-        }
-        task.resume()
+        }.resume()
     }
     
     @inline(__always) private func url(key: String) -> URL {

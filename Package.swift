@@ -55,7 +55,9 @@ let package = Package(
                 "XcodeBuildEnvironmentParametersParser",
                 "RemoteCachePreparer",
                 "BuildStepIntegrator",
-                "Daemon"
+                "Daemon",
+                "CalciferVersionShipper",
+                "CalciferUpdater"
             ]
         ),
         // MARK: CommandRunner
@@ -118,7 +120,8 @@ let package = Package(
         .testTarget(
             name: "BuildProductCacheStorageTests",
             dependencies: [
-                "BuildProductCacheStorage"
+                "BuildProductCacheStorage",
+                "Mock"
             ]
         ),
         // MARK: BuildArtifacts
@@ -225,6 +228,7 @@ let package = Package(
             name: "Daemon",
             dependencies: [
                 "RemoteCachePreparer",
+                "CalciferConfig",
                 "CommandRunner",
                 "ShellCommand",
                 "Swifter"
@@ -234,6 +238,32 @@ let package = Package(
         .target(
             name: "CalciferConfig",
             dependencies: [
+                "Toolkit"
+            ]
+        ),
+        // MARK: CalciferVersionShipper
+        .target(
+            name: "CalciferVersionShipper",
+            dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
+                "ZIPFoundation",
+                "CalciferConfig",
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "CalciferVersionShipperTests",
+            dependencies: [
+                "CalciferVersionShipper",
+                "Mock"
+            ]
+        ),
+        // MARK: CalciferUpdater
+        .target(
+            name: "CalciferUpdater",
+            dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
+                "CalciferConfig",
                 "Toolkit"
             ]
         ),
