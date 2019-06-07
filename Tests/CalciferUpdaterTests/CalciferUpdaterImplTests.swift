@@ -84,8 +84,12 @@ public final class CalciferUpdaterImplTests: XCTestCase {
         let destinationURL = destinationDirectory
             .appendingPathComponent(fileManager.calciferBinaryName())
         
-        let shellExecutor = ShellCommandExecutorStub()
-        shellExecutor.stub = { command in
+        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            XCTFail(
+                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+            )
+        }
+        shellCommandExecutor.stub = { command in
             XCTAssertEqual(command.arguments, ["installCalciferBinary"])
             try? fileManager.copyItem(
                 at: URL(fileURLWithPath: command.launchPath),
@@ -99,7 +103,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             session: sessionStub,
             fileManager: fileManager,
             calciferBinaryPath: destinationURL.path,
-            shellExecutor: shellExecutor
+            shellExecutor: shellCommandExecutor
         )
 
         var updateResult: Result<URL, Error>?

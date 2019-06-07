@@ -64,7 +64,11 @@ public final class DSYMSymbolizerTests: XCTestCase {
         architecture: String)
         -> DSYMSymbolizer
     {
-        let shellCommandExecutor = ShellCommandExecutorStub()
+        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            XCTFail(
+                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+            )
+        }
         let output = [
             "UUID: \(uuid) (\(architecture))",
             "/Users/a/.calcifer/localCache/Unbox/9d4f...10f1/Unbox.framework/Unbox"

@@ -9,7 +9,11 @@ public final class BuildSourcePathProviderImplTests: XCTestCase {
     func test_provider() {
         XCTAssertNoThrow(try {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub()
+            let shellCommandExecutor = ShellCommandExecutorStub() { command in
+                XCTFail(
+                    "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+                )
+            }
             let sourcePathDirectory = URL(
                 fileURLWithPath: NSTemporaryDirectory()
             ).appendingPathComponent("a")

@@ -12,7 +12,11 @@ public final class LaunchdManagerTestsImplTests: XCTestCase {
     func test_unload() {
         // Given
         let plistPath = UUID().uuidString
-        let shellCommandExecutor = ShellCommandExecutorStub()
+        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            XCTFail(
+                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+            )
+        }
         shellCommandExecutor.stubCommand(
             LaunchctlShellCommand(
                 plistPath: plistPath,
@@ -36,7 +40,11 @@ public final class LaunchdManagerTestsImplTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString)
             .appendingPathComponent(plist.label)
             .appendingPathExtension("plist").path
-        let shellCommandExecutor = ShellCommandExecutorStub()
+        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            XCTFail(
+                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+            )
+        }
         shellCommandExecutor.stubCommand(
             [
                 ShellCommandStub(
