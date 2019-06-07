@@ -9,8 +9,10 @@ import XcodeProjectBuilder
 import BuildStepIntegrator
 import DSYMSymbolizer
 import Daemon
+import LaunchdManager
 import CalciferVersionShipper
 import CalciferUpdater
+import CalciferBinaryInstaller
 
 final class CommandRunnerBuilder {
     
@@ -30,9 +32,10 @@ final class CommandRunnerBuilder {
                 SymbolizeDSYMCommand.self,
                 BuildStepIntegrateCommand.self,
                 StartDaemonCommand.self,
-                DaemonizeCommand.self,
+                LaunchdLoadCommand.self,
                 ShipCurrentCalciferVersionCommand.self,
-                UpdateCalciferCommand.self
+                UpdateCalciferCommand.self,
+                CalciferBinaryInstallerCommand.self
             ]
         )
         return runner

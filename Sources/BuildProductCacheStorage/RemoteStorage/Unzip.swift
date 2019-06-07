@@ -10,7 +10,7 @@ public final class Unzip {
     }
     
     public func unzip(_ path: String, to destination: String) throws {
-        let command = ShellCommand(
+        let command = BaseShellCommand(
             launchPath: "/usr/bin/unzip",
             arguments: [
                 "-q",

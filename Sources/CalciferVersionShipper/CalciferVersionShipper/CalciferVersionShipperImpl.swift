@@ -21,52 +21,89 @@ final class CalciferVersionShipperImpl: CalciferVersionShipper {
         config: CalciferShipConfig,
         completion: @escaping (Result<Void, Error>) -> ())
     {
+        let versionFileURL = createVersionFile(
+            binaryPath: binaryPath
+        )
+        uploadVersionFile(
+            binaryPath: binaryPath,
+            versionFileURL: versionFileURL,
+            config: config,
+            completion: completion
+        )
+    }
+    
+    private func createVersionFile(binaryPath: String) -> URL {
         let versionFileURL = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("json")
         let sum = catchError { try checksum(for: binaryPath) }
         let version = CalciferVersion(checksum: sum)
         catchError { try version.save(to: versionFileURL.path) }
+        return versionFileURL
+    }
+    
+    private func uploadVersionFile(
+        binaryPath: String,
+        versionFileURL: URL,
+        config: CalciferShipConfig,
+        completion: @escaping (Result<Void, Error>) -> ())
+    {
         upload(
             file: versionFileURL,
             url: config.versionFileURL,
-            basicAccessAuthentication: config.basicAccessAuthentication) { [self] result in
+            basicAccessAuthentication: config.basicAccessAuthentication) { result in
                 self.processUploadCompletion(
                     result,
-                    onSuccess: { [self] in
-                        let zipBinaryURL = self.fileManager.temporaryDirectory
-                            .appendingPathComponent(UUID().uuidString)
-                            .appendingPathExtension("zip")
-                        catchError {
-                            try self.fileManager.zipItem(at: URL(fileURLWithPath: binaryPath), to: zipBinaryURL)
-                        }
-                        self.upload(
-                            file: zipBinaryURL,
-                            url: config.zipBinaryFileURL,
-                            basicAccessAuthentication: config.basicAccessAuthentication,
-                            completion: { result in
-                                self.processUploadCompletion(
-                                    result,
-                                    onSuccess: { completion(.success(())) },
-                                    onFailure: { error in
-                                        completion(.failure(error))
-                                    }
-                                )
-                            }
+                    file: versionFileURL,
+                    onSuccess: {
+                        self.uploadBinaryFile(
+                            binaryPath: binaryPath,
+                            config: config,
+                            completion: completion
                         )
                     },
                     onFailure: { error in
                         completion(.failure(error))
+                }
+            )
+        }
+    }
+    
+    private func uploadBinaryFile(
+        binaryPath: String,
+        config: CalciferShipConfig,
+        completion: @escaping (Result<Void, Error>) -> ())
+    {
+        let zipBinaryURL = self.fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("zip")
+        catchError {
+            try self.fileManager.zipItem(at: URL(fileURLWithPath: binaryPath), to: zipBinaryURL)
+        }
+        self.upload(
+            file: zipBinaryURL,
+            url: config.zipBinaryFileURL,
+            basicAccessAuthentication: config.basicAccessAuthentication,
+            completion: { result in
+                self.processUploadCompletion(
+                    result,
+                    file: zipBinaryURL,
+                    onSuccess: { completion(.success(())) },
+                    onFailure: { error in
+                        completion(.failure(error))
                     }
                 )
-        }
+            }
+        )
     }
     
     private func processUploadCompletion(
         _ result: Result<Void, Error>,
+        file: URL,
         onSuccess: () -> (),
         onFailure: (Error) -> ())
     {
+        catchError { try fileManager.removeItem(at: file) }
         switch result {
         case .success:
             onSuccess()

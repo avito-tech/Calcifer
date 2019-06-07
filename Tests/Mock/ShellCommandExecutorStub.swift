@@ -1,5 +1,6 @@
 import Foundation
 import ShellCommand
+import XCTest
 
 public final class ShellCommandExecutorStub: ShellCommandExecutor {
 
@@ -20,6 +21,43 @@ public final class ShellCommandExecutorStub: ShellCommandExecutor {
         -> ShellCommandResult
     {
         return stub(command)
+    }
+    
+    public func stubCommand(
+        _ command: ShellCommand,
+        output: String? = nil,
+        error: String? = nil)
+    {
+        stubCommand(
+            ShellCommandStub(
+                command,
+                output: output,
+                error: error
+            )
+        )
+    }
+    
+    public func stubCommand(_ stub: ShellCommandStub) {
+        stubCommand([stub])
+    }
+    
+    public func stubCommand(_ stubs: [ShellCommandStub]) {
+        stub = { command in
+            guard let stub = stubs.first(where: { stub in
+                return stub.launchPath == command.launchPath && stub.arguments == command.arguments
+            }) else {
+                XCTFail(
+                    "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+                )
+                return ShellCommandResult(terminationStatus: 1)
+            }
+            
+            return ShellCommandResult(
+                terminationStatus: 0,
+                output: stub.output,
+                error: stub.error
+            )
+        }
     }
     
 }

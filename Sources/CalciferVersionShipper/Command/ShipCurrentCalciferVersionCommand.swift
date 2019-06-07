@@ -99,13 +99,15 @@ public final class ShipCurrentCalciferVersionCommand: Command {
             session: URLSession.shared,
             fileManager: fileManager
         )
-        
-        shipper.shipCalcifer(at: binaryPath, config: patchedCondig) { result in
-            switch result {
-            case .success:
-                Logger.verbose("Successfully upload new version to \(config.zipBinaryFileURL)")
-            case let .failure(error):
-                Logger.verbose("Failed to upload new version with error \(error)")
+        try DispatchGroup().wait { dispatchGroup in
+            shipper.shipCalcifer(at: binaryPath, config: patchedCondig) { result in
+                switch result {
+                case .success:
+                    Logger.verbose("Successfully upload new version to \(config.zipBinaryFileURL)")
+                case let .failure(error):
+                    Logger.verbose("Failed to upload new version with error \(error)")
+                }
+                dispatchGroup.leave()
             }
         }
     }

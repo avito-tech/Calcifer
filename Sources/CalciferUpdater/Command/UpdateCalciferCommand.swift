@@ -2,6 +2,7 @@ import Foundation
 import XcodeBuildEnvironmentParametersParser
 import ArgumentsParser
 import CalciferConfig
+import ShellCommand
 import Foundation
 import Utility
 import Toolkit
@@ -12,20 +13,13 @@ public final class UpdateCalciferCommand: Command {
     public let overview = "Download and install new version of Calcifer if exist"
     
     enum Arguments: String, CommandArgument {
-        case binaryPath
         case projectDirectory
     }
     
-    private let binaryPathArgument: OptionArgument<String>
     private let projectDirectoryPathArgument: OptionArgument<String>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
-        binaryPathArgument = subparser.add(
-            option: Arguments.binaryPath.optionString,
-            kind: String.self,
-            usage: "Specify binary path. By default current binary"
-        )
         projectDirectoryPathArgument = subparser.add(
             option: Arguments.projectDirectory.optionString,
             kind: String.self,
@@ -34,18 +28,51 @@ public final class UpdateCalciferCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
-        let binaryPath: String
-        if let binaryPathArgumentValue = arguments.get(self.binaryPathArgument) {
-            binaryPath = binaryPathArgumentValue
+        
+        let projectDirectoryPath: String?
+        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
+            projectDirectoryPath = projectDirectoryPathArgumentValue
+        } else if let params = try? XcodeBuildEnvironmentParameters() {
+            projectDirectoryPath = params.projectDirectory
         } else {
-            guard let currentBinaryPath = ProcessInfo.processInfo.arguments.first else {
-                throw ArgumentsError.argumentIsMissing(Arguments.binaryPath.rawValue)
-            }
+            projectDirectoryPath = nil
         }
         
         let fileManager = FileManager.default
         let configProvider = CalciferConfigProvider(fileManager: fileManager)
-        let params = try? XcodeBuildEnvironmentParameters()
+        
+        let config: CalciferUpdateConfig
+        if let projectDirectoryPath = projectDirectoryPath,
+            let projectConfig = try? configProvider.obtainConfig(projectDirectoryPath: projectDirectoryPath),
+            let updateConfig = projectConfig.calciferUpdateConfig
+        {
+            config = updateConfig
+        } else {
+            guard let shipConfig = try configProvider.obtainGlobalConfig().calciferUpdateConfig else {
+                throw CalciferUpdaterError.emptyCalciferUpdateConfig
+            }
+            config = shipConfig
+        }
+        
+        let shellExecutor = ShellCommandExecutorImpl()
+        let updater = CalciferUpdaterImpl(
+            session: URLSession.shared,
+            fileManager: fileManager,
+            calciferBinaryPath: fileManager.calciferBinaryPath(),
+            shellExecutor: shellExecutor
+        )
+        
+        try DispatchGroup().wait { dispatchGroup in
+            try updater.updateCalcifer(config: config) { result in
+                switch result {
+                case .success:
+                    Logger.verbose("Successfully update")
+                case let .failure(error):
+                    Logger.verbose("Failed to update with error \(error)")
+                }
+                dispatchGroup.leave()
+            }
+        }
     }
     
 }

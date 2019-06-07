@@ -11,7 +11,7 @@ public final class SymbolTableProviderImpl: SymbolTableProvider {
     }
     
     public func obtainSymbolTable(binaryPath: String) throws -> [String] {
-        let command = ShellCommand(
+        let command = BaseShellCommand(
             launchPath: "/usr/bin/nm",
             arguments: [
                 "--pa",

@@ -19,15 +19,19 @@ public final class BuildSourcePathProviderImplTests: XCTestCase {
                 atPath: sourcePathDirectory.path,
                 withIntermediateDirectories: true
             )
+            let binaryPath = UUID().uuidString
             let expectedBuildSourcePath = "/b"
             let output = "0000000000000000 - 00 0000    SO \(expectedBuildSourcePath)/Sources/"
-            shellCommandExecutor.stub = { command in
-                return ShellCommandResult(
-                    terminationStatus: 0,
-                    output: output,
-                    error: nil
+            shellCommandExecutor.stubCommand(
+                ShellCommandStub(
+                    launchPath: "/usr/bin/nm",
+                    arguments: [
+                        "--pa",
+                        binaryPath
+                    ],
+                    output: output
                 )
-            }
+            )
             let symbolTableProvider = SymbolTableProviderImpl(
                 shellCommandExecutor: shellCommandExecutor
             )
@@ -39,7 +43,7 @@ public final class BuildSourcePathProviderImplTests: XCTestCase {
             // When
             let buildSourcePath = try buildSourcePathProvider.obtainBuildSourcePath(
                 sourcePath: sourcePath.path,
-                binaryPath: ""
+                binaryPath: binaryPath
             )
             
             // Then

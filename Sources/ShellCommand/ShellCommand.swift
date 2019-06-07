@@ -1,22 +1,18 @@
 import Foundation
 
-public struct ShellCommand: CustomStringConvertible {
+public protocol ShellCommand: CustomStringConvertible {
+    var launchPath: String { get }
+    var arguments: [String] { get }
+    var environment: [String: String] { get }
+}
+
+public extension ShellCommand {
     
-    public let launchPath: String
-    public let arguments: [String]
-    public let environment: [String: String]
-    
-    public var description: String {
+    var description: String {
         return "\(launchPath) \(arguments.joined(separator: " "))"
     }
     
-    public init(
-        launchPath: String,
-        arguments: [String],
-        environment: [String: String])
-    {
-        self.launchPath = launchPath
-        self.arguments = arguments
-        self.environment = environment
+    var environment: [String : String] {
+        return [:]
     }
 }

@@ -56,8 +56,10 @@ let package = Package(
                 "RemoteCachePreparer",
                 "BuildStepIntegrator",
                 "Daemon",
+                "LaunchdManager",
                 "CalciferVersionShipper",
-                "CalciferUpdater"
+                "CalciferUpdater",
+                "CalciferBinaryInstaller"
             ]
         ),
         // MARK: CommandRunner
@@ -223,6 +225,21 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: LaunchdManager
+        .target(
+            name: "LaunchdManager",
+            dependencies: [
+                "ShellCommand",
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "LaunchdManagerTests",
+            dependencies: [
+                "LaunchdManager",
+                "Mock"
+            ]
+        ),
         // MARK: Daemon
         .target(
             name: "Daemon",
@@ -258,13 +275,37 @@ let package = Package(
                 "Mock"
             ]
         ),
+        // MARK: CalciferBinaryInstaller
+        .target(
+            name: "CalciferBinaryInstaller",
+            dependencies: [
+                "LaunchdManager",
+                "ArgumentsParser",
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "CalciferBinaryInstallerTests",
+            dependencies: [
+                "CalciferBinaryInstaller",
+                "Mock"
+            ]
+        ),
         // MARK: CalciferUpdater
         .target(
             name: "CalciferUpdater",
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
                 "CalciferConfig",
+                "ShellCommand",
                 "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "CalciferUpdaterTests",
+            dependencies: [
+                "CalciferUpdater",
+                "Mock"
             ]
         ),
         // MARK: BuildStepIntegrator
