@@ -115,12 +115,12 @@ final class CalciferVersionShipperImpl: CalciferVersionShipper {
     private func upload(
         file: URL,
         url: URL,
-        basicAccessAuthentication: String?,
+        basicAccessAuthentication: BasicAccessAuthentication?,
         completion: @escaping (Result<Void, Error>) -> ())
     {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
-        if let base64CredationData = basicAccessAuthentication?.data(using: .utf8) {
+        if let base64CredationData = basicAccessAuthentication?.stringValue.data(using: .utf8) {
             request.setValue(
                 "Basic \(base64CredationData.base64EncodedString())",
                 forHTTPHeaderField: "Authorization"

@@ -28,11 +28,13 @@ public final class CalciferVersionShipperImplTests: XCTestCase {
                 XCTFail("Can't create url from string")
                 return
         }
-        let basicAccessAuthentication = "USER:PASSWORD"
         let config = CalciferShipConfig(
             versionFileURL: versionFileURL,
             zipBinaryFileURL: zipBinaryFileURL,
-            basicAccessAuthentication: basicAccessAuthentication
+            basicAccessAuthentication: BasicAccessAuthentication(
+                login: "USER",
+                password: "PASSWORD"
+            )
         )
         
         let sessionStub = StubURLSession()
@@ -94,7 +96,7 @@ public final class CalciferVersionShipperImplTests: XCTestCase {
             } else {
                 XCTFail("Failed to stub session")
             }
-            if let base64Credentials = config.basicAccessAuthentication?
+            if let base64Credentials = config.basicAccessAuthentication?.stringValue
                 .data(using: .utf8)?
                 .base64EncodedString()
             {

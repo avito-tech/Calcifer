@@ -14,12 +14,14 @@ public final class ShipCurrentCalciferVersionCommand: Command {
     enum Arguments: String, CommandArgument {
         case binaryPath
         case projectDirectoryPath
-        case basicAccessAuthentication
+        case login
+        case password
     }
     
     private let binaryPathArgument: OptionArgument<String>
     private let projectDirectoryPathArgument: OptionArgument<String>
-    private let basicAccessAuthenticationArgument: OptionArgument<String>
+    private let loginArgument: OptionArgument<String>
+    private let passwordArgument: OptionArgument<String>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
@@ -33,10 +35,15 @@ public final class ShipCurrentCalciferVersionCommand: Command {
             kind: String.self,
             usage: "Specify path to project directory for load config. (optional)"
         )
-        basicAccessAuthenticationArgument = subparser.add(
-            option: Arguments.basicAccessAuthentication.optionString,
+        loginArgument = subparser.add(
+            option: Arguments.login.optionString,
             kind: String.self,
-            usage: "Specify basic access authentication. By default get from config file. (optional)"
+            usage: "Specify login for basic access authentication. By default get from config file. (optional)"
+        )
+        passwordArgument = subparser.add(
+            option: Arguments.password.optionString,
+            kind: String.self,
+            usage: "Specify password for basic access authentication. By default get from config file. (optional)"
         )
     }
     
@@ -64,9 +71,13 @@ public final class ShipCurrentCalciferVersionCommand: Command {
         let fileManager = FileManager.default
         let configProvider = CalciferConfigProvider(fileManager: fileManager)
 
-        let basicAccessAuthentication: String?
-        if let basicAccessAuthenticationValue = arguments.get(self.basicAccessAuthenticationArgument) {
-            basicAccessAuthentication = basicAccessAuthenticationValue
+        let basicAccessAuthentication: BasicAccessAuthentication?
+        if let login = arguments.get(self.loginArgument),
+            let password = arguments.get(self.passwordArgument){
+            basicAccessAuthentication = BasicAccessAuthentication(
+                login: login,
+                password: password
+            )
         } else if let basicAccessAuthenticationFromConfig = obtainAccessAuthenticationFromConfig(
             projectDirectoryPath: projectDirectoryPath,
             configProvider: configProvider)
@@ -115,7 +126,7 @@ public final class ShipCurrentCalciferVersionCommand: Command {
     private func obtainAccessAuthenticationFromConfig(
         projectDirectoryPath: String?,
         configProvider: CalciferConfigProvider)
-        -> String?
+        -> BasicAccessAuthentication?
     {
         if let projectDirectoryPath = projectDirectoryPath,
             let config = try? configProvider.obtainConfig(projectDirectoryPath: projectDirectoryPath),
@@ -130,7 +141,7 @@ public final class ShipCurrentCalciferVersionCommand: Command {
         }
     }
     
-    private func basicAccessAuthentication(from config: CalciferConfig) -> String? {
+    private func basicAccessAuthentication(from config: CalciferConfig) -> BasicAccessAuthentication? {
         guard let basicAccessAuthentication = config.calciferShipConfig?.basicAccessAuthentication
             else { return nil }
         return basicAccessAuthentication
