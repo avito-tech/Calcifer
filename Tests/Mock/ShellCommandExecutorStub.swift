@@ -11,10 +11,10 @@ public final class ShellCommandExecutorStub: ShellCommandExecutor {
         )
     }
     
-    public let onMissmatch: (ShellCommand) -> ()
+    public let onMismatch: (ShellCommand) -> ()
     
-    public init(onMissmatch: @escaping (ShellCommand) -> ()) {
-        self.onMissmatch = onMissmatch
+    public init(onMismatch: @escaping (ShellCommand) -> ()) {
+        self.onMismatch = onMismatch
     }
 
     public func execute(
@@ -49,7 +49,7 @@ public final class ShellCommandExecutorStub: ShellCommandExecutor {
             guard let stub = stubs.first(where: { stub in
                 return stub.launchPath == command.launchPath && stub.arguments == command.arguments
             }) else {
-                self?.onMissmatch(command)
+                self?.onMismatch(command)
                 return ShellCommandResult(terminationStatus: 1)
             }
             
