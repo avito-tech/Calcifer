@@ -6,13 +6,10 @@ public protocol ShellCommand: CustomStringConvertible {
     var environment: [String: String] { get }
 }
 
-public extension ShellCommand {
+public extension CustomStringConvertible where Self: ShellCommand{
     
     var description: String {
         return "\(launchPath) \(arguments.joined(separator: " "))"
     }
     
-    var environment: [String : String] {
-        return [:]
-    }
 }

@@ -1,9 +1,5 @@
 import Foundation
 
-//public protocol Overridable {
-//    func override(by: Self) throws
-//}
-
 extension Decodable where Self: Encodable {
     
     public func override(by another: Self) throws -> Self {

@@ -99,7 +99,7 @@ public final class ShipCurrentCalciferVersionCommand: Command {
             session: URLSession.shared,
             fileManager: fileManager
         )
-        try DispatchGroup().wait { dispatchGroup in
+        DispatchGroup().wait { dispatchGroup in
             shipper.shipCalcifer(at: binaryPath, config: patchedCondig) { result in
                 switch result {
                 case .success:

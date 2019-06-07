@@ -17,6 +17,7 @@ struct LaunchctlShellCommand: ShellCommand {
             plistPath
         ]
     }
+    var environment = [String: String]()
     
     init(plistPath: String, type: CommandType) {
         self.plistPath = plistPath

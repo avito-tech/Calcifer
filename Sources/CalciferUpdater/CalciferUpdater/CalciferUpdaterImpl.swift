@@ -25,9 +25,9 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
     
     public func updateCalcifer(
         config: CalciferUpdateConfig,
-        completion: @escaping (Result<URL, Error>) -> ()) throws
+        completion: @escaping (Result<Void, Error>) -> ())
     {
-        let currentChecksum = try obtainCurrentChecksum()
+        let currentChecksum = catchError { try obtainCurrentChecksum() }
         downloadFile(url: config.versionFileURL) { result in
             self.shouldDownloadBinary(
                 versionDownloadResult: result,
@@ -51,54 +51,64 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         versionDownloadResult: Result<URL, Error>,
         config: CalciferUpdateConfig,
         currentChecksum: String?,
-        completion: @escaping (Result<URL, Error>) -> ())
+        completion: @escaping (Result<Void, Error>) -> ())
     {
         switch versionDownloadResult {
         case let .success(url):
             guard let version = try? CalciferVersion.decode(from: url.path) else {
-                let result: Result<URL, Error> = .failure(
+                let result: Result<Void, Error> = .failure(
                     CalciferUpdaterError.failedToParseVersionFile(url: url)
                 )
                 completion(result)
                 return
             }
             if version.checksum == currentChecksum {
-                completion(versionDownloadResult)
+                completion(.success(()))
                 return
             }
-            downloadBinary(from: config.zipBinaryFileURL, completion: completion)
-        case .failure:
-            completion(versionDownloadResult)
+            downloadZipBinary(
+                from: config.zipBinaryFileURL,
+                completion: completion
+            )
+        case let .failure(error):
+            let result: Result<Void, Error> = .failure(error)
+            completion(result)
         }
     }
     
-    private func downloadBinary(from url: URL, completion: @escaping (Result<URL, Error>) -> ()) {
+    private func downloadZipBinary(
+        from url: URL,
+        completion: @escaping (Result<Void, Error>) -> ())
+    {
         self.downloadFile(url: url) { result in
             switch result {
             case let .success(url):
                 self.updateCalcifer(
-                    zipURL: url,
+                    downloadedZipURL: url,
                     completion: completion
                 )
-            case .failure:
-                completion(result)
+            case let .failure(error):
+                completion(.failure(error))
             }
         }
     }
     
-    private func updateCalcifer(zipURL: URL, completion: @escaping (Result<URL, Error>) -> ()) {
+    private func updateCalcifer(
+        downloadedZipURL: URL,
+        completion: @escaping (Result<Void, Error>) -> ())
+    {
         let unzipURL = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         catchError { try fileManager.createDirectory(at: unzipURL, withIntermediateDirectories: true) }
-        catchError { try fileManager.unzipItem(at: zipURL, to: unzipURL) }
+        catchError { try fileManager.unzipItem(at: downloadedZipURL, to: unzipURL) }
         let unzipBinaryURL = unzipURL.appendingPathComponent(fileManager.calciferBinaryName())
         installBinary(binaryPath: unzipBinaryURL.path)
         let resultBinaryURL = URL(fileURLWithPath: calciferBinaryPath)
         if fileManager.fileExists(atPath: resultBinaryURL.path)
             && equalFiles(unzipBinaryURL, resultBinaryURL)
         {
-            catchError { try fileManager.removeItem(at: zipURL) }
+            catchError { try fileManager.removeItem(at: downloadedZipURL) }
             catchError { try fileManager.removeItem(at: unzipBinaryURL) }
-            completion(.success(resultBinaryURL))
+            completion(.success(()))
         } else {
             completion(.failure(CalciferUpdaterError.failedToInstallBinary(url: unzipBinaryURL)))
         }

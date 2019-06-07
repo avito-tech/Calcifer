@@ -10,7 +10,7 @@ import Toolkit
 public final class UpdateCalciferCommand: Command {
     
     public let command = "updateCalcifer"
-    public let overview = "Download and install new version of Calcifer if exist"
+    public let overview = "Download and install new version of Calcifer if new version is available"
     
     enum Arguments: String, CommandArgument {
         case projectDirectory
