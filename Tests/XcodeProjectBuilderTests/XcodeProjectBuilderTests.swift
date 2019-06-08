@@ -41,7 +41,11 @@ public final class XcodeProjectBuilderTests: XCTestCase {
             )
             
             // When
-            try build.build(config: config, environment: [:])
+            try build.build(
+                config: config,
+                environment: [:],
+                buildLogDirectory: nil
+            )
             
             // Then
             guard let command = shellCommand else {

@@ -69,7 +69,10 @@ public final class ShipCurrentCalciferVersionCommand: Command {
         }
         
         let fileManager = FileManager.default
-        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let configProvider = CalciferConfigProvider(
+            calciferDirectory: calciferPathProvider.calciferDirectory()
+        )
 
         let basicAccessAuthentication: BasicAccessAuthentication?
         if let login = arguments.get(self.loginArgument),

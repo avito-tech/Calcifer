@@ -14,6 +14,7 @@ import Toolkit
 final class RemoteCacheUploader {
     
     private let fileManager: FileManager
+    private let calciferPathProvider: CalciferPathProvider
     private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
     private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
@@ -21,11 +22,13 @@ final class RemoteCacheUploader {
     
     init(
         fileManager: FileManager,
+        calciferPathProvider: CalciferPathProvider,
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory)
     {
         self.fileManager = fileManager
+        self.calciferPathProvider = calciferPathProvider
         self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
@@ -46,14 +49,19 @@ final class RemoteCacheUploader {
                 podsProjectPath: podsProjectPath
             )
         }
-        try targetChecksumProvider.saveChecksumToFile()
+        try targetChecksumProvider.saveChecksum(
+            to: calciferPathProvider.calciferCheckumFilePath()
+        )
         
-        guard let gradleHost = config.storageConfig?.gradleHost else {
+        let storageConfig = config.storageConfig
+        guard let gradleHost = storageConfig.gradleHost else {
             Logger.error("Gradle host is not set")
             return
         }
         
-        let localStorage = cacheStorageFactory.createLocalBuildProductCacheStorage()
+        let localStorage = cacheStorageFactory.createLocalBuildProductCacheStorage(
+            localCacheDirectoryPath: storageConfig.localCacheDirectory
+        )
         let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost
         )

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct BasicAccessAuthentication: Codable {
+public struct BasicAccessAuthentication: Codable, Equatable {
     public let login: String
     public let password: String
     

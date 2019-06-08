@@ -29,7 +29,8 @@ public final class ParseXcodeBuildEnvironmentParametersCommand: Command {
         if let outputPathArgumentValue = arguments.get(self.outputPathArgument) {
             outputPath = outputPathArgumentValue
         } else {
-            outputPath = fileManager
+            let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+            outputPath = calciferPathProvider
                 .calciferDirectory()
                 .appendingPathComponent("calciferenv.json")
         }

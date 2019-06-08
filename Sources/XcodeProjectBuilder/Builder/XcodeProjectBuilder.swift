@@ -17,7 +17,8 @@ public final class XcodeProjectBuilder {
     
     public func build(
         config: XcodeProjectBuildConfig,
-        environment: [String: String]) throws {
+        environment: [String: String],
+        buildLogDirectory: String?) throws {
         let architectures = config.architectures.map { $0.rawValue }.joined(separator: " ")
         let onlyActiveArchitecture = config.onlyActiveArchitecture ? "YES" : "NO"
         let command = BaseShellCommand(
@@ -40,7 +41,7 @@ public final class XcodeProjectBuilder {
             environment: environment
         )
         Logger.verbose("Execute build command \(command.launchPath) \(command.arguments.joined(separator: " ")) with environment \(command.environment)")
-        try outputHandler.setup()
+        try outputHandler.setup(buildLogDirectory: buildLogDirectory)
         let result = shellExecutor.execute(
             command: command,
             onOutputData: { [outputHandler] data in

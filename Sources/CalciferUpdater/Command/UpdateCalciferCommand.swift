@@ -39,7 +39,10 @@ public final class UpdateCalciferCommand: Command {
         }
         
         let fileManager = FileManager.default
-        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let configProvider = CalciferConfigProvider(
+            calciferDirectory: calciferPathProvider.calciferDirectory()
+        )
         
         let config: CalciferUpdateConfig
         if let projectDirectoryPath = projectDirectoryPath,
@@ -55,15 +58,16 @@ public final class UpdateCalciferCommand: Command {
         }
         
         let shellExecutor = ShellCommandExecutorImpl()
+        let calciferBinaryPath = calciferPathProvider.calciferBinaryPath()
         let updater = CalciferUpdaterImpl(
             session: URLSession.shared,
             fileManager: fileManager,
-            calciferBinaryPath: fileManager.calciferBinaryPath(),
+            calciferBinaryPath: calciferBinaryPath,
             shellExecutor: shellExecutor
         )
         
-        try DispatchGroup().wait { dispatchGroup in
-            try updater.updateCalcifer(config: config) { result in
+        DispatchGroup().wait { dispatchGroup in
+            updater.updateCalcifer(config: config) { result in
                 switch result {
                 case .success:
                     Logger.verbose("Successfully update")

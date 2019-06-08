@@ -10,9 +10,11 @@ public final class CalciferBinaryInstallerImplTests: XCTestCase {
     func test_install() {
         // Given
         let fileManager = FileManager.default
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let calciferBinaryName = calciferPathProvider.calciferBinaryName()
         let binaryPath = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-            .appendingPathComponent(fileManager.calciferBinaryName()).path
+            .appendingPathComponent(calciferBinaryName).path
         XCTAssertNoThrow(
             try fileManager.createDirectory(
                 atPath: binaryPath.deletingLastPathComponent(),
@@ -25,7 +27,7 @@ public final class CalciferBinaryInstallerImplTests: XCTestCase {
         )
         let destinationPath = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-            .appendingPathComponent(fileManager.calciferBinaryName()).path
+            .appendingPathComponent(calciferBinaryName).path
         let launchdManager = LaunchdManagerStub()
         let plist = LaunchdPlist.daemonPlist(programPath: destinationPath)
         let expectedPlistPath = fileManager.launchctlPlistPath(label: plist.label)

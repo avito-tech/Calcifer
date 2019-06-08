@@ -50,7 +50,8 @@ final class PatchedProjectBuilder {
     public func prepareAndBuildPatchedProjectIfNeeded(
         params: XcodeBuildEnvironmentParameters,
         buildDirectoryPath: String,
-        requiredTargets: [TargetInfo<BaseChecksum>])
+        requiredTargets: [TargetInfo<BaseChecksum>],
+        buildLogDirectory: String?)
         throws
     {
         try validateVersion(params: params)
@@ -119,7 +120,8 @@ final class PatchedProjectBuilder {
                 try build(
                     params: params,
                     buildDirectoryPath: buildDirectoryPath,
-                    patchedProjectPath: patchedProjectPath
+                    patchedProjectPath: patchedProjectPath,
+                    buildLogDirectory: buildLogDirectory
                 )
             }
             
@@ -242,7 +244,8 @@ final class PatchedProjectBuilder {
     private func build(
         params: XcodeBuildEnvironmentParameters,
         buildDirectoryPath: String,
-        patchedProjectPath: String) throws
+        patchedProjectPath: String,
+        buildLogDirectory: String?) throws
     {
         let config = try createTargetBuildConfig(
             params: params,
@@ -252,7 +255,8 @@ final class PatchedProjectBuilder {
         // TODO: Get environment from /usr/bin/env
         try builder.build(
             config: config,
-            environment: ["PATH": params.userBinaryPath]
+            environment: ["PATH": params.userBinaryPath],
+            buildLogDirectory: buildLogDirectory
         )
     }
     

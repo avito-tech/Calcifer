@@ -30,8 +30,7 @@ public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProduc
         let checksumHolder = try builder.build(projectPath: projectPath)
         Logger.info("XcodeProj checksum: \(checksumHolder.checksum.stringValue) for \(checksumHolder.description)")
         let provider = TargetInfoProvider(
-            checksumHolder: checksumHolder,
-            fileManager: fileManager
+            checksumHolder: checksumHolder
         )
         return provider
     }

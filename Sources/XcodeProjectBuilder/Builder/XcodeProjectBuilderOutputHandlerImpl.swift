@@ -18,8 +18,13 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
         self.outputFilter = outputFilter
     }
     
-    public func setup() throws {
-        let logFilePath = buildLogFile().path
+    public func setup(buildLogDirectory: String?) throws {
+        guard let buildLogDirectory = buildLogDirectory else {
+            return
+        }
+        let logFilePath = buildLogFile(
+            buildLogDirectory: buildLogDirectory
+        ).path
         fileManager.createFile(atPath: logFilePath, contents: nil)
         guard let fileHandle = FileHandle(forWritingAtPath: logFilePath) else {
             throw XcodeProjectBuilderError.failedCreateBuildLogFile(path: logFilePath)
@@ -39,15 +44,12 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
         observableStandardStream.writeError(filtredData)
     }
     
-    private func buildLogFile() -> URL {
-        let fileManager = FileManager.default
-        let logDirectory = fileManager.calciferDirectory()
-            .appendingPathComponent("buildlogs")
+    private func buildLogFile(buildLogDirectory: String) -> URL {
         try? fileManager.createDirectory(
-            atPath: logDirectory,
+            atPath: buildLogDirectory,
             withIntermediateDirectories: true
         )
-        let logFilePath = logDirectory
+        let logFilePath = buildLogDirectory
             .appendingPathComponent(Date().formattedString())
             .appending(".txt")
         let logFile = URL(fileURLWithPath: logFilePath)

@@ -16,6 +16,7 @@ import Toolkit
 final class RemoteCachePreparer {
     
     private let fileManager: FileManager
+    private let calciferPathProvider: CalciferPathProvider
     private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
     private let shellCommandExecutor: ShellCommandExecutor
     private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
@@ -26,6 +27,7 @@ final class RemoteCachePreparer {
     
     init(
         fileManager: FileManager,
+        calciferPathProvider: CalciferPathProvider,
         shellCommandExecutor: ShellCommandExecutor,
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
@@ -33,6 +35,7 @@ final class RemoteCachePreparer {
         xcodeProjCache: XcodeProjCache)
     {
         self.fileManager = fileManager
+        self.calciferPathProvider = calciferPathProvider
         self.shellCommandExecutor = shellCommandExecutor
         self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
@@ -51,23 +54,26 @@ final class RemoteCachePreparer {
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
         let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
         
-        try params.save(to: buildEnvironmentParametersPath())
+        try params.save(to: calciferPathProvider.calciferEnvironmentFilePath())
         
         let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
             try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
                 podsProjectPath: podsProjectPath
             )
         }
-        try targetChecksumProvider.saveChecksumToFile()
+        try targetChecksumProvider.saveChecksum(to: calciferPathProvider.calciferCheckumFilePath())
         
-        guard let gradleHost = config.storageConfig?.gradleHost else {
+        let storageConfig = config.storageConfig
+        guard let gradleHost = storageConfig.gradleHost else {
             Logger.error("Gradle host is not set")
             return
         }
-        
+        let shouldUploadCache = storageConfig.shouldUpload
+        let localCacheDirectoryPath = storageConfig.localCacheDirectory
         let cacheStorage = try cacheStorageFactory.createMixedCacheStorage(
+            localCacheDirectoryPath: localCacheDirectoryPath,
             gradleHost: gradleHost,
-            shouldUploadCache: false
+            shouldUpload: shouldUploadCache
         )
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
         
@@ -106,10 +112,12 @@ final class RemoteCachePreparer {
                 checksumProducer: checksumProducer,
                 artifactIntegrator: artifactIntegrator
             )
+            let buildLogDirectory = calciferPathProvider.calciferBuildLogDirectory()
             try patchedProjectBuilder.prepareAndBuildPatchedProjectIfNeeded(
                 params: params,
                 buildDirectoryPath: buildDirectoryPath,
-                requiredTargets: requiredTargets
+                requiredTargets: requiredTargets,
+                buildLogDirectory: buildLogDirectory
             )
         }
         
@@ -236,12 +244,6 @@ final class RemoteCachePreparer {
             loggers: loggers
         )
         return aggregateLogger
-    }
-    
-    func buildEnvironmentParametersPath() -> String {
-        return fileManager
-            .calciferDirectory()
-            .appendingPathComponent("calciferenv.json")
     }
     
     private func obtainBuildDirectoryPath() -> String {
