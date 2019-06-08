@@ -9,7 +9,7 @@ public final class TimeProfiler {
     public static func measure<R>(
         _ description: TimeMeasurementDescription,
         action: (() throws -> (R)))
-        throws -> R
+        rethrows -> R
     {
         let start = timestamp()
         let result = try action()

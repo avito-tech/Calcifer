@@ -11,7 +11,7 @@ public final class DWARFUUIDProviderImpl: DWARFUUIDProvider {
     }
     
     public func obtainDwarfUUIDs(path: String) throws -> [DWARFUUID] {
-        let command = ShellCommand(
+        let command = BaseShellCommand(
             launchPath: "/usr/bin/dwarfdump",
             arguments: [
                 "--uuid",

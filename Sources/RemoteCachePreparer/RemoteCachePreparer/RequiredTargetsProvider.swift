@@ -26,11 +26,18 @@ public class RequiredTargetsProviderImpl: RequiredTargetsProvider {
             buildParametersChecksum: buildParametersChecksum)
             else {
                 let podsTargetName = "Pods-\(params.targetName)"
-                let targetInfos = try targetInfoFilter.obtainRequiredTargets(
+                guard let podsTargetInfos = try? targetInfoFilter.obtainRequiredTargets(
                     targetName: podsTargetName,
-                    buildParametersChecksum: buildParametersChecksum
-                )
-                return targetInfos
+                    buildParametersChecksum: buildParametersChecksum)
+                    else {
+                        let calciferTargetName = "\(params.targetName)-Calcifer"
+                        let targetInfos = try targetInfoFilter.obtainRequiredTargets(
+                            targetName: calciferTargetName,
+                            buildParametersChecksum: buildParametersChecksum
+                        )
+                        return targetInfos
+                    }
+                return podsTargetInfos
             }
         return calciferPodsTargetInfos
     }

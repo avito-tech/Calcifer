@@ -5,8 +5,6 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     public let targetName: String
     // "PROJECT": "Some"
     public let project: String
-    // "PRODUCT_IDENTIFIER": "io.some.bla"
-    public let productIdentifier: String
     // "PRODUCT_BUNDLE_IDENTIFIER": "io.some.bla"
     public let productBundleIdentifier: String
     // "FULL_PRODUCT_NAME": "Some.app"
@@ -111,7 +109,6 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     public init(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
         targetName = try environment.getValue("TARGETNAME")
         project = try environment.getValue("PROJECT")
-        productIdentifier = try environment.getValue("PRODUCT_IDENTIFIER")
         productBundleIdentifier = try environment.getValue("PRODUCT_BUNDLE_IDENTIFIER")
         fullProductName = try environment.getValue("FULL_PRODUCT_NAME")
         targetBuildDirectory = try environment.getValue("TARGET_BUILD_DIR")

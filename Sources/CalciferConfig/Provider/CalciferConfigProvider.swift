@@ -16,31 +16,41 @@ public final class CalciferConfigProvider {
         return try jsonData.decode()
     }
     
-    public func obtainConfig(path: String) throws -> CalciferConfig {
-        let globalConfigDictionary = try obtainConfigDicationary(from: globalConfigPath())
-        let localConfigDictionary = try obtainConfigDicationary(from: path)
-        let mergedDictionary = globalConfigDictionary.merging(localConfigDictionary) { (_, new) in new }
-        let jsonData = try JSONSerialization.data(withJSONObject: mergedDictionary)
-        return try jsonData.decode()
+    public func obtainConfig(projectDirectoryPath: String) throws -> CalciferConfig {
+        let globalConfig = try CalciferConfig.decode(from: globalConfigPath())
+        let projectConfig = try CalciferConfig.decode(
+            from: projectConfigPath(
+                at: projectDirectoryPath,
+                local: false
+            )
+        )
+        let localProjectConfig = try CalciferConfig.decode(
+            from: projectConfigPath(
+                at: projectDirectoryPath,
+                local: true
+            )
+        )
+        return try globalConfig
+            .override(by: projectConfig)
+            .override(by: localProjectConfig)
+    }
+    
+    private func projectConfigPath(at projectDirectoryPath: String, local: Bool) -> String {
+        return projectDirectoryPath
+            .appendingPathComponent(configFileName(local: local))
     }
     
     private func globalConfigPath() -> String {
         return fileManager.calciferDirectory()
-            .appendingPathComponent(configFileName())
+            .appendingPathComponent(configFileName(local: false))
     }
     
-    private func obtainConfigDicationary(from path: String) throws -> [String: Any] {
-        guard fileManager.fileExists(atPath: path) else { return [:] }
-        let url = URL(fileURLWithPath: path)
-        let jsonData = try Data(contentsOf: url)
-        let jsonObject = try JSONSerialization.jsonObject(with: jsonData)
-        guard let jsonResult = jsonObject as? [String: Any]
-            else { return [:] }
-        return jsonResult
-    }
-    
-    public func configFileName() -> String {
-        return "CalciferConfig.json"
+    private func configFileName(local: Bool) -> String {
+        if local {
+            return "CalciferConfig.local.json"
+        } else {
+            return "CalciferConfig.json"
+        }
     }
     
 }

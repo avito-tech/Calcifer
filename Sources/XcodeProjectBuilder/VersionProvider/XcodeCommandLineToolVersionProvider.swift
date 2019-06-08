@@ -11,7 +11,7 @@ public final class XcodeCommandLineToolVersionProvider {
     }
     
     public func obtainXcodeCommandLineToolVersion() throws -> String {
-        let command = ShellCommand(
+        let command = BaseShellCommand(
             launchPath: "/usr/bin/xcodebuild",
             arguments: [
                 "-version"

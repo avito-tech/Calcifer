@@ -80,8 +80,7 @@ public final class PrepareRemoteCacheCommand: Command {
             xcodeProjCache: xcodeProjCache
         )
         let configProvider = CalciferConfigProvider(fileManager: fileManager)
-        let localConfigPath = sourcePath.appendingPathComponent(configProvider.configFileName())
-        let config = try configProvider.obtainConfig(path: localConfigPath)
+        let config = try configProvider.obtainConfig(projectDirectoryPath: params.projectDirectory)
         
         try TimeProfiler.measure("Prepare remote cache") {
             try preparer.prepare(

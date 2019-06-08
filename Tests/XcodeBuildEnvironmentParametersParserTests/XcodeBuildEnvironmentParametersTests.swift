@@ -15,7 +15,6 @@ public final class XcodeBuildEnvironmentParametersTests: XCTestCase {
         return [
             "TARGETNAME": "Some",
             "PROJECT": "Some",
-            "PRODUCT_IDENTIFIER": "io.some.bla",
             "PRODUCT_BUNDLE_IDENTIFIER": "io.some.bla",
             "FULL_PRODUCT_NAME": "Some.app",
             "TARGET_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator",

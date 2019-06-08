@@ -9,7 +9,11 @@ public final class DWARFUUIDProviderImplTests: XCTestCase {
     func test_provider() {
         XCTAssertNoThrow(try {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub()
+            let shellCommandExecutor = ShellCommandExecutorStub() { command in
+                XCTFail(
+                    "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+                )
+            }
             let uuid = UUID().uuidString
             let architecture = "x86_64"
             let output = [

@@ -27,6 +27,8 @@ public final class DSYMSymbolizerTests: XCTestCase {
                 .appendingPathComponent("\(uuid).plist")
             
             let symbolizer = createSymbolizer(
+                binaryPath: binaryPath,
+                dsymBundlePath: dSYMPath,
                 uuid: uuid,
                 architecture: expectedArchitecture
             )
@@ -56,22 +58,32 @@ public final class DSYMSymbolizerTests: XCTestCase {
     }
     
     private func createSymbolizer(
+        binaryPath: String,
+        dsymBundlePath: String,
         uuid: String,
         architecture: String)
         -> DSYMSymbolizer
     {
-        let shellCommandExecutor = ShellCommandExecutorStub()
+        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            XCTFail(
+                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+            )
+        }
         let output = [
             "UUID: \(uuid) (\(architecture))",
             "/Users/a/.calcifer/localCache/Unbox/9d4f...10f1/Unbox.framework/Unbox"
-            ].joined(separator: " ")
-        shellCommandExecutor.stub = { command in
-            return ShellCommandResult(
-                terminationStatus: 0,
-                output: output,
-                error: nil
+        ].joined(separator: " ")
+        let stubs = [binaryPath, dsymBundlePath].map {
+            ShellCommandStub(
+                launchPath: "/usr/bin/dwarfdump",
+                arguments: [
+                    "--uuid",
+                    $0
+                ],
+                output: output
             )
         }
+        shellCommandExecutor.stubCommand(stubs)
         let uuidProvider = DWARFUUIDProviderImpl(
             shellCommandExecutor: shellCommandExecutor
         )

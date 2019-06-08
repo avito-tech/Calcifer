@@ -19,6 +19,14 @@ public extension Encodable {
     }
 }
 
+public extension Decodable {
+    static func decode(from path: String) throws -> Self {
+        let url = URL(fileURLWithPath: path)
+        let jsonData = try Data(contentsOf: url)
+        return try jsonData.decode()
+    }
+}
+
 public extension Data {
     func decode<T: Decodable>(type: T.Type = T.self) throws -> T {
         let decoder = JSONDecoder()

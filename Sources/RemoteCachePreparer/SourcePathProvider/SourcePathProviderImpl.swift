@@ -10,7 +10,7 @@ public final class SourcePathProviderImpl: SourcePathProvider {
     }
     
     public func obtainSourcePath(podsRoot: String) throws -> String {
-        let command = ShellCommand(
+        let command = BaseShellCommand(
             launchPath: "/usr/bin/git",
             arguments: [
                 "-C",

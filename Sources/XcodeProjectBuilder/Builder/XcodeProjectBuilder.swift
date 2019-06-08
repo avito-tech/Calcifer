@@ -20,7 +20,7 @@ public final class XcodeProjectBuilder {
         environment: [String: String]) throws {
         let architectures = config.architectures.map { $0.rawValue }.joined(separator: " ")
         let onlyActiveArchitecture = config.onlyActiveArchitecture ? "YES" : "NO"
-        let command = ShellCommand(
+        let command = BaseShellCommand(
             launchPath: "/usr/bin/xcodebuild",
             arguments: [
                 "-project",
