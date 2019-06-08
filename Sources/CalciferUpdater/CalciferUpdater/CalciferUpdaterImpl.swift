@@ -83,7 +83,7 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         self.downloadFile(url: url) { result in
             switch result {
             case let .success(url):
-                self.updateCalcifer(
+                self.process(
                     downloadedZipURL: url,
                     completion: completion
                 )
@@ -93,7 +93,7 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         }
     }
     
-    private func updateCalcifer(
+    private func process(
         downloadedZipURL: URL,
         completion: @escaping (Result<Void, Error>) -> ())
     {
