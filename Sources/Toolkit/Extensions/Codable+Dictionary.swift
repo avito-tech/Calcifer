@@ -32,7 +32,7 @@ public extension Dictionary where Key == String, Value == Any {
     
     static func contentsOfFile(_ path: String) -> [String: Any] {
         guard let dictionary = NSDictionary(contentsOfFile: path) as? [String: Any]
-            else { return [String: Any]() }
+            else { return [:] }
         return dictionary
     }
 }

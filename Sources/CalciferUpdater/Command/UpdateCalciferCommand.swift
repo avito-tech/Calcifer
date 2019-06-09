@@ -66,7 +66,7 @@ public final class UpdateCalciferCommand: Command {
             shellExecutor: shellExecutor
         )
         
-        DispatchGroup().wait { dispatchGroup in
+        DispatchGroup.wait { dispatchGroup in
             updater.updateCalcifer(config: config) { result in
                 switch result {
                 case .success:
