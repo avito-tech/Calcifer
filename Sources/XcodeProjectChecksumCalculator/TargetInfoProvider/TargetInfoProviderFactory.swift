@@ -5,18 +5,13 @@ import Toolkit
 
 public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProducer> {
     
-    private let fileManager: FileManager
     private let checksumProducer: ChecksumProducer
     private let factory = XcodeProjChecksumHolderBuilderFactory(
         fullPathProvider: BaseFileElementFullPathProvider(),
         xcodeProjCache: XcodeProjCacheImpl.shared
     )
     
-    public init(
-        fileManager: FileManager,
-        checksumProducer: ChecksumProducer)
-    {
-        self.fileManager = fileManager
+    public init(checksumProducer: ChecksumProducer) {
         self.checksumProducer = checksumProducer
     }
     

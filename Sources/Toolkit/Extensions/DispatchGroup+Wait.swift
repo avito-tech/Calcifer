@@ -2,10 +2,11 @@ import Foundation
 
 public extension DispatchGroup {
     @discardableResult
-    func wait<T>(_ action: (DispatchGroup) throws -> (T)) rethrows -> T {
-        enter()
-        let result = try action(self)
-        wait()
+    static func wait<T>(_ action: (DispatchGroup) throws -> (T)) rethrows -> T {
+        let dispatchGroup = DispatchGroup()
+        dispatchGroup.enter()
+        let result = try action(dispatchGroup)
+        dispatchGroup.wait()
         return result
     }
 }
