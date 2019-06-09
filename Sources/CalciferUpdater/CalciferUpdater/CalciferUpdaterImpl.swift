@@ -6,18 +6,21 @@ import Toolkit
 
 public final class CalciferUpdaterImpl: CalciferUpdater {
     
-    private let session: URLSession
+    private let updateChecker: UpdateChecker
+    private let fileDownloader: FileDownloader
     private let fileManager: FileManager
     private let calciferBinaryPath: String
     private let shellExecutor: ShellCommandExecutor
     
     public init(
-        session: URLSession,
+        updateChecker: UpdateChecker,
+        fileDownloader: FileDownloader,
         fileManager: FileManager,
         calciferBinaryPath: String,
         shellExecutor: ShellCommandExecutor)
     {
-        self.session = session
+        self.updateChecker = updateChecker
+        self.fileDownloader = fileDownloader
         self.fileManager = fileManager
         self.calciferBinaryPath = calciferBinaryPath
         self.shellExecutor = shellExecutor
@@ -27,52 +30,22 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         config: CalciferUpdateConfig,
         completion: @escaping (Result<Void, Error>) -> ())
     {
-        let currentChecksum = catchError { try obtainCurrentChecksum() }
-        downloadFile(url: config.versionFileURL) { result in
-            self.shouldDownloadBinary(
-                versionDownloadResult: result,
-                config: config,
-                currentChecksum: currentChecksum,
-                completion: completion
-            )
-        }
-    }
-    
-    private func obtainCurrentChecksum() throws -> String? {
-        if fileManager.fileExists(atPath: calciferBinaryPath) {
-            return try Data(
-                contentsOf: URL(fileURLWithPath: calciferBinaryPath)
-            ).md5()
-        }
-        return nil
-    }
-    
-    private func shouldDownloadBinary(
-        versionDownloadResult: Result<URL, Error>,
-        config: CalciferUpdateConfig,
-        currentChecksum: String?,
-        completion: @escaping (Result<Void, Error>) -> ())
-    {
-        switch versionDownloadResult {
-        case let .success(url):
-            guard let version = try? CalciferVersion.decode(from: url.path) else {
-                let result: Result<Void, Error> = .failure(
-                    CalciferUpdaterError.failedToParseVersionFile(url: url)
-                )
-                completion(result)
-                return
+        updateChecker.shouldUpdateCalcifer(
+            versionFileURL: config.versionFileURL
+        ) { [weak self] result in
+            switch result {
+            case let .success(shouldUpdate):
+                if shouldUpdate == true {
+                    self?.downloadZipBinary(
+                        from: config.zipBinaryFileURL,
+                        completion: completion
+                    )
+                } else {
+                    completion(.success(()))
+                }
+            case let .failure(error):
+                completion(.failure(error))
             }
-            if version.checksum == currentChecksum {
-                completion(.success(()))
-                return
-            }
-            downloadZipBinary(
-                from: config.zipBinaryFileURL,
-                completion: completion
-            )
-        case let .failure(error):
-            let result: Result<Void, Error> = .failure(error)
-            completion(result)
         }
     }
     
@@ -80,10 +53,10 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         from url: URL,
         completion: @escaping (Result<Void, Error>) -> ())
     {
-        self.downloadFile(url: url) { result in
+        fileDownloader.downloadFile(url: url) { [weak self] result in
             switch result {
             case let .success(url):
-                self.process(
+                self?.process(
                     downloadedZipURL: url,
                     completion: completion
                 )
@@ -140,14 +113,4 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         }
     }
     
-    private func downloadFile(url: URL, completion: @escaping (Result<URL, Error>) -> ()) {
-        session.downloadTask(with: url) { (downloadedURL, _, error) in
-            guard let downloadedURL = downloadedURL, error == nil else {
-                let downloadError = error ?? CalciferUpdaterError.failedToDownloadFile(url: url)
-                completion(.failure(downloadError))
-                return
-            }
-            completion(.success(downloadedURL))
-        }.resume()
-    }
 }

@@ -7,13 +7,16 @@ import ZIPFoundation
 import ShellCommand
 @testable import CalciferUpdater
 
-public final class CalciferUpdaterImplTests: XCTestCase {
+public final class CalciferUpdaterImplTests: XCTestCase { 
     
-    func test_uploadNewVersion() {
+    let fileManager = FileManager.default
+    let calciferBinaryName = CalciferPathProviderImpl(
+        fileManager: FileManager.default
+    ).calciferBinaryName()
+    let temporaryDirectory = FileManager.default.createTemporaryDirectory()
+    
+    func test_updateCalcifer() {
         // Given
-        let fileManager = FileManager.default
-        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
-        let calciferBinaryName = calciferPathProvider.calciferBinaryName()
         guard let versionFileURL = URL(string: "http://some.com/version.json"),
             let zipBinaryFileURL = URL(string: "http://some.com/Calcifer.zip")
             else {
@@ -25,64 +28,11 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             zipBinaryFileURL: zipBinaryFileURL
         )
         
-        let temporaryDirectory = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-        XCTAssertNoThrow(
-            try fileManager.createDirectory(
-                at: temporaryDirectory,
-                withIntermediateDirectories: true
-            )
-        )
-        let binaryFileURL = temporaryDirectory
-            .appendingPathComponent(calciferBinaryName)
-        
-        guard let binaryContent = UUID().uuidString.data(using: .utf8) else {
-            XCTFail("Can't create data from string")
-            return
-        }
-        fileManager.createFile(
-            atPath: binaryFileURL.path,
-            contents: binaryContent
-        )
-        let zipFileURL = temporaryDirectory
-            .appendingPathComponent(calciferBinaryName)
-            .appendingPathExtension("zip")
-        XCTAssertNoThrow(
-            try fileManager.zipItem(
-                at: binaryFileURL,
-                to: zipFileURL
-            )
-        )
-        XCTAssertNoThrow(
-            try fileManager.removeItem(at: binaryFileURL)
-        )
-        
-        let versionURL = temporaryDirectory.appendingPathComponent("version.json")
-        XCTAssertNoThrow(
-            try CalciferVersion(checksum: binaryContent.md5())
-                .save(to: versionURL.path)
-        )
-        
-        let sessionStub = StubURLSession()
-        stubSession(
-            sessionStub,
-            config: config,
-            onVersionRequest: {
-                return versionURL
-            }, onZipRequest: {
-                return zipFileURL
-            }
-        )
-        
-        let destinationDirectory = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-        XCTAssertNoThrow(
-            try fileManager.createDirectory(
-                at: destinationDirectory,
-                withIntermediateDirectories: true
-            )
-        )
-        let destinationURL = destinationDirectory
+        let binaryContent = UUID().uuidString.data(using: .utf8) ?? Data()
+        let binaryFileURL = createBinary(content: binaryContent)
+        let zipFileURL = createZip(binaryFileURL: binaryFileURL)
+
+        let destinationURL = fileManager.createTemporaryDirectory()
             .appendingPathComponent(calciferBinaryName)
         
         let shellCommandExecutor = ShellCommandExecutorStub() { command in
@@ -92,16 +42,28 @@ public final class CalciferUpdaterImplTests: XCTestCase {
         }
         shellCommandExecutor.stub = { command in
             XCTAssertEqual(command.arguments, ["installCalciferBinary"])
-            try? fileManager.copyItem(
+            try? self.fileManager.copyItem(
                 at: URL(fileURLWithPath: command.launchPath),
                 to: destinationURL
             )
             return ShellCommandResult(terminationStatus: 0)
         }
         
-
+        let updateChecker = UpdateCheckerStub { url -> (Result<Bool, Error>) in
+            if url == versionFileURL {
+                return .success(true)
+            }
+            return .failure(CalciferUpdaterError.failedToDownloadFile(url: url))
+        }
+        let fileDownloader = FileDownloaderStub { url -> (Result<URL, Error>) in
+            if url == zipBinaryFileURL {
+                return .success(zipFileURL)
+            }
+            return .failure(CalciferUpdaterError.failedToDownloadFile(url: url))
+        }
         let updater = CalciferUpdaterImpl(
-            session: sessionStub,
+            updateChecker: updateChecker,
+            fileDownloader: fileDownloader,
             fileManager: fileManager,
             calciferBinaryPath: destinationURL.path,
             shellExecutor: shellCommandExecutor
@@ -126,28 +88,30 @@ public final class CalciferUpdaterImplTests: XCTestCase {
         }
     }
     
-    private func stubSession(
-        _ stub: StubURLSession,
-        config: CalciferUpdateConfig,
-        onVersionRequest: @escaping () -> (URL),
-        onZipRequest: @escaping () -> (URL))
-    {
-        
-        stub.downloadStub = { request in
-            guard let requestURL = request.url else {
-                XCTFail("Failed to stub session")
-                return (nil, nil, nil)
-            }
-            var url: URL? = nil
-            if requestURL == config.versionFileURL {
-                url = onVersionRequest()
-            } else if requestURL == config.zipBinaryFileURL {
-                url = onZipRequest()
-            } else {
-                XCTFail("Failed to stub session")
-            }
-            return (url, nil, nil)
-        }
+    private func createBinary(content: Data) -> URL {
+        let binaryFileURL = temporaryDirectory
+            .appendingPathComponent(calciferBinaryName)
+        fileManager.createFile(
+            atPath: binaryFileURL.path,
+            contents: content
+        )
+        return binaryFileURL
+    }
+    
+    private func createZip(binaryFileURL: URL) -> URL {
+        let zipFileURL = temporaryDirectory
+            .appendingPathComponent(calciferBinaryName)
+            .appendingPathExtension("zip")
+        XCTAssertNoThrow(
+            try fileManager.zipItem(
+                at: binaryFileURL,
+                to: zipFileURL
+            )
+        )
+        XCTAssertNoThrow(
+            try fileManager.removeItem(at: binaryFileURL)
+        )
+        return zipFileURL
     }
     
 }
