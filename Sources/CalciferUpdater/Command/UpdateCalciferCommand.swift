@@ -59,8 +59,15 @@ public final class UpdateCalciferCommand: Command {
         
         let shellExecutor = ShellCommandExecutorImpl()
         let calciferBinaryPath = calciferPathProvider.calciferBinaryPath()
+        let fileDownloader = FileDownloaderImpl(session: URLSession.shared)
+        let updateChecker = UpdateCheckerImpl(
+            fileDownloader: fileDownloader,
+            fileManager: fileManager,
+            calciferBinaryPath: calciferBinaryPath
+        )
         let updater = CalciferUpdaterImpl(
-            session: URLSession.shared,
+            updateChecker: updateChecker,
+            fileDownloader: fileDownloader,
             fileManager: fileManager,
             calciferBinaryPath: calciferBinaryPath,
             shellExecutor: shellExecutor
