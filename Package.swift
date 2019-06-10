@@ -60,7 +60,8 @@ let package = Package(
                 "CalciferVersionShipper",
                 "CalciferUpdater",
                 "CalciferBinaryInstaller",
-                "CalciferConfig"
+                "CalciferConfig",
+                "DaemonClient"
             ]
         ),
         // MARK: CommandRunner
@@ -241,15 +242,36 @@ let package = Package(
                 "Mock"
             ]
         ),
+        // MARK: DaemonModels
+        .target(
+            name: "DaemonModels",
+            dependencies: [
+                "Toolkit"
+            ]
+        ),
         // MARK: Daemon
         .target(
             name: "Daemon",
             dependencies: [
                 "RemoteCachePreparer",
+                "DaemonModels",
                 "CalciferConfig",
+                "ArgumentsParser",
                 "CommandRunner",
                 "ShellCommand",
                 "Swifter"
+            ]
+        ),
+        // MARK: DaemonClient
+        .target(
+            name: "DaemonClient",
+            dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
+                "ArgumentsParser",
+                "CalciferConfig",
+                "DaemonModels",
+                "Starscream",
+                "Toolkit"
             ]
         ),
         // MARK: CalciferConfig

@@ -1,10 +1,10 @@
 import Foundation
 
 public struct StandardStreamMessage: Codable {
-    let source: StandardStreamMessageSource
-    let data: Data
+    public let source: StandardStreamMessageSource
+    public let data: Data
     
-    init(
+    public init(
         source: StandardStreamMessageSource,
         data: Data)
     {

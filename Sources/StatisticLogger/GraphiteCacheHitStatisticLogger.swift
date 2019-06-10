@@ -57,6 +57,7 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
     private func shortMetricKey(for params: XcodeBuildEnvironmentParameters) -> [String] {
         return rootKey +
         [
+            params.targetName,
             "v\(version)",
             params.user,
             MetricKeyParts.metricName,
@@ -68,6 +69,7 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
     private func fullMetricKey(for params: XcodeBuildEnvironmentParameters) -> [String] {
         return rootKey +
             [
+                params.targetName,
                 "v\(version)",
                 params.user,
                 MetricKeyParts.metricName,
