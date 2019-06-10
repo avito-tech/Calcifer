@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CalciferShipConfig: Codable {
+public struct CalciferShipConfig: Codable, Equatable {
     public let versionFileURL: URL
     public let zipBinaryFileURL: URL
     public let basicAccessAuthentication: BasicAccessAuthentication?

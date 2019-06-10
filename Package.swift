@@ -258,6 +258,12 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        .testTarget(
+            name: "CalciferConfigTests",
+            dependencies: [
+                "CalciferConfig"
+            ]
+        ),
         // MARK: CalciferVersionShipper
         .target(
             name: "CalciferVersionShipper",

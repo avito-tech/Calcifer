@@ -18,20 +18,6 @@ public extension FileManager {
         }
     }
     
-    func calciferDirectory() -> String {
-        // .noindex - remove from spotlight index
-        return home().appendingPathComponent(".calcifer.noindex")
-    }
-    
-    func calciferBinaryName() -> String {
-        return "Calcifer"
-    }
-    
-    func calciferBinaryPath() -> String {
-        return calciferDirectory()
-            .appendingPathComponent(calciferBinaryName())
-    }
-    
     func launchctlPlistPath(label: String) -> String {
         return home()
             .appendingPathComponent("Library")

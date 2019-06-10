@@ -63,6 +63,7 @@ public final class PrepareRemoteCacheCommand: Command {
         }
         
         let fileManager = FileManager.default
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let unzip = Unzip(shellExecutor: shellExecutor)
@@ -73,13 +74,16 @@ public final class PrepareRemoteCacheCommand: Command {
         let xcodeProjCache = XcodeProjCacheImpl.shared
         let preparer = RemoteCachePreparer(
             fileManager: fileManager,
+            calciferPathProvider: calciferPathProvider,
             shellCommandExecutor: shellExecutor,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory,
             xcodeProjCache: xcodeProjCache
         )
-        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let configProvider = CalciferConfigProvider(
+            calciferDirectory: calciferPathProvider.calciferDirectory()
+        )
         let config = try configProvider.obtainConfig(projectDirectoryPath: params.projectDirectory)
         
         try TimeProfiler.measure("Prepare remote cache") {

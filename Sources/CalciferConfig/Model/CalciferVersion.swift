@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CalciferVersion: Codable {
+public struct CalciferVersion: Codable, Equatable {
     public let checksum: String
     
     public init(checksum: String) {

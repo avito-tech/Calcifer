@@ -62,6 +62,7 @@ public final class UploadRemoteCacheCommand: Command {
         }
         
         let fileManager = FileManager.default
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
@@ -71,12 +72,15 @@ public final class UploadRemoteCacheCommand: Command {
         )
         let uploader = RemoteCacheUploader(
             fileManager: fileManager,
+            calciferPathProvider: calciferPathProvider,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory
         )
         
-        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let configProvider = CalciferConfigProvider(
+            calciferDirectory: calciferPathProvider.calciferDirectory()
+        )
         let config = try configProvider.obtainConfig(projectDirectoryPath: params.projectDirectory)
 
         try TimeProfiler.measure("Upload remote cache") {

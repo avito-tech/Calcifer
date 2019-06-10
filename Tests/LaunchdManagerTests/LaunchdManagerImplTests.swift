@@ -5,7 +5,7 @@ import Mock
 import ShellCommand
 @testable import LaunchdManager
 
-public final class LaunchdManagerTestsImplTests: XCTestCase {
+public final class LaunchdManagerImplTests: XCTestCase {
     
     let fileManager = FileManager.default
     

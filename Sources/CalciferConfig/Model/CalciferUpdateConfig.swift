@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CalciferUpdateConfig: Codable {
+public struct CalciferUpdateConfig: Codable, Equatable {
     public let versionFileURL: URL
     public let zipBinaryFileURL: URL
     

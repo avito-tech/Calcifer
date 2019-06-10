@@ -82,7 +82,8 @@ public final class Logger {
     
     private static func logFileURL() -> URL {
         let fileManager = FileManager.default
-        let logDirectory = fileManager.calciferDirectory()
+        let pathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let logDirectory = pathProvider.calciferDirectory()
             .appendingPathComponent("logs")
         try? fileManager.createDirectory(
             atPath: logDirectory,

@@ -3,10 +3,10 @@ import Toolkit
 
 public final class CalciferConfigProvider {
     
-    private let fileManager: FileManager
+    private let calciferDirectory: String
     
-    public init(fileManager: FileManager) {
-        self.fileManager = fileManager
+    public init(calciferDirectory: String) {
+        self.calciferDirectory = calciferDirectory
     }
     
     public func obtainGlobalConfig()  throws -> CalciferConfig {
@@ -17,22 +17,29 @@ public final class CalciferConfigProvider {
     }
     
     public func obtainConfig(projectDirectoryPath: String) throws -> CalciferConfig {
-        let globalConfig = try CalciferConfig.decode(from: globalConfigPath())
-        let projectConfig = try CalciferConfig.decode(
-            from: projectConfigPath(
+        let defaultConfigDictionary = try CalciferConfig.defaultConfig(
+            calciferDirectory: calciferDirectory
+        ).toDictionary()
+        let globalConfigDictionary = Dictionary.contentsOfFile(
+            globalConfigPath()
+        )
+        let projectConfigDictionary = Dictionary.contentsOfFile(
+            projectConfigPath(
                 at: projectDirectoryPath,
                 local: false
             )
         )
-        let localProjectConfig = try CalciferConfig.decode(
-            from: projectConfigPath(
+        let localProjectConfig = Dictionary.contentsOfFile(
+            projectConfigPath(
                 at: projectDirectoryPath,
                 local: true
             )
         )
-        return try globalConfig
-            .override(by: projectConfig)
+        let configDictionary = defaultConfigDictionary
+            .override(by: globalConfigDictionary)
+            .override(by: projectConfigDictionary)
             .override(by: localProjectConfig)
+        return try configDictionary.toObject()
     }
     
     private func projectConfigPath(at projectDirectoryPath: String, local: Bool) -> String {
@@ -41,7 +48,7 @@ public final class CalciferConfigProvider {
     }
     
     private func globalConfigPath() -> String {
-        return fileManager.calciferDirectory()
+        return calciferDirectory
             .appendingPathComponent(configFileName(local: false))
     }
     

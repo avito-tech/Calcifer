@@ -7,11 +7,12 @@ import Toolkit
 public protocol CacheStorageFactory {
     
     func createMixedCacheStorage(
+        localCacheDirectoryPath: String,
         gradleHost: String,
-        shouldUploadCache: Bool
+        shouldUpload: Bool
     ) throws -> BuildProductCacheStorage
     
-    func createLocalBuildProductCacheStorage()
+    func createLocalBuildProductCacheStorage(localCacheDirectoryPath: String)
         -> BuildProductCacheStorage
     
     func createRemoteBuildProductCacheStorage(gradleHost: String) throws -> BuildProductCacheStorage
@@ -22,17 +23,23 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
     private let fileManager: FileManager
     private let unzip: Unzip
     
-    init(fileManager: FileManager, unzip: Unzip) {
+    init(
+        fileManager: FileManager,
+        unzip: Unzip)
+    {
         self.fileManager = fileManager
         self.unzip = unzip
     }
     
     public func createMixedCacheStorage(
+        localCacheDirectoryPath: String,
         gradleHost: String,
-        shouldUploadCache: Bool)
+        shouldUpload: Bool)
         throws -> BuildProductCacheStorage
     {
-        let localStorage = createLocalBuildProductCacheStorage()
+        let localStorage = createLocalBuildProductCacheStorage(
+            localCacheDirectoryPath: localCacheDirectoryPath
+        )
         let remoteStorage = try createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost
         )
@@ -40,15 +47,13 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
             fileManager: fileManager,
             localCacheStorage: localStorage,
             remoteCacheStorage: remoteStorage,
-            shouldUpload: shouldUploadCache
+            shouldUpload: shouldUpload
         )
     }
     
-    public func createLocalBuildProductCacheStorage()
+    public func createLocalBuildProductCacheStorage(localCacheDirectoryPath: String)
         -> BuildProductCacheStorage
     {
-        let localCacheDirectoryPath = fileManager.calciferDirectory()
-            .appendingPathComponent("localCache")
         let localStorage = LocalBuildProductCacheStorage(
             fileManager: fileManager,
             cacheDirectoryPath: localCacheDirectoryPath

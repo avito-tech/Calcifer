@@ -12,6 +12,8 @@ public final class CalciferUpdaterImplTests: XCTestCase {
     func test_uploadNewVersion() {
         // Given
         let fileManager = FileManager.default
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let calciferBinaryName = calciferPathProvider.calciferBinaryName()
         guard let versionFileURL = URL(string: "http://some.com/version.json"),
             let zipBinaryFileURL = URL(string: "http://some.com/Calcifer.zip")
             else {
@@ -22,7 +24,6 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             versionFileURL: versionFileURL,
             zipBinaryFileURL: zipBinaryFileURL
         )
-        let binaryPath = UUID().uuidString
         
         let temporaryDirectory = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
@@ -33,7 +34,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             )
         )
         let binaryFileURL = temporaryDirectory
-            .appendingPathComponent(fileManager.calciferBinaryName())
+            .appendingPathComponent(calciferBinaryName)
         
         guard let binaryContent = UUID().uuidString.data(using: .utf8) else {
             XCTFail("Can't create data from string")
@@ -44,7 +45,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             contents: binaryContent
         )
         let zipFileURL = temporaryDirectory
-            .appendingPathComponent(fileManager.calciferBinaryName())
+            .appendingPathComponent(calciferBinaryName)
             .appendingPathExtension("zip")
         XCTAssertNoThrow(
             try fileManager.zipItem(
@@ -82,7 +83,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             )
         )
         let destinationURL = destinationDirectory
-            .appendingPathComponent(fileManager.calciferBinaryName())
+            .appendingPathComponent(calciferBinaryName)
         
         let shellCommandExecutor = ShellCommandExecutorStub() { command in
             XCTFail(
@@ -106,13 +107,11 @@ public final class CalciferUpdaterImplTests: XCTestCase {
             shellExecutor: shellCommandExecutor
         )
 
-        var updateResult: Result<URL, Error>?
+        var updateResult: Result<Void, Error>?
         // When
-        XCTAssertNoThrow(
-            try updater.updateCalcifer(config: config) { result in
-                updateResult = result
-            }
-        )
+        updater.updateCalcifer(config: config) { result in
+            updateResult = result
+        }
         
         // Then
         guard let result = updateResult else {

@@ -17,17 +17,6 @@ public final class BuildXcodeProjectCommand: Command {
         case platform
     }
     
-    private let builder = XcodeProjectBuilder(
-        shellExecutor: ShellCommandExecutorImpl(),
-        outputHandler: XcodeProjectBuilderOutputHandlerImpl(
-            fileManager: FileManager.default,
-            observableStandardStream: ObservableStandardStream.shared,
-            outputFilter: XcodeProjectBuilderOutputFilterImpl(
-                buildLogLevel: .verbose
-            )
-        )
-    )
-    
     private let buildDirectoryPathArgument: OptionArgument<String>
     private let projectPathArgument: OptionArgument<String>
     private let configurationArgument: OptionArgument<String>
@@ -105,6 +94,25 @@ public final class BuildXcodeProjectCommand: Command {
             onlyActiveArchitecture: true
         )
         let environment = ProcessInfo.processInfo.environment
-        try builder.build(config: config, environment: environment)
+        
+        let fileManager = FileManager.default
+        let builder = XcodeProjectBuilder(
+            shellExecutor: ShellCommandExecutorImpl(),
+            outputHandler: XcodeProjectBuilderOutputHandlerImpl(
+                fileManager: fileManager,
+                observableStandardStream: ObservableStandardStream.shared,
+                outputFilter: XcodeProjectBuilderOutputFilterImpl(
+                    buildLogLevel: .verbose
+                )
+            )
+        )
+        
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let buildLogDirectory = calciferPathProvider.calciferBuildLogDirectory()
+        try builder.build(
+            config: config,
+            environment: environment,
+            buildLogDirectory: buildLogDirectory
+        )
     }
 }

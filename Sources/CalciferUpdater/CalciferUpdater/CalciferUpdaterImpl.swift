@@ -100,7 +100,8 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         let unzipURL = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         catchError { try fileManager.createDirectory(at: unzipURL, withIntermediateDirectories: true) }
         catchError { try fileManager.unzipItem(at: downloadedZipURL, to: unzipURL) }
-        let unzipBinaryURL = unzipURL.appendingPathComponent(fileManager.calciferBinaryName())
+        let fileName = calciferBinaryPath.lastPathComponent()
+        let unzipBinaryURL = unzipURL.appendingPathComponent(fileName)
         installBinary(binaryPath: unzipBinaryURL.path)
         let resultBinaryURL = URL(fileURLWithPath: calciferBinaryPath)
         if fileManager.fileExists(atPath: resultBinaryURL.path)

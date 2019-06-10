@@ -69,7 +69,10 @@ public final class ShipCurrentCalciferVersionCommand: Command {
         }
         
         let fileManager = FileManager.default
-        let configProvider = CalciferConfigProvider(fileManager: fileManager)
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let configProvider = CalciferConfigProvider(
+            calciferDirectory: calciferPathProvider.calciferDirectory()
+        )
 
         let basicAccessAuthentication: BasicAccessAuthentication?
         if let login = arguments.get(self.loginArgument),
@@ -110,7 +113,7 @@ public final class ShipCurrentCalciferVersionCommand: Command {
             session: URLSession.shared,
             fileManager: fileManager
         )
-        DispatchGroup().wait { dispatchGroup in
+        DispatchGroup.wait { dispatchGroup in
             shipper.shipCalcifer(at: binaryPath, config: patchedCondig) { result in
                 switch result {
                 case .success:
