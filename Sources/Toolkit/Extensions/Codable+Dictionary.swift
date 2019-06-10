@@ -30,8 +30,12 @@ public extension Dictionary where Key == String, Value == Any {
         }
     }
     
-    static func contentsOfFile(_ path: String) -> [String: Any] {
-        guard let dictionary = NSDictionary(contentsOfFile: path) as? [String: Any]
+    static func contentsOfFile(_ path: String) throws -> [String: Any] {
+        guard FileManager.default.fileExists(atPath: path) else {
+            return [:]
+        }
+        let jsonData = try NSData(contentsOfFile: path) as Data
+        guard let dictionary = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any]
             else { return [:] }
         return dictionary
     }
