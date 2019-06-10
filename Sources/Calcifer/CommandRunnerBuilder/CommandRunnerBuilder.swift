@@ -13,6 +13,7 @@ import LaunchdManager
 import CalciferVersionShipper
 import CalciferUpdater
 import CalciferBinaryInstaller
+import CalciferConfig
 
 final class CommandRunnerBuilder {
     
@@ -35,7 +36,8 @@ final class CommandRunnerBuilder {
                 LaunchdLoadCommand.self,
                 ShipCurrentCalciferVersionCommand.self,
                 UpdateCalciferCommand.self,
-                CalciferBinaryInstallerCommand.self
+                CalciferBinaryInstallerCommand.self,
+                ObtainConfigValueCommand.self
             ]
         )
         return runner
