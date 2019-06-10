@@ -48,7 +48,7 @@ public final class ObtainConfigValueCommand: Command {
             projectDirectoryPath: projectDirectory
         )
         let dictionary = try config.toDictionary()
-        guard let value = (dictionary  as NSDictionary).value(forKeyPath: keyPath) else {
+        guard let value = (dictionary as NSDictionary).value(forKeyPath: keyPath) else {
             throw CalciferConfigError.emptyValueForKeyPath(
                 keyPath: keyPath,
                 dictionary: dictionary
