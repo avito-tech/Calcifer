@@ -59,7 +59,8 @@ let package = Package(
                 "LaunchdManager",
                 "CalciferVersionShipper",
                 "CalciferUpdater",
-                "CalciferBinaryInstaller"
+                "CalciferBinaryInstaller",
+                "CalciferConfig"
             ]
         ),
         // MARK: CommandRunner
@@ -255,6 +256,7 @@ let package = Package(
         .target(
             name: "CalciferConfig",
             dependencies: [
+                "ArgumentsParser",
                 "Toolkit"
             ]
         ),
