@@ -20,20 +20,22 @@ public final class CalciferConfigProvider {
         let defaultConfigDictionary = try CalciferConfig.defaultConfig(
             calciferDirectory: calciferDirectory
         ).toDictionary()
-        let globalConfigDictionary = Dictionary.contentsOfFile(
+        let globalConfigDictionary = try Dictionary.contentsOfFile(
             globalConfigPath()
         )
-        let projectConfigDictionary = Dictionary.contentsOfFile(
-            projectConfigPath(
-                at: projectDirectoryPath,
-                local: false
-            )
+        let projectConfigPath = obtainProjectConfigPath(
+            at: projectDirectoryPath,
+            local: false
         )
-        let localProjectConfig = Dictionary.contentsOfFile(
-            projectConfigPath(
-                at: projectDirectoryPath,
-                local: true
-            )
+        let projectConfigDictionary = try Dictionary.contentsOfFile(
+            projectConfigPath
+        )
+        let localConfigPath = obtainProjectConfigPath(
+            at: projectDirectoryPath,
+            local: true
+        )
+        let localProjectConfig = try Dictionary.contentsOfFile(
+            localConfigPath
         )
         let configDictionary = defaultConfigDictionary
             .override(by: globalConfigDictionary)
@@ -42,7 +44,11 @@ public final class CalciferConfigProvider {
         return try configDictionary.toObject()
     }
     
-    private func projectConfigPath(at projectDirectoryPath: String, local: Bool) -> String {
+    private func obtainProjectConfigPath(
+        at projectDirectoryPath: String,
+        local: Bool)
+        -> String
+    {
         return projectDirectoryPath
             .appendingPathComponent(configFileName(local: local))
     }
