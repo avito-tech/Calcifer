@@ -21,12 +21,12 @@ public final class ObtainConfigValueCommand: Command {
         projectDirectoryPathArgument = subparser.add(
             option: Arguments.projectDirectory.optionString,
             kind: String.self,
-            usage: "Specify path to project directory for load config."
+            usage: "Specify path to project directory for load config. Will be used merged CalciferConfig."
         )
         keyPathArgument = subparser.add(
             option: Arguments.keyPath.optionString,
             kind: String.self,
-            usage: "Specify key path."
+            usage: "Specify key path. Example: calciferUpdateConfig.versionFileURL"
         )
     }
     
