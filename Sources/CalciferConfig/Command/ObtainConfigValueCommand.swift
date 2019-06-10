@@ -54,6 +54,9 @@ public final class ObtainConfigValueCommand: Command {
                 dictionary: dictionary
             )
         }
-        debugPrint("\(value)")
+        guard let data = "\(value)".data(using: .utf8) else {
+            return
+        }
+        FileHandle.standardOutput.write(data)
     }
 }
