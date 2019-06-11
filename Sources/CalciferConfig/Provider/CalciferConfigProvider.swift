@@ -10,10 +10,15 @@ public final class CalciferConfigProvider {
     }
     
     public func obtainGlobalConfig()  throws -> CalciferConfig {
-        let path = globalConfigPath()
-        let url = URL(fileURLWithPath: path)
-        let jsonData = try Data(contentsOf: url)
-        return try jsonData.decode()
+        let defaultConfigDictionary = try CalciferConfig.defaultConfig(
+            calciferDirectory: calciferDirectory
+        ).toDictionary()
+        let globalConfigDictionary = try Dictionary.contentsOfFile(
+            globalConfigPath()
+        )
+        let configDictionary = defaultConfigDictionary
+            .override(by: globalConfigDictionary)
+        return try configDictionary.toObject()
     }
     
     public func obtainConfig(projectDirectoryPath: String) throws -> CalciferConfig {
