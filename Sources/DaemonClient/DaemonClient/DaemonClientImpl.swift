@@ -3,21 +3,23 @@ import Starscream
 import DaemonModels
 import ArgumentsParser
 import Toolkit
-import SwiftyBeaver
 
 public final class DaemonClientImpl: DaemonClient {
     
     private lazy var socket = WebSocket(url: daemonURL)
     private let daemonURL: URL
     private let dispatchGroup = DispatchGroup()
-    private let callbackQueue = DispatchQueue(label: "DaemonClientQueue")
+    private let callbackQueue = DispatchQueue(
+        label: "DaemonClientQueue",
+        qos: .userInitiated
+    )
     
-    init(daemonURL: URL) {
+    public init(daemonURL: URL) {
         self.daemonURL = daemonURL
+        socket.callbackQueue = callbackQueue
     }
     
     public func sendToDaemon(commandRunConfig: CommandRunConfig) throws {
-        socket.callbackQueue = callbackQueue
         let commandData = try commandRunConfig.encode()
         var exitCode: Int32? = nil
         setupSocketCallbacks(
