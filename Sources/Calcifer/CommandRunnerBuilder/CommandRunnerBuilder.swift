@@ -14,6 +14,7 @@ import CalciferVersionShipper
 import CalciferUpdater
 import CalciferBinaryInstaller
 import CalciferConfig
+import DaemonClient
 
 final class CommandRunnerBuilder {
     
@@ -37,7 +38,8 @@ final class CommandRunnerBuilder {
                 ShipCurrentCalciferVersionCommand.self,
                 UpdateCalciferCommand.self,
                 CalciferBinaryInstallerCommand.self,
-                ObtainConfigValueCommand.self
+                ObtainConfigValueCommand.self,
+                SendCommandToDaemonCommand.self
             ]
         )
         return runner

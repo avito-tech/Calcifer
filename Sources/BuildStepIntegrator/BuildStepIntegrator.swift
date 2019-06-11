@@ -52,7 +52,7 @@ public final class BuildStepIntegrator {
             let shellScript = [
                 "\(binaryPath) parseXcodeBuildEnvironmentParameters",
                 "\(binaryPath) prepareRemoteCache"
-                ].joined(separator: "\n")
+            ].joined(separator: "\n")
             let phaseName = "[Calcifer] Remote Cache"
             let phaseIndex = resourcesBuildPhaseIndex - 1
             

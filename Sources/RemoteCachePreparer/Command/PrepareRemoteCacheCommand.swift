@@ -37,15 +37,23 @@ public final class PrepareRemoteCacheCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
+        let fileManager = FileManager.default
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        
         let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
             "Parse environment parameters"
         ) {
             if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
                 let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
                 return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
-            } else {
-                return try XcodeBuildEnvironmentParameters()
+            } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
+                return environmentParams
             }
+            let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
+            if fileManager.fileExists(atPath: environmentFilePath) {
+                return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
+            }
+            throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
         }
         
         let shellExecutor = ShellCommandExecutorImpl()
@@ -62,8 +70,6 @@ public final class PrepareRemoteCacheCommand: Command {
             )
         }
         
-        let fileManager = FileManager.default
-        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let unzip = Unzip(shellExecutor: shellExecutor)

@@ -80,6 +80,19 @@ public final class Logger {
         logger.error(message)
     }
     
+    public static func log(_ loggerMessage: LoggerMessage) {
+        for destination in SwiftyBeaver.destinations {
+            _ = destination.send(
+                loggerMessage.level,
+                msg: loggerMessage.message,
+                thread: loggerMessage.thread,
+                file: loggerMessage.file,
+                function: loggerMessage.function,
+                line: loggerMessage.line
+            )
+        }
+    }
+    
     private static func logFileURL() -> URL {
         let fileManager = FileManager.default
         let pathProvider = CalciferPathProviderImpl(fileManager: fileManager)
