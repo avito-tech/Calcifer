@@ -10,7 +10,7 @@ import Toolkit
 public final class SendCommandToDaemonCommand: Command {
     
     public let command = "sendCommandToDaemon"
-    public let overview = "Send prepareRemoteCache command to daemon"
+    public let overview = "Send command to daemon"
     
     enum Arguments: String, CommandArgument {
         case commandName
