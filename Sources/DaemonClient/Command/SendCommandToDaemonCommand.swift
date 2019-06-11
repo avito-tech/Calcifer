@@ -54,6 +54,7 @@ public final class SendCommandToDaemonCommand: Command {
         let configProvider = CalciferConfigProvider(
             calciferDirectory: calciferPathProvider.calciferDirectory()
         )
+        let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
         
         let params: XcodeBuildEnvironmentParameters
         if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
@@ -65,11 +66,9 @@ public final class SendCommandToDaemonCommand: Command {
             let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
             try environmentParams.save(to: environmentFilePath)
             params = environmentParams
+        } else if fileManager.fileExists(atPath: environmentFilePath) {
+            params = try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
         } else {
-            let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
-            if fileManager.fileExists(atPath: environmentFilePath) {
-                params = try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
-            }
             throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
         }
         
