@@ -25,6 +25,7 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
         let logFilePath = buildLogFile(
             buildLogDirectory: buildLogDirectory
         ).path
+        Logger.info("Write build logs to \(logFilePath)")
         fileManager.createFile(atPath: logFilePath, contents: nil)
         guard let fileHandle = FileHandle(forWritingAtPath: logFilePath) else {
             throw XcodeProjectBuilderError.failedCreateBuildLogFile(path: logFilePath)
