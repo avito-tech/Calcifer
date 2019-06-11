@@ -29,6 +29,10 @@ public final class Daemon {
             let decoder = JSONDecoder()
             let config = catchError { try decoder.decode(CommandRunConfig.self, from: data) }
             self.executeCommand(config: config, for: session)
+        },
+        disconnected: { session in
+            self.clearLogsRedirect()
+            self.clearStandardStreamRedirect()
         })
         try server.start(in_port_t(serverPort))
         RunLoop.main.run()
