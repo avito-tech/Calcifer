@@ -34,10 +34,12 @@ public final class Logger {
         let swiftyBeaver = SwiftyBeaver.self
         let fileDestination = FileDestination()
         fileDestination.format = "$L: $M"
-        fileDestination.logFileURL = logFileURL()
+        let logFile = logFileURL()
+        fileDestination.logFileURL = logFile
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
         swiftyBeaver.addDestination(fileDestination)
+        SwiftyBeaver.info("Write logs to \(logFile)")
     }
     
     public static func addDestination(_ destination: BaseDestination) {
