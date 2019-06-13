@@ -39,7 +39,7 @@ public final class Logger {
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
         swiftyBeaver.addDestination(fileDestination)
-        SwiftyBeaver.self.info("Write logs to \(logFile)")
+        SwiftyBeaver.info("Write logs to \(logFile)")
     }
     
     public static func addDestination(_ destination: BaseDestination) {
