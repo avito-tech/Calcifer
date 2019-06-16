@@ -1,6 +1,6 @@
 import ArgumentsParser
 import Foundation
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class ObtainConfigValueCommand: Command {

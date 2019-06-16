@@ -9,15 +9,11 @@ let package = Package(
         // MARK: - Dependencies
         .package(
             url: "https://github.com/apple/swift-package-manager.git",
-            .exact("0.3.0")
+            .branch("swift-5.0-branch")
         ),
-
-//        .package(
-//            url: "https://github.com/tuist/xcodeproj.git",
-//            .upToNextMajor(from: "6.4.0")
-//        ),
         .package(
-            path: "/Users/vvsmal/Rep/xcodeproj"
+            url: "https://github.com/tuist/xcodeproj.git",
+            .branch("master")
         ),
         .package(
             url: "https://github.com/httpswift/swifter.git",
@@ -29,7 +25,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
-            .exact("1.6.2")
+            .exact("1.7.0")
         ),
         .package(
             url: "https://github.com/daltoniam/Starscream.git",
@@ -278,6 +274,7 @@ let package = Package(
         .target(
             name: "CalciferConfig",
             dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
                 "ArgumentsParser",
                 "Toolkit"
             ]
@@ -366,7 +363,7 @@ let package = Package(
             name: "Toolkit",
             dependencies: [
                 "SwiftyBeaver",
-                "Utility"
+                "SPMUtility"
             ]
         ),
         // MARK: Mock

@@ -5,7 +5,7 @@ import XcodeProjCache
 import CalciferConfig
 import Foundation
 import ShellCommand
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class PrepareRemoteCacheCommand: Command {
