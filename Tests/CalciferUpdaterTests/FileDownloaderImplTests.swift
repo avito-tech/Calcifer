@@ -15,7 +15,7 @@ public final class FileDownloaderImplTests: XCTestCase {
         }
         let expectedDownloadedURL = URL(fileURLWithPath: "/path/file.zip")
         stubSession(sessionStub, downloadURL: url) {
-            return expectedDownloadedURL
+            expectedDownloadedURL
         }
         let fileDownloader = FileDownloaderImpl(session: sessionStub)
         
