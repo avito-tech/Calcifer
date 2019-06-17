@@ -24,7 +24,7 @@ public final class XcodeProjectPatcher {
         params: XcodeBuildEnvironmentParameters)
         throws
     {
-        let xcodeproject = try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
+        let xcodeproject = try xcodeProjCache.obtainWritableXcodeProj(projectPath: projectPath)
         let pbxproj = xcodeproject.pbxproj
         guard let project = try pbxproj.rootProject() else { return }
         patchBuildSetting(in: project.buildConfigurationList, params: params)

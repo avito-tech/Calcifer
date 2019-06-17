@@ -28,13 +28,13 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
     
     func test_build_correctly() {
         let target = PBXObjectFactory.target()
-        var cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
         let expectedChecksum = target.filesPaths(sourceRoot: sourceRoot)
         let checksumHolder = try? builder.build(
             target: target,
             sourceRoot: sourceRoot,
-            cache: &cache
+            cache: cache
         )
         
         XCTAssertEqual(checksumHolder?.checksum.stringValue, expectedChecksum)
@@ -46,7 +46,7 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         let targetWithDependencies = PBXObjectFactory.target(
             dependencies: [target]
         )
-        var cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
         let filesPaths = targetWithDependencies.filesPaths(sourceRoot: sourceRoot)
         let expectedChecksum = target.filesPaths(sourceRoot: sourceRoot) + filesPaths
@@ -54,7 +54,7 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         let checksumHolder = try? builder.build(
             target: targetWithDependencies,
             sourceRoot: sourceRoot,
-            cache: &cache
+            cache: cache
         )
 
         XCTAssertEqual(checksumHolder?.checksum.stringValue, expectedChecksum)
