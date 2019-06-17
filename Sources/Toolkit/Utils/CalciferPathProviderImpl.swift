@@ -39,4 +39,23 @@ public final class CalciferPathProviderImpl: CalciferPathProvider {
             .appendingPathComponent("buildlogs")
     }
     
+    public func launchAgentPlistPath(label: String) -> String {
+        return fileManager.home()
+            .appendingPathComponent("Library")
+            .appendingPathComponent("LaunchAgents")
+            .appendingPathComponent("\(label).plist")
+    }
+    
+    public func launchctlStandardOutPath() -> String {
+        return calciferDirectory()
+            .appendingPathComponent("launchctl")
+            .appendingPathComponent("out.txt")
+    }
+    
+    public func launchctlStandardErrorPath() -> String {
+        return calciferDirectory()
+            .appendingPathComponent("launchctl")
+            .appendingPathComponent("error.txt")
+    }
+    
 }

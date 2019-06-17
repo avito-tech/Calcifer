@@ -11,14 +11,18 @@ public final class CalciferBinaryInstallerImpl: CalciferBinaryInstaller {
         self.launchdManager = launchdManager
     }
     
-    public func install(binaryPath: String, destinationPath: String) throws {
-        let plist = LaunchdPlist.daemonPlist(programPath: destinationPath)
-        let plistPath = fileManager.launchctlPlistPath(label: plist.label)
+    public func install(
+        binaryPath: String,
+        destinationBinaryPath: String,
+        plist: LaunchdPlist,
+        plistPath: String)
+        throws
+    {
         try launchdManager.unloadPlistFromLaunchctl(plistPath: plistPath)
-        if fileManager.fileExists(atPath: destinationPath) {
-            try fileManager.removeItem(atPath: destinationPath)
+        if fileManager.fileExists(atPath: destinationBinaryPath) {
+            try fileManager.removeItem(atPath: destinationBinaryPath)
         }
-        let destinationDirectory = destinationPath.deletingLastPathComponent()
+        let destinationDirectory = destinationBinaryPath.deletingLastPathComponent()
         if fileManager.directoryExist(at: destinationDirectory) == false {
             try fileManager.createDirectory(
                 atPath: destinationDirectory,
@@ -27,7 +31,7 @@ public final class CalciferBinaryInstallerImpl: CalciferBinaryInstaller {
         }
         try fileManager.copyItem(
             atPath: binaryPath,
-            toPath: destinationPath
+            toPath: destinationBinaryPath
         )
         try launchdManager.loadPlistToLaunchctl(plist: plist, plistPath: plistPath)
     }

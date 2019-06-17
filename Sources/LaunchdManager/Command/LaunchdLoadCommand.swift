@@ -18,13 +18,18 @@ public final class LaunchdLoadCommand: Command {
         guard let programPath = ProcessInfo.processInfo.arguments.first else {
             return
         }
-        let plist = LaunchdPlist.daemonPlist(programPath: programPath)
         let fileManager = FileManager.default
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let plist = LaunchdPlist.daemonPlist(
+            programPath: programPath,
+            standardOutPath: calciferPathProvider.launchctlStandardOutPath(),
+            standardErrorPath: calciferPathProvider.launchctlStandardErrorPath()
+        )
         let launchdManager = LaunchdManagerImpl(
             fileManager: fileManager,
             shellExecutor: ShellCommandExecutorImpl()
         )
-        let plistPath = fileManager.launchctlPlistPath(label: plist.label)
+        let plistPath = calciferPathProvider.launchAgentPlistPath(label: plist.label)
         try launchdManager.loadPlistToLaunchctl(
             plist: plist,
             plistPath: plistPath

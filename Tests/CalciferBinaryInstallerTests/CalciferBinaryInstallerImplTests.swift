@@ -29,8 +29,16 @@ public final class CalciferBinaryInstallerImplTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString)
             .appendingPathComponent(calciferBinaryName).path
         let launchdManager = LaunchdManagerStub()
-        let plist = LaunchdPlist.daemonPlist(programPath: destinationPath)
-        let expectedPlistPath = fileManager.launchctlPlistPath(label: plist.label)
+        let standardOutPath = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString).path
+        let standardErrorPath = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString).path
+        let plist = LaunchdPlist.daemonPlist(
+            programPath: destinationPath,
+            standardOutPath: standardOutPath,
+            standardErrorPath: standardErrorPath
+        )
+        let plistPath = calciferPathProvider.launchAgentPlistPath(label: plist.label)
         var unloadPlistPath: String?
         launchdManager.onUnloadPlist = { plistPath in
             unloadPlistPath = plistPath
@@ -49,12 +57,14 @@ public final class CalciferBinaryInstallerImplTests: XCTestCase {
         XCTAssertNoThrow(
             try installer.install(
                 binaryPath: binaryPath,
-                destinationPath: destinationPath
+                destinationBinaryPath: destinationPath,
+                plist: plist,
+                plistPath: plistPath
             )
         )
         // Then
-        XCTAssertEqual(unloadPlistPath, expectedPlistPath)
-        XCTAssertEqual(loadPlistPath, expectedPlistPath)
+        XCTAssertEqual(unloadPlistPath, plistPath)
+        XCTAssertEqual(loadPlistPath, plistPath)
     }
     
 }

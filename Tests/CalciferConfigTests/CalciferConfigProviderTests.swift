@@ -203,7 +203,7 @@ public final class CalciferConfigProviderTests: XCTestCase {
                 return
         }
         let expectedGraphiteConfig: [String: Any] = [
-            "host": graphiteHost,
+            "host": graphiteHost.absoluteString,
             "port": 8080,
             "rootKey": "metric.name"
         ]
@@ -253,9 +253,18 @@ public final class CalciferConfigProviderTests: XCTestCase {
             XCTFail("Failed obtain graphite config")
             return
         }
+        let graphiteConfigDictionary = try? graphiteConfig.toDictionary()
         XCTAssertEqual(
-            graphiteConfig.toDictionary(),
-            expectedGraphiteConfig
+            graphiteConfigDictionary?["host"] as? String,
+            expectedGraphiteConfig["host"] as? String
+        )
+        XCTAssertEqual(
+            graphiteConfigDictionary?["port"] as? Int,
+            expectedGraphiteConfig["port"]  as? Int
+        )
+        XCTAssertEqual(
+            graphiteConfigDictionary?["rootKey"] as? String,
+            expectedGraphiteConfig["rootKey"] as? String
         )
         XCTAssertEqual(
             config.calciferShipConfig,

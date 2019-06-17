@@ -35,7 +35,14 @@ public final class LaunchdManagerImplTests: XCTestCase {
     func test_load() {
         // Given
         let programPath = UUID().uuidString
-        let plist = LaunchdPlist.daemonPlist(programPath: programPath)
+        let standardOutPath = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString).path
+        let standardErrorPath = fileManager.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString).path
+        let plist = LaunchdPlist.daemonPlist(
+            programPath: programPath,
+            standardOutPath: standardOutPath,
+            standardErrorPath: standardErrorPath)
         let plistPath = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathComponent(plist.label)

@@ -7,4 +7,7 @@ public protocol CalciferPathProvider {
     func calciferCheckumFilePath() -> String
     func calciferEnvironmentFilePath() -> String
     func calciferBuildLogDirectory() -> String
+    func launchAgentPlistPath(label: String) -> String
+    func launchctlStandardOutPath() -> String
+    func launchctlStandardErrorPath() -> String
 }
