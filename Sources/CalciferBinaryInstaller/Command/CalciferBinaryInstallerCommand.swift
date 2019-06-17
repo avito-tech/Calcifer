@@ -49,10 +49,18 @@ public final class CalciferBinaryInstallerCommand: Command {
             launchdManager: launchdManager
         )
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
-        let destinationPath = calciferPathProvider.calciferBinaryPath()
+        let destinationBinaryPath = calciferPathProvider.calciferBinaryPath()
+        let plist = LaunchdPlist.daemonPlist(
+            programPath: destinationBinaryPath,
+            standardOutPath: calciferPathProvider.launchctlStandardOutPath(),
+            standardErrorPath: calciferPathProvider.launchctlStandardErrorPath()
+        )
+        let plistPath = calciferPathProvider.launchAgentPlistPath(label: plist.label)
         try installer.install(
             binaryPath: binaryPath,
-            destinationPath: destinationPath
+            destinationBinaryPath: destinationBinaryPath,
+            plist: plist,
+            plistPath: plistPath
         )
     }
     

@@ -18,13 +18,6 @@ public extension FileManager {
         }
     }
     
-    func launchctlPlistPath(label: String) -> String {
-        return home()
-            .appendingPathComponent("Library")
-            .appendingPathComponent("LaunchAgents")
-            .appendingPathComponent("\(label).plist")
-    }
-    
     func directoryExist(at path: String) -> Bool {
         var isDirectory: ObjCBool = false
         return fileExists(
