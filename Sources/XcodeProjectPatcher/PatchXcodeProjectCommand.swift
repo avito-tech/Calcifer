@@ -2,7 +2,7 @@ import ArgumentsParser
 import XcodeBuildEnvironmentParametersParser
 import XcodeProjCache
 import Foundation
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class PatchXcodeProjectCommand: Command {

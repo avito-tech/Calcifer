@@ -4,7 +4,7 @@ import ArgumentsParser
 import CalciferConfig
 import ShellCommand
 import Foundation
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class UpdateCalciferCommand: Command {

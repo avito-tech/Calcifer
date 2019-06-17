@@ -3,7 +3,7 @@ import ArgumentsParser
 import LaunchdManager
 import ShellCommand
 import Foundation
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class CalciferBinaryInstallerCommand: Command {

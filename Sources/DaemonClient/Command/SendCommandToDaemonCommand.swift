@@ -4,7 +4,7 @@ import ArgumentsParser
 import ShellCommand
 import DaemonModels
 import CalciferConfig
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class SendCommandToDaemonCommand: Command {
@@ -90,6 +90,4 @@ public final class SendCommandToDaemonCommand: Command {
             try daemonClient.sendToDaemon(commandRunConfig: commandRunConfig)
         }
     }
-    
 }
-

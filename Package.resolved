@@ -56,12 +56,21 @@
         }
       },
       {
+        "package": "llbuild",
+        "repositoryURL": "https://github.com/apple/swift-llbuild.git",
+        "state": {
+          "branch": "master",
+          "revision": "58212a6e3d02d7563423ee47f253c376c2bbb219",
+          "version": null
+        }
+      },
+      {
         "package": "SwiftPM",
         "repositoryURL": "https://github.com/apple/swift-package-manager.git",
         "state": {
-          "branch": null,
-          "revision": "235aacc514cb81a6881364b0fedcb3dd083228f3",
-          "version": "0.3.0"
+          "branch": "swift-5.0-branch",
+          "revision": "3a57975e10be0b1a8b87992ddf3a49701036f96c",
+          "version": null
         }
       },
       {
@@ -78,8 +87,17 @@
         "repositoryURL": "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
         "state": {
           "branch": null,
-          "revision": "78352a16ed33e53307795b46145a1c739e08fb83",
-          "version": "1.6.2"
+          "revision": "ad66cc41c5d8acbd63d9dcdc9d3609f152e08ed1",
+          "version": "1.7.0"
+        }
+      },
+      {
+        "package": "XcodeProj",
+        "repositoryURL": "https://github.com/tuist/xcodeproj.git",
+        "state": {
+          "branch": "master",
+          "revision": "bc8e2f5a80564e966534f71cc28a5e688c46cf46",
+          "version": null
         }
       },
       {

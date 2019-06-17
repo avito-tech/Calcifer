@@ -3,7 +3,7 @@ import XcodeBuildEnvironmentParametersParser
 import ArgumentsParser
 import CalciferConfig
 import Foundation
-import Utility
+import SPMUtility
 import Toolkit
 
 public final class ShipCurrentCalciferVersionCommand: Command {
