@@ -3,6 +3,7 @@ import Foundation
 public final class PipeReader {
     
     let pipe: Pipe
+    let lock = NSLock()
     private var allData = Data()
     
     public init(pipe: Pipe) {
@@ -11,13 +12,21 @@ public final class PipeReader {
     
     public func setup(onNewData: ((Data) -> ())?) {
         setupReadabilityHandler { [weak self] newData in
-            self?.allData.append(newData)
+            guard let strongSelf = self else {
+                return
+            }
+            strongSelf.lock.lock()
+            strongSelf.allData.append(newData)
+            strongSelf.lock.unlock()
             onNewData?(newData)
         }
     }
     
     public func output() -> String? {
-        return String(data: allData, encoding: .utf8)
+        lock.lock()
+        let string = String(data: allData, encoding: .utf8)
+        lock.unlock()
+        return string
     }
     
     private func setupReadabilityHandler(obtain: @escaping (Data) -> ()) {
