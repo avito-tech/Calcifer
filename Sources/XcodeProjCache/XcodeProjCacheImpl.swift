@@ -53,6 +53,11 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
         }
     }
     
+    public func obtainWritableXcodeProj(projectPath: String) throws -> XcodeProj {
+        let path = Path(projectPath)
+        return try XcodeProj(path: path)
+    }
+    
     private func obtainChecksum(for projectPath: String) throws -> BaseChecksum {
         let pbxprojPath = obtainPbxprojPath(for: projectPath)
         let pbxprojURL = URL(fileURLWithPath: pbxprojPath)
