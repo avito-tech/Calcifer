@@ -16,7 +16,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
     func build(
         target: PBXTarget,
         sourceRoot: Path,
-        cache: inout ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>)
+        cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>)
         throws -> TargetChecksumHolder<Builder.ChecksumType>
     {
         if let cachedChecksum = cache.read(target) {
@@ -29,7 +29,7 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
             return try build(
                 target: dependency,
                 sourceRoot: sourceRoot,
-                cache: &cache
+                cache: cache
             )
         }
         let dependenciesChecksum = try dependenciesChecksums.checksum()
