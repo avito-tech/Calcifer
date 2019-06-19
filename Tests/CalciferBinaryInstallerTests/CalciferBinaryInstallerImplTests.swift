@@ -40,7 +40,7 @@ public final class CalciferBinaryInstallerImplTests: XCTestCase {
         )
         let plistPath = calciferPathProvider.launchAgentPlistPath(label: plist.label)
         var unloadPlistPath: String?
-        launchdManager.onUnloadPlist = { plistPath in
+        launchdManager.onUnloadPlist = { _, plistPath in
             unloadPlistPath = plistPath
         }
         var loadPlistPath: String?
