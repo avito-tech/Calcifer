@@ -29,18 +29,34 @@ public final class DaemonClientImpl: DaemonClient {
                 self.socket.write(data: commandData)
             },
             onDisconnect: { error in
-                guard let exitCode = exitCode else {
-                    if let error = error {
-                        Logger.info("Socket was disconnected with error \(error)")
-                    } else {
-                        Logger.info("Socket was disconnected")
+                if let exitCode = exitCode {
+                    Logger.info("Work completed with exit code \(exitCode)")
+                    if exitCode != 0 {
+                        exit(exitCode)
                     }
-                    exit(1)
+                    self.dispatchGroup.leave()
+                    return
                 }
-                if exitCode != 0 {
-                    exit(exitCode)
+                if let error = error {
+                    Logger.info("Socket was disconnected with error \(error)")
+                    // Reconnect on specific error
+                    if let wsError = error as? WSError,
+                        wsError.type == .protocolError,
+                        wsError.code == 1002
+                    {
+                        Logger.info("Reconnect to socket")
+                        self.socket.connect()
+                    } else if (error as NSError).code == 61 {
+                        Logger.info("Daemon not started")
+                        exit(1)
+                    } else {
+                        exit(1)
+                    }
+                } else {
+                    Logger.info("Socket was disconnected without error and exit code")
+                    Logger.info("Reconnect to socket")
+                    self.socket.connect()
                 }
-                self.dispatchGroup.leave()
             },
             onExitCodeMessage: { exitCodeMessage in
                 exitCode = exitCodeMessage.code
@@ -48,6 +64,7 @@ public final class DaemonClientImpl: DaemonClient {
                 self.socket.disconnect()
             }
         )
+        Logger.info("Try to connect to daemon by socket \(daemonURL)")
         socket.connect()
         dispatchGroup.enter()
         dispatchGroup.wait()

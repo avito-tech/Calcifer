@@ -14,6 +14,9 @@ public final class Daemon {
     )
     private let serverPort = 9080
     
+    var commandStateHolder: CommandStateHolder?
+    var sessionWriter: SessionWriter?
+    
     public init(commandRunner: CommandRunner) {
         self.commandRunner = commandRunner
     }
@@ -22,17 +25,56 @@ public final class Daemon {
         Logger.disableFileLog()
         server["/daemon"] = websocket(text: { session, text in
             let arguments = text.chop().split(separator: " ").map { String($0) }
-            let config = CommandRunConfig(arguments: arguments)
+            let config = CommandRunConfig(
+                identifier: UUID().uuidString,
+                arguments: arguments
+            )
             self.executeCommand(config: config, for: session)
         }, binary: { session, binary in
+            
+            if self.sessionWriter?.session != session {
+                Logger.warning("Multiple daemon connections")
+                return
+            }
+            
             let data = Data(bytes: binary)
             let decoder = JSONDecoder()
-            let config = catchError { try decoder.decode(CommandRunConfig.self, from: data) }
-            self.executeCommand(config: config, for: session)
+            Logger.info("Daemon receive data")
+            do {
+                let config = try decoder.decode(CommandRunConfig.self, from: data)
+                self.executeCommand(config: config, for: session)
+            } catch let error {
+                Logger.warning("Failed execute command with error \(error)")
+                self.commandStateHolder?.state = .completed(exitCode: 1)
+                self.sendExitCommand(code: 1)
+            }
+        },
+        connected: { session in
+            
+            let sessionWriter: SessionWriter
+            if let currentSessionWriter = self.sessionWriter,
+                currentSessionWriter.session == session
+            {
+                sessionWriter = currentSessionWriter
+            } else {
+                sessionWriter = SessionWriter(session: session)
+                self.sessionWriter = sessionWriter
+            }
+            
+            sessionWriter.state = .active
+            
+            self.redirectLogs(to: sessionWriter)
+            self.redirectStandardStream(to: sessionWriter)
+            Logger.info("Daemon receive connection")
         },
         disconnected: { session in
             self.clearLogsRedirect()
             self.clearStandardStreamRedirect()
+            if let currentSessionWriter = self.sessionWriter,
+                currentSessionWriter.session == session
+            {
+                currentSessionWriter.state = .suspended
+            }
         })
         try server.start(in_port_t(serverPort))
         RunLoop.main.run()
@@ -41,27 +83,46 @@ public final class Daemon {
     private func executeCommand(config: CommandRunConfig, for session: WebSocketSession) {
         // It is very important that this code is asynchronous. ( PERFORMANCE )
         commandRunQueue.async {
-            self.redirectLogs(to: session)
-            self.redirectStandardStream(to: session)
             
-            Logger.info("Start execute command \(config.arguments)")
+            if let currentCommandStateHolder = self.commandStateHolder,
+                currentCommandStateHolder.identifier == config.identifier
+            {
+                switch currentCommandStateHolder.state {
+                case .progress:
+                    Logger.warning("Command \(config) already in progress")
+                case let .completed(exitCode):
+                    Logger.warning("Command \(config) already completed with exit code \(exitCode)")
+                    self.sendExitCommand(code: exitCode)
+                }
+                return
+            }
+            
+            self.commandStateHolder = CommandStateHolder(
+                identifier: config.identifier,
+                state: .progress
+            )
+            Logger.info("Start execute command \(config)")
             let code = TimeProfiler.measure("Execute command") {
                 self.commandRunner.run(config: config)
             }
+            self.commandStateHolder?.state = .completed(exitCode: code)
             Logger.info("Command run result \(code)")
             
-            self.clearLogsRedirect()
-            self.clearStandardStreamRedirect()
-            
-            let codeMessage = CommandExitCodeMessage(code: code)
-            session.write(DaemonMessage.exitCode(codeMessage))
-            session.writeCloseFrame()
+            self.sendExitCommand(code: code)
         }
     }
     
-    private func redirectLogs(to session: WebSocketSession) {
+    private func sendExitCommand(code: Int32) {
+        guard let sessionWriter = self.sessionWriter else {
+            return
+        }
+        let codeMessage = CommandExitCodeMessage(code: code)
+        sessionWriter.write(DaemonMessage.exitCode(codeMessage))
+    }
+    
+    private func redirectLogs(to writer: SessionWriter) {
         let destination = CustomLoggerDestination(onNewMessage: { message in
-            session.write(DaemonMessage.logger(message))
+            writer.write(DaemonMessage.logger(message))
         })
         Logger.addDestination(destination)
     }
@@ -71,14 +132,14 @@ public final class Daemon {
         Logger.addConsoleDestination()
     }
     
-    private func redirectStandardStream(to session: WebSocketSession) {
+    private func redirectStandardStream(to writer: SessionWriter) {
         ObservableStandardStream.shared.onOutputWrite = { data in
             let message = StandardStreamMessage(source: .output, data: data)
-            session.write(DaemonMessage.standardStream(message))
+            writer.write(DaemonMessage.standardStream(message))
         }
         ObservableStandardStream.shared.onErrorWrite = { data in
             let message = StandardStreamMessage(source: .error, data: data)
-            session.write(DaemonMessage.standardStream(message))
+            writer.write(DaemonMessage.standardStream(message))
         }
     }
     

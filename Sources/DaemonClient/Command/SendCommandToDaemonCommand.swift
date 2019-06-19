@@ -83,9 +83,12 @@ public final class SendCommandToDaemonCommand: Command {
         let daemonClient = DaemonClientImpl(daemonURL: daemonURL)
         var arguments = [commandName]
         if let commandArguments = commandArguments {
-            arguments = arguments + commandArguments.split(separator: " ").map { String($0) }
+            arguments += commandArguments.split(separator: " ").map { String($0) }
         }
-        let commandRunConfig = CommandRunConfig(arguments: arguments)
+        let commandRunConfig = CommandRunConfig(
+            identifier: UUID().uuidString,
+            arguments: arguments
+        )
         try TimeProfiler.measure("send command to daemon") {
             try daemonClient.sendToDaemon(commandRunConfig: commandRunConfig)
         }
