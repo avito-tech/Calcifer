@@ -35,7 +35,12 @@ public final class LaunchdManagerImplTests: XCTestCase {
         )
         
         // When
-        XCTAssertNoThrow(try manager.unloadPlistFromLaunchctl(plist: plist, plistPath: plistPath))
+        XCTAssertNoThrow(
+            try manager.unloadPlistFromLaunchctl(
+                sessionType: plist.sessionType,
+                plistPath: plistPath
+            )
+        )
     }
     
     func test_load() {
