@@ -12,8 +12,7 @@ let package = Package(
             .branch("swift-5.0-branch")
         ),
         .package(
-            url: "https://github.com/tuist/xcodeproj.git",
-            .branch("master")
+            path: "/Users/vvsmal/Rep/xcodeproj"
         ),
         .package(
             url: "https://github.com/httpswift/swifter.git",
