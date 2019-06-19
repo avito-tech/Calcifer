@@ -56,41 +56,64 @@ public final class SendCommandToDaemonCommand: Command {
         )
         let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
         
-        let params: XcodeBuildEnvironmentParameters
+        let params = try obtainEnvironmentParams(
+            with: arguments,
+            fileManager: fileManager,
+            environmentFilePath: environmentFilePath
+        )
+        
+        let config = try configProvider.obtainConfig(
+            projectDirectoryPath: params.projectDirectory
+        )
+        let daemonClient = try createDaemonClient(daemonConfig: config.daemonConfig)
+        let commandRunConfig = createCommandRunConfig(
+            commandName: commandName,
+            commandArguments: commandArguments
+        )
+        try TimeProfiler.measure("send command to daemon") {
+            try daemonClient.sendToDaemon(commandRunConfig: commandRunConfig)
+        }
+    }
+    
+    private func createCommandRunConfig(
+        commandName: String,
+        commandArguments: String?)
+        -> CommandRunConfig
+    {
+        var arguments = [commandName]
+        if let commandArguments = commandArguments {
+            arguments = arguments + commandArguments.split(separator: " ").map { String($0) }
+        }
+        return CommandRunConfig(arguments: arguments)
+    }
+    
+    private func createDaemonClient(daemonConfig: DaemonConfig) throws -> DaemonClient {
+        guard let daemonURL = URL(
+            string: "\(daemonConfig.host):\(daemonConfig.port)/\(daemonConfig.endpoint)"
+        ) else {
+            throw DaemonClientError.unableToCreateDaemonURL
+        }
+        return DaemonClientImpl(daemonURL: daemonURL)
+    }
+    
+    private func obtainEnvironmentParams(
+        with arguments: ArgumentParser.Result,
+        fileManager: FileManager,
+        environmentFilePath: String)
+        throws -> XcodeBuildEnvironmentParameters
+    {
         if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
             let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
-            params = try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+            return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
         } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
             let fileManager = FileManager.default
             let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
             let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
             try environmentParams.save(to: environmentFilePath)
-            params = environmentParams
+            return environmentParams
         } else if fileManager.fileExists(atPath: environmentFilePath) {
-            params = try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
-        } else {
-            throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
+            return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
         }
-        
-        let config = try configProvider.obtainConfig(
-            projectDirectoryPath: params.projectDirectory
-        )
-        let daemonConfig = config.daemonConfig
-        guard let daemonURL = URL(string: "\(daemonConfig.host):\(daemonConfig.port)/\(daemonConfig.endpoint)") else {
-            return
-        }
-        
-        let daemonClient = DaemonClientImpl(daemonURL: daemonURL)
-        var arguments = [commandName]
-        if let commandArguments = commandArguments {
-            arguments += commandArguments.split(separator: " ").map { String($0) }
-        }
-        let commandRunConfig = CommandRunConfig(
-            identifier: UUID().uuidString,
-            arguments: arguments
-        )
-        try TimeProfiler.measure("send command to daemon") {
-            try daemonClient.sendToDaemon(commandRunConfig: commandRunConfig)
-        }
+        throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
     }
 }
