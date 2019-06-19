@@ -16,11 +16,15 @@ public final class LaunchdManagerImpl: LaunchdManager {
     }
     
     public func loadPlistToLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
-        try unloadPlistFromLaunchctl(plistPath: plistPath)
+        try unloadPlistFromLaunchctl(plist: plist, plistPath: plistPath)
         try fileManager.write(plist.content, to: plistPath)
         try createOutputDirectory(plist.standardOutPath.deletingLastPathComponent())
         try createOutputDirectory(plist.standardErrorPath.deletingLastPathComponent())
-        let loadCommand = LaunchctlShellCommand(plistPath: plistPath, type: .load)
+        let loadCommand = LaunchctlShellCommand(
+            plistPath: plistPath,
+            type: .load,
+            sessionType: plist.sessionType
+        )
         let result = shellExecutor.execute(command: loadCommand)
         Logger.verbose("Launchctl load with result \(result)")
         if result.terminationStatus != 0 {
@@ -38,10 +42,11 @@ public final class LaunchdManagerImpl: LaunchdManager {
         }
     }
     
-    public func unloadPlistFromLaunchctl(plistPath: String) throws {
+    public func unloadPlistFromLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
         let unloadCommand = LaunchctlShellCommand(
             plistPath: plistPath,
-            type: .unload
+            type: .unload,
+            sessionType: plist.sessionType
         )
         let result = shellExecutor.execute(command: unloadCommand)
         Logger.verbose("Launchctl unload with result \(result)")
