@@ -1,3 +1,4 @@
+import XcodeBuildEnvironmentParametersParser
 import ArgumentsParser
 import Foundation
 import SPMUtility
@@ -21,7 +22,7 @@ public final class ObtainConfigValueCommand: Command {
         projectDirectoryPathArgument = subparser.add(
             option: Arguments.projectDirectory.optionString,
             kind: String.self,
-            usage: "Specify path to project directory for load config. Will be used merged CalciferConfig."
+            usage: "Specify path to project directory for load config. Will be used merged CalciferConfig. Can be obtained from Xcode build environment."
         )
         keyPathArgument = subparser.add(
             option: Arguments.keyPath.optionString,
@@ -31,10 +32,16 @@ public final class ObtainConfigValueCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
-        let projectDirectory = try ArgumentsReader.validateNotNil(
-            arguments.get(self.projectDirectoryPathArgument),
-            name: Arguments.projectDirectory.rawValue
-        )
+        
+        let projectDirectory: String
+        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
+            projectDirectory = projectDirectoryPathArgumentValue
+        } else if let params = try? XcodeBuildEnvironmentParameters() {
+            projectDirectory = params.projectDirectory
+        } else {
+            throw ArgumentsError.argumentIsMissing(Arguments.projectDirectory.rawValue)
+        }
+        
         let keyPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.keyPathArgument),
             name: Arguments.keyPath.rawValue
@@ -54,7 +61,8 @@ public final class ObtainConfigValueCommand: Command {
                 dictionary: dictionary
             )
         }
-        guard let data = "\(value)".data(using: .utf8) else {
+        Logger.verbose("Obtain value for keyPath \(keyPath) from config dictionary \(dictionary)")
+        guard let data = "\(value)\n".data(using: .utf8) else {
             return
         }
         FileHandle.standardOutput.write(data)
