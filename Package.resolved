@@ -92,15 +92,6 @@
         }
       },
       {
-        "package": "XcodeProj",
-        "repositoryURL": "https://github.com/tuist/xcodeproj.git",
-        "state": {
-          "branch": "master",
-          "revision": "bc8e2f5a80564e966534f71cc28a5e688c46cf46",
-          "version": null
-        }
-      },
-      {
         "package": "ZIPFoundation",
         "repositoryURL": "https://github.com/weichsel/ZIPFoundation/",
         "state": {
