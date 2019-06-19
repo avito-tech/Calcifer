@@ -29,14 +29,7 @@ public final class UpdateCalciferCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let projectDirectoryPath: String?
-        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
-            projectDirectoryPath = projectDirectoryPathArgumentValue
-        } else if let params = try? XcodeBuildEnvironmentParameters() {
-            projectDirectoryPath = params.projectDirectory
-        } else {
-            projectDirectoryPath = nil
-        }
+        let projectDirectoryPath = obtainProjectDirectory(with: arguments)
         
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
@@ -44,19 +37,27 @@ public final class UpdateCalciferCommand: Command {
             calciferDirectory: calciferPathProvider.calciferDirectory()
         )
         
-        let config: CalciferUpdateConfig
-        if let projectDirectoryPath = projectDirectoryPath,
-            let projectConfig = try? configProvider.obtainConfig(projectDirectoryPath: projectDirectoryPath),
-            let updateConfig = projectConfig.calciferUpdateConfig
-        {
-            config = updateConfig
-        } else {
-            guard let shipConfig = try configProvider.obtainGlobalConfig().calciferUpdateConfig else {
-                throw CalciferUpdaterError.emptyCalciferUpdateConfig
-            }
-            config = shipConfig
-        }
+        let updateConfig = try obtainUpdateConfig(
+            configProvider: configProvider,
+            projectDirectory: projectDirectoryPath
+        )
+
+        let updater = createCalciferUpdater(
+            calciferPathProvider: calciferPathProvider,
+            fileManager: fileManager
+        )
         
+        update(
+            updater: updater,
+            updateConfig: updateConfig
+        )
+    }
+    
+    private func createCalciferUpdater(
+        calciferPathProvider: CalciferPathProvider,
+        fileManager: FileManager)
+        -> CalciferUpdater
+    {
         let shellExecutor = ShellCommandExecutorImpl()
         let calciferBinaryPath = calciferPathProvider.calciferBinaryPath()
         let fileDownloader = FileDownloaderImpl(session: URLSession.shared)
@@ -65,16 +66,18 @@ public final class UpdateCalciferCommand: Command {
             fileManager: fileManager,
             calciferBinaryPath: calciferBinaryPath
         )
-        let updater = CalciferUpdaterImpl(
+        return CalciferUpdaterImpl(
             updateChecker: updateChecker,
             fileDownloader: fileDownloader,
             fileManager: fileManager,
             calciferBinaryPath: calciferBinaryPath,
             shellExecutor: shellExecutor
         )
-        
+    }
+    
+    private func update(updater: CalciferUpdater, updateConfig: CalciferUpdateConfig) {
         DispatchGroup.wait { dispatchGroup in
-            updater.updateCalcifer(config: config) { result in
+            updater.updateCalcifer(config: updateConfig) { result in
                 switch result {
                 case .success:
                     Logger.verbose("Successfully update")
@@ -84,6 +87,32 @@ public final class UpdateCalciferCommand: Command {
                 dispatchGroup.leave()
             }
         }
+    }
+    
+    private func obtainProjectDirectory(with arguments: ArgumentParser.Result) -> String? {
+        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
+            return projectDirectoryPathArgumentValue
+        } else if let params = try? XcodeBuildEnvironmentParameters() {
+            return params.projectDirectory
+        }
+        return nil
+    }
+    
+    private func obtainUpdateConfig(
+        configProvider: CalciferConfigProvider,
+        projectDirectory: String?)
+        throws -> CalciferUpdateConfig
+    {
+        if let projectDirectory = projectDirectory,
+            let projectConfig = try? configProvider.obtainConfig(projectDirectoryPath: projectDirectory),
+            let updateConfig = projectConfig.calciferUpdateConfig
+        {
+            return updateConfig
+        }
+        guard let updateConfig = try configProvider.obtainGlobalConfig().calciferUpdateConfig else {
+            throw CalciferUpdaterError.emptyCalciferUpdateConfig
+        }
+        return updateConfig
     }
     
 }

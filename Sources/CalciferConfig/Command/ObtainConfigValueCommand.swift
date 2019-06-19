@@ -1,3 +1,4 @@
+import XcodeBuildEnvironmentParametersParser
 import ArgumentsParser
 import Foundation
 import SPMUtility
@@ -21,7 +22,7 @@ public final class ObtainConfigValueCommand: Command {
         projectDirectoryPathArgument = subparser.add(
             option: Arguments.projectDirectory.optionString,
             kind: String.self,
-            usage: "Specify path to project directory for load config. Will be used merged CalciferConfig."
+            usage: "Specify path to project directory for load config. Will be used merged CalciferConfig. Can be obtained from Xcode build environment."
         )
         keyPathArgument = subparser.add(
             option: Arguments.keyPath.optionString,
@@ -31,14 +32,14 @@ public final class ObtainConfigValueCommand: Command {
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
-        let projectDirectory = try ArgumentsReader.validateNotNil(
-            arguments.get(self.projectDirectoryPathArgument),
-            name: Arguments.projectDirectory.rawValue
-        )
+        
+        let projectDirectory = try obtainProjectDirectory(with: arguments)
+
         let keyPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.keyPathArgument),
             name: Arguments.keyPath.rawValue
         )
+        
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let configProvider = CalciferConfigProvider(
@@ -47,6 +48,14 @@ public final class ObtainConfigValueCommand: Command {
         let config = try configProvider.obtainConfig(
             projectDirectoryPath: projectDirectory
         )
+        let value = try obtainKeyPathValue(from: config, keyPath: keyPath)
+        guard let data = value.data(using: .utf8) else {
+            return
+        }
+        FileHandle.standardOutput.write(data)
+    }
+    
+    func obtainKeyPathValue(from config: CalciferConfig, keyPath: String) throws -> String {
         let dictionary = try config.toDictionary()
         guard let value = (dictionary as NSDictionary).value(forKeyPath: keyPath) else {
             throw CalciferConfigError.emptyValueForKeyPath(
@@ -54,9 +63,16 @@ public final class ObtainConfigValueCommand: Command {
                 dictionary: dictionary
             )
         }
-        guard let data = "\(value)".data(using: .utf8) else {
-            return
+        Logger.verbose("Obtain value for keyPath \(keyPath) from config dictionary \(dictionary)")
+        return "\(value)\n"
+    }
+    
+    private func obtainProjectDirectory(with arguments: ArgumentParser.Result) throws -> String {
+        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
+            return projectDirectoryPathArgumentValue
+        } else if let params = try? XcodeBuildEnvironmentParameters() {
+            return params.projectDirectory
         }
-        FileHandle.standardOutput.write(data)
+        throw ArgumentsError.argumentIsMissing(Arguments.projectDirectory.rawValue)
     }
 }

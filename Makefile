@@ -16,5 +16,6 @@ release_build:
 generate_project:
 	swift package generate-xcodeproj --xcconfig-overrides Config.xcconfig
 
-prepareRemoteCache:
-	.build/x86_64-apple-macosx10.10/debug/Calcifer prepareRemoteCache --environmentFilePath ~/calciferenv.json
+ship:
+	swift build -c release -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.13" --static-swift-stdlib
+	./.build/x86_64-apple-macosx/release/Calcifer shipCurrentCalciferVersion

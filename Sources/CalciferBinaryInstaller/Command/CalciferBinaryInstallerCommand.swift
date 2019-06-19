@@ -28,15 +28,7 @@ public final class CalciferBinaryInstallerCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let binaryPath: String
-        if let binaryPathArgumentValue = arguments.get(self.binaryPathArgument) {
-            binaryPath = binaryPathArgumentValue
-        } else if let launchPath = ProcessInfo.processInfo.arguments.first {
-            binaryPath = launchPath
-        } else {
-            throw ArgumentsError.argumentIsMissing(Arguments.binaryPath.rawValue)
-        }
-        
+        let binaryPath = try obtainBinaryPath(with: arguments)
 
         let fileManager = FileManager.default
         let shellExecutor = ShellCommandExecutorImpl()
@@ -62,6 +54,15 @@ public final class CalciferBinaryInstallerCommand: Command {
             plist: plist,
             plistPath: plistPath
         )
+    }
+    
+    private func obtainBinaryPath(with arguments: ArgumentParser.Result) throws -> String {
+        if let binaryPathArgumentValue = arguments.get(self.binaryPathArgument) {
+            return binaryPathArgumentValue
+        } else if let launchPath = ProcessInfo.processInfo.arguments.first {
+            return launchPath
+        }
+        throw ArgumentsError.argumentIsMissing(Arguments.binaryPath.rawValue)
     }
     
 }

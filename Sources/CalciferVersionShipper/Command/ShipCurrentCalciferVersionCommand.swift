@@ -49,24 +49,9 @@ public final class ShipCurrentCalciferVersionCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let binaryPath: String
-        if let binaryPathArgumentValue = arguments.get(self.binaryPathArgument) {
-            binaryPath = binaryPathArgumentValue
-        } else {
-            guard let currentBinaryPath = ProcessInfo.processInfo.arguments.first else {
-                throw ArgumentsError.argumentIsMissing(Arguments.binaryPath.rawValue)
-            }
-            binaryPath = currentBinaryPath
-        }
+        let binaryPath = try obtainBinaryPath(with: arguments)
         
-        let projectDirectoryPath: String?
-        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
-            projectDirectoryPath = projectDirectoryPathArgumentValue
-        } else if let params = try? XcodeBuildEnvironmentParameters() {
-           projectDirectoryPath = params.projectDirectory
-        } else {
-            projectDirectoryPath = nil
-        }
+        let projectDirectoryPath = obtainProjectDirectory(with: arguments)
         
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
@@ -74,38 +59,15 @@ public final class ShipCurrentCalciferVersionCommand: Command {
             calciferDirectory: calciferPathProvider.calciferDirectory()
         )
 
-        let basicAccessAuthentication: BasicAccessAuthentication?
-        if let login = arguments.get(self.loginArgument),
-            let password = arguments.get(self.passwordArgument){
-            basicAccessAuthentication = BasicAccessAuthentication(
-                login: login,
-                password: password
-            )
-        } else if let basicAccessAuthenticationFromConfig = obtainAccessAuthenticationFromConfig(
-            projectDirectoryPath: projectDirectoryPath,
-            configProvider: configProvider)
-        {
-            basicAccessAuthentication = basicAccessAuthenticationFromConfig
-        } else {
-            basicAccessAuthentication = nil
-        }
+        let basicAccessAuthentication = obtainBasicAccessAuthentication(
+            with: arguments,
+            projectDirectory: projectDirectoryPath,
+            configProvider: configProvider
+        )
         
-        let config: CalciferShipConfig
-        if let projectDirectoryPath = projectDirectoryPath,
-            let projectConfig = try? configProvider.obtainConfig(projectDirectoryPath: projectDirectoryPath),
-            let shipConfig = projectConfig.calciferShipConfig
-        {
-            config = shipConfig
-        } else {
-            guard let shipConfig = try configProvider.obtainGlobalConfig().calciferShipConfig else {
-                throw CalciferVersionShipperError.emptyCalciferShipConfig
-            }
-            config = shipConfig
-        }
-        
-        let patchedCondig = CalciferShipConfig(
-            versionFileURL: config.versionFileURL,
-            zipBinaryFileURL: config.zipBinaryFileURL,
+        let config = try obtainPatchedShipConfig(
+            configProvider: configProvider,
+            projectDirectory: projectDirectoryPath,
             basicAccessAuthentication: basicAccessAuthentication
         )
         
@@ -113,8 +75,21 @@ public final class ShipCurrentCalciferVersionCommand: Command {
             session: URLSession.shared,
             fileManager: fileManager
         )
-        DispatchGroup.wait { dispatchGroup in
-            shipper.shipCalcifer(at: binaryPath, config: patchedCondig) { result in
+        try ship(
+            shipper: shipper,
+            binaryPath: binaryPath,
+            config: config
+        )
+    }
+    
+    private func ship(
+        shipper: CalciferVersionShipper,
+        binaryPath: String,
+        config: CalciferShipConfig)
+        throws
+    {
+        try DispatchGroup.wait { dispatchGroup in
+            try shipper.shipCalcifer(at: binaryPath, config: config) { result in
                 switch result {
                 case .success:
                     Logger.verbose("Successfully upload new version to \(config.zipBinaryFileURL)")
@@ -124,6 +99,80 @@ public final class ShipCurrentCalciferVersionCommand: Command {
                 dispatchGroup.leave()
             }
         }
+    }
+    
+    private func obtainPatchedShipConfig(
+        configProvider: CalciferConfigProvider,
+        projectDirectory: String?,
+        basicAccessAuthentication: BasicAccessAuthentication?)
+        throws -> CalciferShipConfig
+    {
+        let config = try obtainShipConfig(
+            configProvider: configProvider,
+            projectDirectory: projectDirectory
+        )
+        return CalciferShipConfig(
+            versionFileURL: config.versionFileURL,
+            zipBinaryFileURL: config.zipBinaryFileURL,
+            basicAccessAuthentication: basicAccessAuthentication
+        )
+    }
+    
+    private func obtainShipConfig(
+        configProvider: CalciferConfigProvider,
+        projectDirectory: String?)
+        throws -> CalciferShipConfig
+    {
+        if let projectDirectory = projectDirectory,
+            let projectConfig = try? configProvider.obtainConfig(projectDirectoryPath: projectDirectory),
+            let shipConfig = projectConfig.calciferShipConfig
+        {
+            return shipConfig
+        }
+        guard let shipConfig = try configProvider.obtainGlobalConfig().calciferShipConfig else {
+            throw CalciferVersionShipperError.emptyCalciferShipConfig
+        }
+        return shipConfig
+    }
+    
+    private func obtainProjectDirectory(with arguments: ArgumentParser.Result) -> String? {
+        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
+            return projectDirectoryPathArgumentValue
+        } else if let params = try? XcodeBuildEnvironmentParameters() {
+            return params.projectDirectory
+        }
+        return nil
+    }
+    
+    private func obtainBinaryPath(with arguments: ArgumentParser.Result) throws -> String {
+        if let binaryPathArgumentValue = arguments.get(self.binaryPathArgument) {
+            return binaryPathArgumentValue
+        }
+        guard let currentBinaryPath = ProcessInfo.processInfo.arguments.first else {
+            throw ArgumentsError.argumentIsMissing(Arguments.binaryPath.rawValue)
+        }
+        return currentBinaryPath
+    }
+    
+    private func obtainBasicAccessAuthentication(
+        with arguments: ArgumentParser.Result,
+        projectDirectory: String?,
+        configProvider: CalciferConfigProvider)
+        -> BasicAccessAuthentication?
+    {
+        if let login = arguments.get(self.loginArgument),
+            let password = arguments.get(self.passwordArgument){
+            return BasicAccessAuthentication(
+                login: login,
+                password: password
+            )
+        } else if let basicAccessAuthenticationFromConfig = obtainAccessAuthenticationFromConfig(
+            projectDirectoryPath: projectDirectory,
+            configProvider: configProvider)
+        {
+            return basicAccessAuthenticationFromConfig
+        }
+        return nil
     }
     
     private func obtainAccessAuthenticationFromConfig(
