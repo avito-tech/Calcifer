@@ -13,6 +13,6 @@ public final class ShellCommandResult: CustomDebugStringConvertible {
     }
     
     public var debugDescription: String {
-        return "terminationStatus: \"\(terminationStatus)\" output: \"\(output)\" error: \"\(error)\""
+        return "terminationStatus: \"\(terminationStatus)\" output: \"\(output ?? "-")\" error: \"\(error ?? "-")\""
     }
 }

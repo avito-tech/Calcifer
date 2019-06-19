@@ -39,58 +39,32 @@ public final class PrepareRemoteCacheCommand: Command {
         
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
         
-        let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
-            "Parse environment parameters"
-        ) {
-            if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
-                let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
-                return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
-            } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
-                return environmentParams
-            }
-            let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
-            if fileManager.fileExists(atPath: environmentFilePath) {
-                return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
-            }
-            throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
-        }
+        let params = try obtainEnvironmentParams(
+            with: arguments,
+            fileManager: fileManager,
+            environmentFilePath: environmentFilePath
+        )
         
         let shellExecutor = ShellCommandExecutorImpl()
-        
-        let sourcePath: String
-        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
-            sourcePath = sourcePathArgumentValue
-        } else {
-            let sourcePathProvider = SourcePathProviderImpl(
-                shellCommandExecutor: shellExecutor
-            )
-            sourcePath = try sourcePathProvider.obtainSourcePath(
-                podsRoot: params.podsRoot
-            )
-        }
-        
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
-        let requiredTargetsProvider = RequiredTargetsProviderImpl()
-        let unzip = Unzip(shellExecutor: shellExecutor)
-        let cacheStorageFactory = CacheStorageFactoryImpl(
-            fileManager: fileManager,
-            unzip: unzip
+        let sourcePath = try obtainSourcePath(
+            with: arguments,
+            shellExecutor: shellExecutor,
+            params: params
         )
-        let xcodeProjCache = XcodeProjCacheImpl.shared
-        let preparer = RemoteCachePreparer(
-            fileManager: fileManager,
-            calciferPathProvider: calciferPathProvider,
-            shellCommandExecutor: shellExecutor,
-            buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
-            requiredTargetsProvider: requiredTargetsProvider,
-            cacheStorageFactory: cacheStorageFactory,
-            xcodeProjCache: xcodeProjCache
-        )
+        
         let configProvider = CalciferConfigProvider(
             calciferDirectory: calciferPathProvider.calciferDirectory()
         )
-        let config = try configProvider.obtainConfig(projectDirectoryPath: params.projectDirectory)
+        let config = try configProvider.obtainConfig(
+            projectDirectoryPath: params.projectDirectory
+        )
+        let preparer = createPreparer(
+            fileManager: fileManager,
+            calciferPathProvider: calciferPathProvider,
+            shellExecutor: shellExecutor
+        )
         
         try TimeProfiler.measure("Prepare remote cache") {
             try preparer.prepare(
@@ -99,6 +73,69 @@ public final class PrepareRemoteCacheCommand: Command {
                 sourcePath: sourcePath
             )
         }
+    }
+    
+    private func createPreparer(
+        fileManager: FileManager,
+        calciferPathProvider: CalciferPathProvider,
+        shellExecutor: ShellCommandExecutor)
+        -> RemoteCachePreparer
+    {
+        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
+        let requiredTargetsProvider = RequiredTargetsProviderImpl()
+        let unzip = Unzip(shellExecutor: shellExecutor)
+        let cacheStorageFactory = CacheStorageFactoryImpl(
+            fileManager: fileManager,
+            unzip: unzip
+        )
+        let xcodeProjCache = XcodeProjCacheImpl.shared
+        return RemoteCachePreparer(
+            fileManager: fileManager,
+            calciferPathProvider: calciferPathProvider,
+            shellCommandExecutor: shellExecutor,
+            buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
+            requiredTargetsProvider: requiredTargetsProvider,
+            cacheStorageFactory: cacheStorageFactory,
+            xcodeProjCache: xcodeProjCache
+        )
+    }
+    
+    private func obtainSourcePath(
+        with arguments: ArgumentParser.Result,
+        shellExecutor: ShellCommandExecutor,
+        params: XcodeBuildEnvironmentParameters)
+        throws -> String
+    {
+        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
+            return sourcePathArgumentValue
+        }
+        let sourcePathProvider = SourcePathProviderImpl(
+            shellCommandExecutor: shellExecutor
+        )
+        return try sourcePathProvider.obtainSourcePath(
+            podsRoot: params.podsRoot
+        )
+    }
+    
+    private func obtainEnvironmentParams(
+        with arguments: ArgumentParser.Result,
+        fileManager: FileManager,
+        environmentFilePath: String)
+        throws -> XcodeBuildEnvironmentParameters
+    {
+        if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
+            let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
+            return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+        } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
+            let fileManager = FileManager.default
+            let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+            let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
+            try environmentParams.save(to: environmentFilePath)
+            return environmentParams
+        } else if fileManager.fileExists(atPath: environmentFilePath) {
+            return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
+        }
+        throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
     }
     
 }

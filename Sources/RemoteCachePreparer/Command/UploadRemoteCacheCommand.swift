@@ -36,56 +36,100 @@ public final class UploadRemoteCacheCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let params: XcodeBuildEnvironmentParameters = try TimeProfiler.measure(
-            "Parse environment parameters"
-        ) {
-            if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
-                let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
-                return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
-            } else {
-                return try XcodeBuildEnvironmentParameters()
-            }
-        }
-        
-        let shellExecutor = ShellCommandExecutorImpl()
-        
-        let sourcePath: String
-        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
-            sourcePath = sourcePathArgumentValue
-        } else {
-            let sourcePathProvider = SourcePathProviderImpl(
-                shellCommandExecutor: shellExecutor
-            )
-            sourcePath = try sourcePathProvider.obtainSourcePath(
-                podsRoot: params.podsRoot
-            )
-        }
-        
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
-        let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
+        let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
+        
+        let params = try obtainEnvironmentParams(
+            with: arguments,
+            fileManager: fileManager,
+            environmentFilePath: environmentFilePath
+        )
+        
+        let shellExecutor = ShellCommandExecutorImpl()
+        let sourcePath = try obtainSourcePath(
+            with: arguments,
+            shellExecutor: shellExecutor,
+            params: params
+        )
+        Logger.verbose("sourcePath \(sourcePath)")
+
+        let uploader = createUploader(
+            calciferPathProvider: calciferPathProvider,
+            fileManager: fileManager,
+            shellExecutor: shellExecutor
+        )
+        
+        let configProvider = CalciferConfigProvider(
+            calciferDirectory: calciferPathProvider.calciferDirectory()
+        )
+        let config = try configProvider.obtainConfig(
+            projectDirectoryPath: params.projectDirectory
+        )
+
+        try TimeProfiler.measure("Upload remote cache") {
+            try uploader.upload(config: config, params: params)
+        }
+    }
+    
+    func createUploader(
+        calciferPathProvider: CalciferPathProvider,
+        fileManager: FileManager,
+        shellExecutor: ShellCommandExecutor)
+        -> RemoteCacheUploader
+    {
+        let unzip = Unzip(shellExecutor: shellExecutor)
         let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let cacheStorageFactory = CacheStorageFactoryImpl(
             fileManager: fileManager,
             unzip: unzip
         )
-        let uploader = RemoteCacheUploader(
+        return RemoteCacheUploader(
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory
         )
-        
-        let configProvider = CalciferConfigProvider(
-            calciferDirectory: calciferPathProvider.calciferDirectory()
-        )
-        let config = try configProvider.obtainConfig(projectDirectoryPath: params.projectDirectory)
-
-        try TimeProfiler.measure("Upload remote cache") {
-            try uploader.upload(config: config, params: params)
+    }
+    
+    private func obtainSourcePath(
+        with arguments: ArgumentParser.Result,
+        shellExecutor: ShellCommandExecutor,
+        params: XcodeBuildEnvironmentParameters)
+        throws -> String
+    {
+        if let sourcePathArgumentValue = arguments.get(self.sourcePathArgument) {
+            return sourcePathArgumentValue
         }
+        let sourcePathProvider = SourcePathProviderImpl(
+            shellCommandExecutor: shellExecutor
+        )
+        return try sourcePathProvider.obtainSourcePath(
+            podsRoot: params.podsRoot
+        )
+    }
+    
+    private func obtainEnvironmentParams(
+        with arguments: ArgumentParser.Result,
+        fileManager: FileManager,
+        environmentFilePath: String)
+        throws -> XcodeBuildEnvironmentParameters
+    {
+        if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
+            let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
+            return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+        } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
+            let fileManager = FileManager.default
+            let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+            let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
+            try environmentParams.save(to: environmentFilePath)
+            return environmentParams
+        } else if fileManager.fileExists(atPath: environmentFilePath) {
+            return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
+        }
+        throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
     }
 
 }
