@@ -92,6 +92,15 @@
         }
       },
       {
+        "package": "XcodeProj",
+        "repositoryURL": "https://github.com/CognitiveDisson/xcodeproj",
+        "state": {
+          "branch": "deadlock-fix",
+          "revision": "c394755eff8fccf40babfd1238d86fcd4bfa8ea5",
+          "version": null
+        }
+      },
+      {
         "package": "ZIPFoundation",
         "repositoryURL": "https://github.com/weichsel/ZIPFoundation/",
         "state": {

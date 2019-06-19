@@ -12,7 +12,8 @@ let package = Package(
             .branch("swift-5.0-branch")
         ),
         .package(
-            path: "/Users/vvsmal/Rep/xcodeproj"
+            url: "https://github.com/CognitiveDisson/xcodeproj",
+            .branch("deadlock-fix")
         ),
         .package(
             url: "https://github.com/httpswift/swifter.git",
