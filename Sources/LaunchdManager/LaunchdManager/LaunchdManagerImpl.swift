@@ -16,7 +16,7 @@ public final class LaunchdManagerImpl: LaunchdManager {
     }
     
     public func loadPlistToLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
-        try unloadPlistFromLaunchctl(plist: plist, plistPath: plistPath)
+        try unloadPlistFromLaunchctl(sessionType: plist.sessionType, plistPath: plistPath)
         try fileManager.write(plist.content, to: plistPath)
         try createOutputDirectory(plist.standardOutPath.deletingLastPathComponent())
         try createOutputDirectory(plist.standardErrorPath.deletingLastPathComponent())
@@ -42,11 +42,11 @@ public final class LaunchdManagerImpl: LaunchdManager {
         }
     }
     
-    public func unloadPlistFromLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
+    public func unloadPlistFromLaunchctl(sessionType: LaunchdSessionType, plistPath: String) throws {
         let unloadCommand = LaunchctlShellCommand(
             plistPath: plistPath,
             type: .unload,
-            sessionType: plist.sessionType
+            sessionType: sessionType
         )
         let result = shellExecutor.execute(command: unloadCommand)
         Logger.verbose("Launchctl unload with result \(result)")
