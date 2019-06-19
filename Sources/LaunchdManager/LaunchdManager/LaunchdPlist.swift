@@ -5,9 +5,11 @@ public struct LaunchdPlist {
     public let programPath: String
     public let standardOutPath: String
     public let standardErrorPath: String
+    public let sessionType: LaunchdSessionType
     
     private let programArguments: [String]
     private let keepAlive: Bool
+    private let runAtLoad: Bool
     
     public static func daemonPlist(
         programPath: String,
@@ -20,11 +22,13 @@ public struct LaunchdPlist {
             programPath: programPath,
             standardOutPath: standardOutPath,
             standardErrorPath: standardErrorPath,
+            sessionType: .background,
             programArguments: [
                 programPath,
                 "startDaemon"
             ],
-            keepAlive: true
+            keepAlive: true,
+            runAtLoad: true
         )
     }
     
@@ -32,7 +36,9 @@ public struct LaunchdPlist {
         return [
             "Label": label,
             "ProgramArguments": programArguments,
+            "LimitLoadToSessionType": sessionType.rawValue,
             "KeepAlive": keepAlive,
+            "RunAtLoad": runAtLoad,
             "StandardOutPath": standardOutPath,
             "StandardErrorPath": standardErrorPath
         ]

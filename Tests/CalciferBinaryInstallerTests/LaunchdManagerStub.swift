@@ -8,9 +8,9 @@ class LaunchdManagerStub: LaunchdManager {
         onLoadPlist?(plist, plistPath)
     }
     
-    var onUnloadPlist: ((String) -> ())? = nil
-    func unloadPlistFromLaunchctl(plistPath: String) throws {
-        onUnloadPlist?(plistPath)
+    var onUnloadPlist: ((LaunchdPlist, String) -> ())? = nil
+    func unloadPlistFromLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
+        onUnloadPlist?(plist, plistPath)
     }
     
 }
