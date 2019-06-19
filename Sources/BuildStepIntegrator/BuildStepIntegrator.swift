@@ -50,8 +50,13 @@ public final class BuildStepIntegrator {
                 .firstIndex(of: resourcesBuildPhase) {
             
             let shellScript = [
-                "\(binaryPath) parseXcodeBuildEnvironmentParameters",
-                "\(binaryPath) prepareRemoteCache"
+                "calcifer_path=\"${HOME}/.calcifer.noindex/Calcifer\"",
+                "if [ -f ${calcifer_path} ]; then",
+                "   enabled=$(\"${calcifer_path}\" obtainConfigValue --keyPath enabled | head -1)",
+                "   if [ \"$enabled\" == \"1\" ]; then",
+                "       \"${calcifer_path}\" sendCommandToDaemon --commandName prepareRemoteCache",
+                "   fi",
+                "fi"
             ].joined(separator: "\n")
             let phaseName = "[Calcifer] Remote Cache"
             let phaseIndex = resourcesBuildPhaseIndex - 1
@@ -70,7 +75,7 @@ public final class BuildStepIntegrator {
                 let shellScriptBuildPhase = PBXShellScriptBuildPhase(
                     name: phaseName,
                     shellScript: shellScript,
-                    showEnvVarsInLog: true
+                    showEnvVarsInLog: false
                 )
                 pbxproj.add(object: shellScriptBuildPhase)
                 target.buildPhases.insert(
