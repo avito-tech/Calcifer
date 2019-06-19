@@ -33,19 +33,13 @@ public final class ObtainConfigValueCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let projectDirectory: String
-        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
-            projectDirectory = projectDirectoryPathArgumentValue
-        } else if let params = try? XcodeBuildEnvironmentParameters() {
-            projectDirectory = params.projectDirectory
-        } else {
-            throw ArgumentsError.argumentIsMissing(Arguments.projectDirectory.rawValue)
-        }
-        
+        let projectDirectory = try obtainProjectDirectory(with: arguments)
+
         let keyPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.keyPathArgument),
             name: Arguments.keyPath.rawValue
         )
+        
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let configProvider = CalciferConfigProvider(
@@ -54,6 +48,14 @@ public final class ObtainConfigValueCommand: Command {
         let config = try configProvider.obtainConfig(
             projectDirectoryPath: projectDirectory
         )
+        let value = try obtainKeyPathValue(from: config, keyPath: keyPath)
+        guard let data = value.data(using: .utf8) else {
+            return
+        }
+        FileHandle.standardOutput.write(data)
+    }
+    
+    func obtainKeyPathValue(from config: CalciferConfig, keyPath: String) throws -> String {
         let dictionary = try config.toDictionary()
         guard let value = (dictionary as NSDictionary).value(forKeyPath: keyPath) else {
             throw CalciferConfigError.emptyValueForKeyPath(
@@ -62,9 +64,15 @@ public final class ObtainConfigValueCommand: Command {
             )
         }
         Logger.verbose("Obtain value for keyPath \(keyPath) from config dictionary \(dictionary)")
-        guard let data = "\(value)\n".data(using: .utf8) else {
-            return
+        return "\(value)\n"
+    }
+    
+    private func obtainProjectDirectory(with arguments: ArgumentParser.Result) throws -> String {
+        if let projectDirectoryPathArgumentValue = arguments.get(self.projectDirectoryPathArgument) {
+            return projectDirectoryPathArgumentValue
+        } else if let params = try? XcodeBuildEnvironmentParameters() {
+            return params.projectDirectory
         }
-        FileHandle.standardOutput.write(data)
+        throw ArgumentsError.argumentIsMissing(Arguments.projectDirectory.rawValue)
     }
 }
