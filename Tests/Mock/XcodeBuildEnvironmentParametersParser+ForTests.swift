@@ -1,5 +1,5 @@
 import Foundation
-@testable import XcodeBuildEnvironmentParametersParser
+import XcodeBuildEnvironmentParametersParser
 
 extension XcodeBuildEnvironmentParameters {
     
