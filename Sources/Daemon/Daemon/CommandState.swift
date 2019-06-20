@@ -1,6 +1,6 @@
 import Foundation
 
 public enum CommandState {
-    case progress
+    case running
     case completed(exitCode: Int32)
 }

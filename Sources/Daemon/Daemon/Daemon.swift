@@ -85,10 +85,10 @@ public final class Daemon {
         commandRunQueue.async {
             
             if let currentCommandStateHolder = self.commandStateHolder,
-                currentCommandStateHolder.identifier == config.identifier
+                currentCommandStateHolder.commandIdentifier == config.identifier
             {
                 switch currentCommandStateHolder.state {
-                case .progress:
+                case .running:
                     Logger.warning("Command \(config) already in progress")
                 case let .completed(exitCode):
                     Logger.warning("Command \(config) already completed with exit code \(exitCode)")
@@ -98,8 +98,8 @@ public final class Daemon {
             }
             
             self.commandStateHolder = CommandStateHolder(
-                identifier: config.identifier,
-                state: .progress
+                commandIdentifier: config.identifier,
+                state: .running
             )
             Logger.info("Start execute command \(config)")
             let code = TimeProfiler.measure("Execute command") {
