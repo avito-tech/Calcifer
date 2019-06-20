@@ -37,7 +37,9 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
         params: XcodeBuildEnvironmentParameters)
         throws
     {
-        let hitValue = statistic.hitRate
+        guard let hitValue = statistic.hitRate else {
+            return
+        }
         let timestamp = Date()
         
         let shortKey = shortMetricKey(for: params)
