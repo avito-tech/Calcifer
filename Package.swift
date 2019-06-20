@@ -84,6 +84,12 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        .testTarget(
+            name: "StatisticLoggerTests",
+            dependencies: [
+                "StatisticLogger"
+            ]
+        ),
         // MARK: RemoteCachePreparer
         .target(
             name: "RemoteCachePreparer",

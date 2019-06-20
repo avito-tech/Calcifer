@@ -13,7 +13,6 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
     private struct MetricKeyParts {
         // short
         static let metricName = "remotecache"
-        static let userName = "userName"
         static let targetName = "targetName"
         static let measureName = "hitrate"
         // full
@@ -38,7 +37,9 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
         params: XcodeBuildEnvironmentParameters)
         throws
     {
-        let hitValue = statistic.hitRate
+        guard let hitValue = statistic.hitRate else {
+            return
+        }
         let timestamp = Date()
         
         let shortKey = shortMetricKey(for: params)
@@ -60,11 +61,10 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
         return rootKey +
         [
             "v\(version)",
-            MetricKeyParts.userName,
             params.user,
+            MetricKeyParts.metricName,
             MetricKeyParts.targetName,
             params.targetName,
-            MetricKeyParts.metricName,
             MetricKeyParts.MetricType.short.rawValue,
             MetricKeyParts.measureName
         ]
@@ -74,11 +74,10 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
         return rootKey +
             [
                 "v\(version)",
-                MetricKeyParts.userName,
                 params.user,
+                MetricKeyParts.metricName,
                 MetricKeyParts.targetName,
                 params.targetName,
-                MetricKeyParts.metricName,
                 MetricKeyParts.MetricType.full.rawValue,
                 MetricKeyParts.measureName,
                 MetricKeyParts.platformNameKey,
