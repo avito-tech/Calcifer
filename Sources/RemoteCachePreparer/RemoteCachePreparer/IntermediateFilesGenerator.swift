@@ -30,7 +30,7 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
                 .lastPathComponent()
                 .deletingPathExtension() + ".build"
             let allProductHeadersFilePath = buildDirectoryPath
-                .appendingPathComponent(intermediateFolderName )
+                .appendingPathComponent(intermediateFolderName)
                 .appendingPathComponent("\(params.configuration)-\(params.platformName)")
                 .appendingPathComponent(targetInfo.productName.deletingPathExtension() + ".build")
                 .appendingPathComponent("all-product-headers.yaml")
