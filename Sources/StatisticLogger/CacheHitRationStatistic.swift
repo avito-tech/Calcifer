@@ -8,9 +8,7 @@ public struct CacheHitRationStatistic {
     }
     
     public var hitRate: Double? {
-        if entries.count == 0 {
-            return nil
-        }
+        guard !entries.isEmpty else { return nil }
         let hitEntries = entries.filter { $0.resolution == .hit }
         let rate = Double(hitEntries.count) / Double(entries.count)
         return rate
