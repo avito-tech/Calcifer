@@ -144,13 +144,10 @@ final class RemoteCachePreparer {
             fileManager: fileManager
         )
         try TimeProfiler.measure("Generate intermediate files") {
-            let targetsForIntermediateFiles = targetInfoFilter.frameworkTargetInfos(
-                requiredTargets
-            )
             try intermediateFilesGenerator.generateIntermediateFiles(
+                for: integrated,
                 params: params,
-                buildDirectoryPath: buildDirectoryPath,
-                requiredTargets: targetsForIntermediateFiles
+                buildDirectoryPath: buildDirectoryPath
             )
         }
         
