@@ -61,7 +61,7 @@ final class RemoteCachePreparer {
                 podsProjectPath: podsProjectPath
             )
         }
-        try targetChecksumProvider.saveChecksum(to: calciferPathProvider.calciferCheckumFilePath())
+        try targetChecksumProvider.saveChecksum(to: calciferPathProvider.calciferChecksumFilePath())
         
         let storageConfig = config.storageConfig
         guard let gradleHost = storageConfig.gradleHost else {
