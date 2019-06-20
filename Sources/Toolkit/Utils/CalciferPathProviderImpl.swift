@@ -24,9 +24,9 @@ public final class CalciferPathProviderImpl: CalciferPathProvider {
             .appendingPathComponent(calciferBinaryName())
     }
     
-    public func calciferCheckumFilePath() -> String {
+    public func calciferChecksumFilePath() -> String {
         return calciferDirectory()
-            .appendingPathComponent("checkum.json")
+            .appendingPathComponent("сhecksum.json")
     }
     
     public func calciferEnvironmentFilePath() -> String {

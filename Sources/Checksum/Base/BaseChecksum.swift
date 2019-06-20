@@ -25,8 +25,8 @@ public final class BaseChecksum: Checksum {
             return left
         }
         let stringValue = left.stringValue + right.stringValue
-        let stringCheckum = stringValue.md5()
-        return BaseChecksum(stringCheckum)
+        let stringChecksum = stringValue.md5()
+        return BaseChecksum(stringChecksum)
     }
     
     public static var zero: BaseChecksum {
