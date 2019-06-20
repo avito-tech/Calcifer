@@ -41,9 +41,9 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
                     withIntermediateDirectories: true
                 )
             }
-            try moveModuleMapFile(
+            try copyModuleMapFile(
                 artifact: artifact,
-                atDirectory: intermediateDirectory
+                toDirectory: intermediateDirectory
             )
             try createAllProductHeadersFile(
                 atDirectory: intermediateDirectory
@@ -51,16 +51,16 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
         }
     }
     
-    private func moveModuleMapFile(
+    private func copyModuleMapFile(
         artifact: TargetBuildArtifact<BaseChecksum>,
-        atDirectory: String)
+        toDirectory directory: String)
         throws
     {
         let moduleMapFileName = "module.modulemap"
         let moduleMapPath = artifact.productPath
             .appendingPathComponent("Modules")
             .appendingPathComponent(moduleMapFileName)
-        let moduleMapDestination = atDirectory
+        let moduleMapDestination = directory
             .appendingPathComponent(moduleMapFileName)
         if fileManager.fileExists(atPath: moduleMapDestination) {
             return
@@ -73,8 +73,8 @@ public class IntermediateFilesGeneratorImpl: IntermediateFilesGenerator {
         }
     }
     
-    private func createAllProductHeadersFile(atDirectory: String) throws {
-        let allProductHeadersFilePath = atDirectory
+    private func createAllProductHeadersFile(atDirectory directory: String) throws {
+        let allProductHeadersFilePath = directory
             .appendingPathComponent("all-product-headers.yaml")
         
         let content = [
