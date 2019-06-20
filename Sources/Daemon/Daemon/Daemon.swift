@@ -15,7 +15,7 @@ public final class Daemon {
     private let serverPort = 9080
     
     var commandStateHolder: CommandStateHolder?
-    var sessionWriter: SessionWriter?
+    var sessionWriter: WebSocketSessionWriter?
     
     public init(commandRunner: CommandRunner) {
         self.commandRunner = commandRunner
@@ -51,13 +51,13 @@ public final class Daemon {
         },
         connected: { session in
             
-            let sessionWriter: SessionWriter
+            let sessionWriter: WebSocketSessionWriter
             if let currentSessionWriter = self.sessionWriter,
                 currentSessionWriter.session == session
             {
                 sessionWriter = currentSessionWriter
             } else {
-                sessionWriter = SessionWriter(session: session)
+                sessionWriter = WebSocketSessionWriter(session: session)
                 self.sessionWriter = sessionWriter
             }
             
@@ -120,7 +120,7 @@ public final class Daemon {
         sessionWriter.write(DaemonMessage.exitCode(codeMessage))
     }
     
-    private func redirectLogs(to writer: SessionWriter) {
+    private func redirectLogs(to writer: WebSocketSessionWriter) {
         let destination = CustomLoggerDestination(onNewMessage: { message in
             writer.write(DaemonMessage.logger(message))
         })
@@ -132,7 +132,7 @@ public final class Daemon {
         Logger.addConsoleDestination()
     }
     
-    private func redirectStandardStream(to writer: SessionWriter) {
+    private func redirectStandardStream(to writer: WebSocketSessionWriter) {
         ObservableStandardStream.shared.onOutputWrite = { data in
             let message = StandardStreamMessage(source: .output, data: data)
             writer.write(DaemonMessage.standardStream(message))

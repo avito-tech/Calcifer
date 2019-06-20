@@ -2,7 +2,7 @@ import Foundation
 import Toolkit
 import Swifter
 
-final class SessionWriter {
+final class WebSocketSessionWriter {
     
     let session: WebSocketSession
     
