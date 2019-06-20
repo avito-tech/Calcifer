@@ -376,6 +376,7 @@ let package = Package(
         .target(
             name: "Mock",
             dependencies: [
+                "XcodeBuildEnvironmentParametersParser",
                 "ShellCommand"
             ],
             path: "Tests/Mock/"
