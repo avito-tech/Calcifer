@@ -84,6 +84,9 @@ public final class Logger {
     
     public static func log(_ loggerMessage: LoggerMessage) {
         for destination in SwiftyBeaver.destinations {
+            guard loggerMessage.level.rawValue >= destination.minLevel.rawValue else {
+                return
+            }
             _ = destination.send(
                 loggerMessage.level,
                 msg: loggerMessage.message,
