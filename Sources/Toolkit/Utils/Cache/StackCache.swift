@@ -1,5 +1,5 @@
 import Foundation
 
 public protocol StackCache: MutableCache {
-    func clear(for key: Key, when: (Value) -> (Bool))
+    func clear(for key: Key, predicate: (Value) -> (Bool))
 }

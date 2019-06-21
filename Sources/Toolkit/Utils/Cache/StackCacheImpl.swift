@@ -14,8 +14,8 @@ public final class StackCacheImpl<Key: Hashable, Value>: StackCache {
         return first
     }
     
-    public func clear(for key: Key, when: (Value) -> (Bool)) {
-        let cleared = cache[key]?.filter { when($0) }
+    public func clear(for key: Key, predicate: (Value) -> (Bool)) {
+        let cleared = cache[key]?.filter { predicate($0) }
         cache[key] = cleared
     }
     
