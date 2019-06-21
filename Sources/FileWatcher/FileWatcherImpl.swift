@@ -16,7 +16,7 @@ public class FileWatcherImpl: FileWatcher {
         stop()
     }
     
-    public func subscribe(_ closure: @escaping (_ events: FileWatcherEvent) -> ()) {
+    public func subscribe(_ closure: @escaping (_ event: FileWatcherEvent) -> ()) {
         closures.append(closure)
     }
     
