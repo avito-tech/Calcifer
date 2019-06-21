@@ -106,6 +106,12 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     // "USER": "username"
     public let user: String
     
+    public var podsProjectPath: String {
+        let podsProjectFileName = "Pods.xcodeproj"
+        let podsProjectPath = podsRoot + "/" + podsProjectFileName
+        return podsProjectPath
+    }
+    
     public init(environment: [String: String] = ProcessInfo.processInfo.environment) throws {
         targetName = try environment.getValue("TARGETNAME")
         project = try environment.getValue("PROJECT")

@@ -8,7 +8,8 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     
     private let queue = DispatchQueue(label: "XcodeProjCache")
     private let checksumProducer: BaseURLChecksumProducer
-    private var cache = [String: XcodeProjCacheValue<BaseChecksum>]()
+    private var readCache = BaseCache<String, XcodeProjCacheValue<BaseChecksum>>()
+    private var writableCache = StackCacheImpl<String, XcodeProjCacheValue<BaseChecksum>>() //<3
     private let fileManager: FileManager
     
     public static let shared: XcodeProjCacheImpl = {
@@ -29,33 +30,67 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     }
     
     public func obtainXcodeProj(projectPath: String) throws -> XcodeProj {
+        let xcodeProjCacheValue = try obtainCachedXcodeProj(
+            projectPath: projectPath,
+            cacheProvider: { readCache.obtain(for: $0) }
+        )
+        readCache.addValue(xcodeProjCacheValue, for: projectPath)
+        return xcodeProjCacheValue.xcodeProj
+    }
+    
+    public func obtainWritableXcodeProj(projectPath: String) throws -> XcodeProj {
+        let xcodeProjCacheValue = try obtainCachedXcodeProj(
+            projectPath: projectPath,
+            cacheProvider: { writableCache.obtain(for: $0) }
+        )
+        writableCache.clear(for: projectPath) { cacheValue in
+            guard cacheValue.modificationDate == xcodeProjCacheValue.modificationDate,
+                cacheValue.checksum != xcodeProjCacheValue.checksum
+                else { return true }
+            return false
+        }
+        return xcodeProjCacheValue.xcodeProj
+    }
+    
+    public func fillXcodeProjCache(projectPath: String) throws {
+        _ = try obtainXcodeProj(projectPath: projectPath)
+        try [0...3].forEach { _ in
+            let xcodeProj = try obtainCachedXcodeProj(
+                projectPath: projectPath,
+                cacheProvider: { _ in return nil }
+            )
+            writableCache.addValue(xcodeProj, for: projectPath)
+        }
+    }
+    
+    private func obtainCachedXcodeProj(
+        projectPath: String,
+        cacheProvider: (String) -> (XcodeProjCacheValue<BaseChecksum>?))
+        throws -> XcodeProjCacheValue<BaseChecksum>
+    {
         return try queue.sync {
             let modificationDate = try obtainModificationDate(for: projectPath)
-            if let cacheValue = cache[projectPath],
+            let cacheValue = cacheProvider(projectPath)
+            if let cacheValue = cacheValue,
                 cacheValue.modificationDate == modificationDate {
-                return cacheValue.xcodeProj
+                return cacheValue
             }
             
             let checksum = try obtainChecksum(for: projectPath)
-            if let cacheValue = cache[projectPath],
+            if let cacheValue = cacheValue,
                 cacheValue.checksum == checksum {
-                return cacheValue.xcodeProj
+                return cacheValue
             }
             
             let path = Path(projectPath)
             let xcodeProj = try XcodeProj(path: path)
-            cache[projectPath] = XcodeProjCacheValue(
+     
+            return XcodeProjCacheValue(
                 xcodeProj: xcodeProj,
                 checksum: checksum,
                 modificationDate: modificationDate
             )
-            return xcodeProj
         }
-    }
-    
-    public func obtainWritableXcodeProj(projectPath: String) throws -> XcodeProj {
-        let path = Path(projectPath)
-        return try XcodeProj(path: path)
     }
     
     private func obtainChecksum(for projectPath: String) throws -> BaseChecksum {

@@ -251,16 +251,27 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: Warmupper
+        .target(
+            name: "Warmupper",
+            dependencies: [
+                "XcodeProjCache",
+                "CalciferConfig",
+                "ArgumentsParser",
+                "ShellCommand",
+                "FileWatcher"
+            ]
+        ),
         // MARK: Daemon
         .target(
             name: "Daemon",
             dependencies: [
-                "RemoteCachePreparer",
                 "DaemonModels",
                 "CalciferConfig",
                 "ArgumentsParser",
                 "CommandRunner",
                 "ShellCommand",
+                "Warmupper",
                 "Swifter"
             ]
         ),
@@ -273,6 +284,13 @@ let package = Package(
                 "CalciferConfig",
                 "DaemonModels",
                 "Starscream",
+                "Toolkit"
+            ]
+        ),
+        // MARK: FileWatcher
+        .target(
+            name: "FileWatcher",
+            dependencies: [
                 "Toolkit"
             ]
         ),
