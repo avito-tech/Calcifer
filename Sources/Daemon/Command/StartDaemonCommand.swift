@@ -21,8 +21,9 @@ public final class StartDaemonCommand: Command {
         let operationQueue = OperationQueue.createSerialQueue(
             qualityOfService: .userInitiated
         )
-
-        let warmer = WarmerFactory().createWarmer(
+        let fileManager = FileManager.default
+        let warmerFactory = WarmerFactory(fileManager: fileManager)
+        let warmer = warmerFactory.createWarmer(
             warmupOperationQueue: operationQueue
         )
         let daemon = Daemon(

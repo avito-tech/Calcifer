@@ -5,12 +5,15 @@ import Toolkit
 
 public final class WarmerFactory {
     
-    public init() {}
+    private let fileManager: FileManager
+    
+    public init(fileManager: FileManager) {
+        self.fileManager = fileManager
+    }
     
     public func createWarmer(warmupOperationQueue: OperationQueue) -> Warmer {
         let fileWatcher = FileWatcherImpl()
         let projectFileMonitor = ProjectFileMonitor(fileEventNotifier: fileWatcher)
-        let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let xcodeProjCacheWarmer = XcodeProjCacheWarmerImpl(
             xcodeProjCache: XcodeProjCacheImpl.shared
