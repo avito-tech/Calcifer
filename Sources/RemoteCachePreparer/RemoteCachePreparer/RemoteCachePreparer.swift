@@ -23,6 +23,7 @@ final class RemoteCachePreparer {
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
     private let xcodeProjCache: XcodeProjCache
+    private let artifactBuildSourcePathCache: ArtifactBuildSourcePathCache
     
     
     init(
@@ -32,7 +33,8 @@ final class RemoteCachePreparer {
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory,
-        xcodeProjCache: XcodeProjCache)
+        xcodeProjCache: XcodeProjCache,
+        artifactBuildSourcePathCache: ArtifactBuildSourcePathCache)
     {
         self.fileManager = fileManager
         self.calciferPathProvider = calciferPathProvider
@@ -41,6 +43,7 @@ final class RemoteCachePreparer {
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
         self.xcodeProjCache = xcodeProjCache
+        self.artifactBuildSourcePathCache = artifactBuildSourcePathCache
     }
     
     func prepare(
@@ -166,7 +169,8 @@ final class RemoteCachePreparer {
         let dsymPatcher = DSYMPatcher(
             symbolizer: symbolizer,
             binaryPathProvider: binaryPathProvider,
-            buildSourcePathProvider: buildSourcePathProvider
+            buildSourcePathProvider: buildSourcePathProvider,
+            artifactBuildSourcePathCache: artifactBuildSourcePathCache
         )
         return dsymPatcher
     }
