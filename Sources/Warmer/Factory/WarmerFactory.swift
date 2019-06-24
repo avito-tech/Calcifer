@@ -12,11 +12,14 @@ public final class WarmerFactory {
         let projectFileMonitor = ProjectFileMonitor(fileWatcher: fileWatcher)
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let xcodeProjCacheWarmer = XcodeProjCacheWarmerImpl(
+            xcodeProjCache: XcodeProjCacheImpl.shared
+        )
         return WarmerImpl(
             warmupOperationQueue: warmupOperationQueue,
             projectFileMonitor: projectFileMonitor,
             calciferPathProvider: calciferPathProvider,
-            xcodeProjCache: XcodeProjCacheImpl.shared
+            xcodeProjCacheWarmer: xcodeProjCacheWarmer
         )
     }
     

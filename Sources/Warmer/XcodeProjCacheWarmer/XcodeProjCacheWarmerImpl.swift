@@ -10,7 +10,7 @@ final class XcodeProjCacheWarmerImpl: XcodeProjCacheWarmer {
     }
     
     public func warmup(projectPath: String) throws {
-        TimeProfiler.measure("Fill xcode project cache") {
+        try TimeProfiler.measure("Fill xcode project cache") {
             try xcodeProjCache.fillXcodeProjCache(
                 projectPath: projectPath
             )
