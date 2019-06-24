@@ -297,6 +297,12 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        .testTarget(
+            name: "FileWatcherTests",
+            dependencies: [
+                "FileWatcher"
+            ]
+        ),
         // MARK: CalciferConfig
         .target(
             name: "CalciferConfig",
