@@ -254,9 +254,9 @@ let package = Package(
                 "Toolkit"
             ]
         ),
-        // MARK: Warmupper
+        // MARK: Warmer
         .target(
-            name: "Warmupper",
+            name: "Warmer",
             dependencies: [
                 "XcodeProjCache",
                 "CalciferConfig",
@@ -274,7 +274,7 @@ let package = Package(
                 "ArgumentsParser",
                 "CommandRunner",
                 "ShellCommand",
-                "Warmupper",
+                "Warmer",
                 "Swifter"
             ]
         ),

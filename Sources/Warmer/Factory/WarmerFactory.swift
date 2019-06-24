@@ -3,16 +3,16 @@ import FileWatcher
 import XcodeProjCache
 import Toolkit
 
-public final class WarmupperFactory {
+public final class WarmerFactory {
     
     public init() {}
     
-    public func createWarmupper(warmupOperationQueue: OperationQueue) -> Warmupper {
+    public func createWarmer(warmupOperationQueue: OperationQueue) -> Warmer {
         let fileWatcher = FileWatcherImpl()
         let projectFileMonitor = ProjectFileMonitor(fileWatcher: fileWatcher)
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
-        return WarmupperImpl(
+        return WarmerImpl(
             warmupOperationQueue: warmupOperationQueue,
             projectFileMonitor: projectFileMonitor,
             calciferPathProvider: calciferPathProvider,

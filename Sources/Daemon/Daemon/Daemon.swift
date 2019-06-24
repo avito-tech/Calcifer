@@ -1,7 +1,7 @@
 import Foundation
 import ArgumentsParser
 import DaemonModels
-import Warmupper
+import Warmer
 import Swifter
 import Toolkit
 
@@ -9,7 +9,7 @@ public final class Daemon {
     
     private let server = HttpServer()
     private let commandRunner: CommandRunner
-    private let warmupper: Warmupper
+    private let warmer: Warmer
 
     private let commandRunOperationQueue: OperationQueue
     private let serverPort = 9080
@@ -20,11 +20,11 @@ public final class Daemon {
     public init(
         commandRunOperationQueue: OperationQueue,
         commandRunner: CommandRunner,
-        warmupper: Warmupper)
+        warmer: Warmer)
     {
         self.commandRunOperationQueue = commandRunOperationQueue
         self.commandRunner = commandRunner
-        self.warmupper = warmupper
+        self.warmer = warmer
     }
     
     public func run() throws {
@@ -83,7 +83,7 @@ public final class Daemon {
             }
         })
         try server.start(in_port_t(serverPort))
-        warmupper.start()
+        warmer.start()
         RunLoop.main.run()
     }
     

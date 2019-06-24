@@ -4,7 +4,7 @@ import XcodeBuildEnvironmentParametersParser
 import XcodeProjCache
 import Toolkit
 
-final class WarmupperImpl: Warmupper {
+final class WarmerImpl: Warmer {
     
     private let warmupOperationQueue: OperationQueue
     private let projectFileMonitor: ProjectFileMonitor

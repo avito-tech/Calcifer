@@ -2,7 +2,7 @@ import Foundation
 import ArgumentsParser
 import ShellCommand
 import SPMUtility
-import Warmupper
+import Warmer
 import Toolkit
 
 public final class StartDaemonCommand: Command {
@@ -22,13 +22,13 @@ public final class StartDaemonCommand: Command {
             qualityOfService: .userInitiated
         )
 
-        let warmupper = WarmupperFactory().createWarmupper(
+        let warmer = WarmerFactory().createWarmer(
             warmupOperationQueue: operationQueue
         )
         let daemon = Daemon(
             commandRunOperationQueue: operationQueue,
             commandRunner: runner,
-            warmupper: warmupper
+            warmer: warmer
         )
         try daemon.run()
     }

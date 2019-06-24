@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol Warmupper {
+public protocol Warmer {
     func start()
     func warmup()
 }
