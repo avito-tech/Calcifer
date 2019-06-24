@@ -9,7 +9,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     private let queue = DispatchQueue(label: "XcodeProjCache")
     private let checksumProducer: BaseURLChecksumProducer
     private var readCache = BaseCache<String, XcodeProjCacheValue<BaseChecksum>>()
-    private var writableCache = StackCacheImpl<String, XcodeProjCacheValue<BaseChecksum>>() //<3
+    private var writableCache = StackCacheImpl<String, XcodeProjCacheValue<BaseChecksum>>()
     private let fileManager: FileManager
     
     public static let shared: XcodeProjCacheImpl = {
