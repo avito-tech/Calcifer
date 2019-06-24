@@ -6,17 +6,20 @@ import Toolkit
 final class WarmerImpl: Warmer {
     
     private let warmupOperationQueue: OperationQueue
+    private let fileWatcher: FileWatcher
     private let projectFileMonitor: ProjectFileMonitor
     private let calciferPathProvider: CalciferPathProvider
     private let xcodeProjCacheWarmer: XcodeProjCacheWarmer
     
     init(
         warmupOperationQueue: OperationQueue,
+        fileWatcher: FileWatcher,
         projectFileMonitor: ProjectFileMonitor,
         calciferPathProvider: CalciferPathProvider,
         xcodeProjCacheWarmer: XcodeProjCacheWarmer)
     {
         self.warmupOperationQueue = warmupOperationQueue
+        self.fileWatcher = fileWatcher
         self.projectFileMonitor = projectFileMonitor
         self.calciferPathProvider = calciferPathProvider
         self.xcodeProjCacheWarmer = xcodeProjCacheWarmer
@@ -25,7 +28,9 @@ final class WarmerImpl: Warmer {
     func start() {
         guard let params = obtainEnvironmentParameters()
             else { return }
-        projectFileMonitor.start(projectPath: params.podsProjectPath) { [weak self] in
+        let projectPath = params.podsProjectPath
+        fileWatcher.start(path: projectPath)
+        projectFileMonitor.start(projectPath: projectPath) { [weak self] in
             self?.warmup()
         }
         warmup()

@@ -4,16 +4,15 @@ import Toolkit
 
 final class ProjectFileMonitor {
     
-    private let fileWatcher: FileWatcher
+    private let fileEventNotifier: FileEventNotifier
     
-    init(fileWatcher: FileWatcher) {
-        self.fileWatcher = fileWatcher
+    init(fileEventNotifier: FileEventNotifier) {
+        self.fileEventNotifier = fileEventNotifier
     }
     
     func start(projectPath: String, onProjectChange: @escaping () -> ()) {
         let pbxprojPath = projectPath.appendingPathComponent("project.pbxproj")
-        fileWatcher.start(path: projectPath)
-        fileWatcher.subscribe { event in
+        fileEventNotifier.subscribe { event in
             guard event.path == pbxprojPath else { return }
             onProjectChange()
         }

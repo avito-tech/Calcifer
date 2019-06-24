@@ -1,12 +1,6 @@
 import Foundation
 
-public typealias FileEventSubscriber = (FileWatcherEvent) -> ()
-
-public protocol FileWatcher {
-    
-    func subscribe(
-        _ subscriber: @escaping FileEventSubscriber
-    )
+public protocol FileWatcher: FileEventNotifier {
     
     func start(path: String)
     

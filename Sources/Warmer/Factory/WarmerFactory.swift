@@ -9,7 +9,7 @@ public final class WarmerFactory {
     
     public func createWarmer(warmupOperationQueue: OperationQueue) -> Warmer {
         let fileWatcher = FileWatcherImpl()
-        let projectFileMonitor = ProjectFileMonitor(fileWatcher: fileWatcher)
+        let projectFileMonitor = ProjectFileMonitor(fileEventNotifier: fileWatcher)
         let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let xcodeProjCacheWarmer = XcodeProjCacheWarmerImpl(
@@ -17,6 +17,7 @@ public final class WarmerFactory {
         )
         return WarmerImpl(
             warmupOperationQueue: warmupOperationQueue,
+            fileWatcher: fileWatcher,
             projectFileMonitor: projectFileMonitor,
             calciferPathProvider: calciferPathProvider,
             xcodeProjCacheWarmer: xcodeProjCacheWarmer
