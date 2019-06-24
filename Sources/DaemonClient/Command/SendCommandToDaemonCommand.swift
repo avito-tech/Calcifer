@@ -106,8 +106,7 @@ public final class SendCommandToDaemonCommand: Command {
         throws -> XcodeBuildEnvironmentParameters
     {
         if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
-            let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
-            return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+            return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
         } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
             let fileManager = FileManager.default
             let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)

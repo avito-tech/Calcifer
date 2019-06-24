@@ -117,9 +117,8 @@ public final class UploadRemoteCacheCommand: Command {
         environmentFilePath: String)
         throws -> XcodeBuildEnvironmentParameters
     {
-        if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
-            let data = try Data(contentsOf: URL(fileURLWithPath: environmentFilePath))
-            return try JSONDecoder().decode(XcodeBuildEnvironmentParameters.self, from: data)
+        if let filePath = arguments.get(self.environmentFilePathArgument) {
+            return try XcodeBuildEnvironmentParameters.decode(from: filePath)
         } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
             let fileManager = FileManager.default
             let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
