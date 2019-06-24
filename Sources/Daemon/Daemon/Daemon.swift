@@ -44,9 +44,9 @@ public final class Daemon {
                 return
             }
             
-            let data = Data(bytes: binary)
+            let data = Data(binary)
             let decoder = JSONDecoder()
-            Logger.info("Daemon receive data")
+            Logger.verbose("Daemon received data")
             do {
                 let config = try decoder.decode(CommandRunConfig.self, from: data)
                 self.executeCommand(config: config, for: session)
@@ -109,12 +109,12 @@ public final class Daemon {
                 commandIdentifier: config.identifier,
                 state: .running
             )
-            Logger.info("Start execute command \(config)")
+            Logger.info("Start execute command \(config.arguments)")
             let code = TimeProfiler.measure("Execute command") {
                 self.commandRunner.run(config: config)
             }
             self.commandStateHolder?.state = .completed(exitCode: code)
-            Logger.info("Command run result \(code)")
+            Logger.verbose("Command run result \(code)")
             
             self.sendExitCommand(code: code)
             self.warmerDebouncer.debounce {

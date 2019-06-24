@@ -30,10 +30,11 @@ public final class DaemonClientImpl: DaemonClient {
             },
             onDisconnect: { error in
                 if let exitCode = exitCode {
-                    Logger.info("Work completed with exit code \(exitCode)")
+                    Logger.verbose("Work completed with exit code \(exitCode)")
                     if exitCode != 0 {
                         exit(exitCode)
                     }
+                    Logger.info("Work successfully completed")
                     self.dispatchGroup.leave()
                     return
                 }
@@ -60,7 +61,7 @@ public final class DaemonClientImpl: DaemonClient {
             },
             onExitCodeMessage: { exitCodeMessage in
                 exitCode = exitCodeMessage.code
-                Logger.info("Command \(commandRunConfig) completed with exit code \(exitCodeMessage.code)")
+                Logger.verbose("Client: Command \(commandRunConfig) completed with exit code \(exitCodeMessage.code)")
                 self.socket.disconnect()
             }
         )
