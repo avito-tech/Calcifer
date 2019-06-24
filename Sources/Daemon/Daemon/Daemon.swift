@@ -1,6 +1,7 @@
 import Foundation
 import ArgumentsParser
 import DaemonModels
+import Warmer
 import Swifter
 import Toolkit
 
@@ -8,17 +9,23 @@ public final class Daemon {
     
     private let server = HttpServer()
     private let commandRunner: CommandRunner
-    private let commandRunQueue = DispatchQueue(
-        label: "DaemonCommandRunQueue",
-        qos: .userInitiated
-    )
+    private let warmerManager: WarmerManager
+
+    private let commandRunOperationQueue: OperationQueue
     private let serverPort = 9080
+    private let warmerDebouncer = Debouncer(delay: 120)
     
     var commandStateHolder: CommandStateHolder?
     var sessionWriter: WebSocketSessionWriter?
     
-    public init(commandRunner: CommandRunner) {
+    public init(
+        commandRunOperationQueue: OperationQueue,
+        commandRunner: CommandRunner,
+        warmerManager: WarmerManager)
+    {
+        self.commandRunOperationQueue = commandRunOperationQueue
         self.commandRunner = commandRunner
+        self.warmerManager = warmerManager
     }
     
     public func run() throws {
@@ -77,12 +84,13 @@ public final class Daemon {
             }
         })
         try server.start(in_port_t(serverPort))
+        warmerManager.start()
         RunLoop.main.run()
     }
     
     private func executeCommand(config: CommandRunConfig, for session: WebSocketSession) {
         // It is very important that this code is asynchronous. ( PERFORMANCE )
-        commandRunQueue.async {
+        let operation = BlockOperation {
             
             if let currentCommandStateHolder = self.commandStateHolder,
                 currentCommandStateHolder.commandIdentifier == config.identifier
@@ -109,7 +117,12 @@ public final class Daemon {
             Logger.info("Command run result \(code)")
             
             self.sendExitCommand(code: code)
+            self.warmerDebouncer.debounce {
+                self.warmerManager.warmup()
+            }
         }
+        operation.queuePriority = .veryHigh
+        commandRunOperationQueue.addOperation(operation)
     }
     
     private func sendExitCommand(code: Int32) {

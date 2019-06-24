@@ -6,11 +6,7 @@ final class WebSocketSessionWriter {
     
     let session: WebSocketSession
     
-    private let operationQueue: OperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        return queue
-    }()
+    private let operationQueue = OperationQueue.createSerialQueue()
     
     init(session: WebSocketSession) {
         self.session = session

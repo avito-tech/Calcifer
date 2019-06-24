@@ -1,6 +1,6 @@
 import Foundation
 
-public final class CalciferPathProviderImpl: CalciferPathProvider {
+open class CalciferPathProviderImpl: CalciferPathProvider {
     
     private let fileManager: FileManager
     
@@ -8,7 +8,7 @@ public final class CalciferPathProviderImpl: CalciferPathProvider {
         self.fileManager = fileManager
     }
     
-    public func calciferDirectory() -> String {
+    open func calciferDirectory() -> String {
         // .noindex - remove from spotlight index
         return fileManager
             .home()

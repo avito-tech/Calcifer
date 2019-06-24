@@ -3,11 +3,18 @@ import XcodeBuildEnvironmentParametersParser
 
 extension XcodeBuildEnvironmentParameters {
     
-    public static func forTests() throws -> XcodeBuildEnvironmentParameters {
-        return try XcodeBuildEnvironmentParameters(environment: environment())
+    public static func forTests(
+        podsRoot: String = "/b/Some/Pods")
+        throws -> XcodeBuildEnvironmentParameters
+    {
+        return try XcodeBuildEnvironmentParameters(
+            environment: environment(
+                podsRoot: podsRoot
+            )
+        )
     }
     
-    private static func environment() -> [String: String] {
+    private static func environment(podsRoot: String) -> [String: String] {
         // swiftlint:disable line_length
         return [
             "TARGETNAME": "Some",
@@ -27,7 +34,7 @@ extension XcodeBuildEnvironmentParameters {
             "PROJECT_DIR": "/b/Some",
             "SRCROOT": "/b/Some",
             "PODS_CONFIGURATION_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator",
-            "PODS_ROOT": "/b/Some/Pods",
+            "PODS_ROOT": podsRoot,
             "PATH": "/usr/bin",
             "OTHER_LDFLAGS": " -ObjC -ObjC -l\"c++\" -l\"resolv\" -l\"sqlite3\" -l\"stdc++\" -l\"xml2\" -l\"z\" -framework \"AVFoundation\"",
             "OTHER_SWIFT_FLAGS": "-DDEBUG -Onone \"-D\" \"COCOAPODS\"",

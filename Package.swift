@@ -254,16 +254,34 @@ let package = Package(
                 "Toolkit"
             ]
         ),
+        // MARK: Warmer
+        .target(
+            name: "Warmer",
+            dependencies: [
+                "XcodeProjCache",
+                "CalciferConfig",
+                "ArgumentsParser",
+                "ShellCommand",
+                "FileWatcher"
+            ]
+        ),
+        .testTarget(
+            name: "WarmerTests",
+            dependencies: [
+                "Warmer",
+                "Mock"
+            ]
+        ),
         // MARK: Daemon
         .target(
             name: "Daemon",
             dependencies: [
-                "RemoteCachePreparer",
                 "DaemonModels",
                 "CalciferConfig",
                 "ArgumentsParser",
                 "CommandRunner",
                 "ShellCommand",
+                "Warmer",
                 "Swifter"
             ]
         ),
@@ -277,6 +295,19 @@ let package = Package(
                 "DaemonModels",
                 "Starscream",
                 "Toolkit"
+            ]
+        ),
+        // MARK: FileWatcher
+        .target(
+            name: "FileWatcher",
+            dependencies: [
+                "Toolkit"
+            ]
+        ),
+        .testTarget(
+            name: "FileWatcherTests",
+            dependencies: [
+                "FileWatcher"
             ]
         ),
         // MARK: CalciferConfig
@@ -373,6 +404,13 @@ let package = Package(
             dependencies: [
                 "SwiftyBeaver",
                 "SPMUtility"
+            ]
+        ),
+        // MARK: Toolkit
+        .testTarget(
+            name: "ToolkitTests",
+            dependencies: [
+                "Toolkit"
             ]
         ),
         // MARK: Mock
