@@ -265,6 +265,13 @@ let package = Package(
                 "FileWatcher"
             ]
         ),
+        .testTarget(
+            name: "WarmerTests",
+            dependencies: [
+                "Warmer",
+                "Mock"
+            ]
+        ),
         // MARK: Daemon
         .target(
             name: "Daemon",
