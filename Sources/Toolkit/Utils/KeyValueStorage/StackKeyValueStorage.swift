@@ -1,5 +1,5 @@
 import Foundation
 
-public protocol StackCache: MutableCache {
+public protocol StackKeyValueStorage: MutableKeyValueStorage {
     func clear(for key: Key, predicate: (Value) -> (Bool))
 }

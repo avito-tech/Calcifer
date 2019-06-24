@@ -1,6 +1,6 @@
 import Foundation
 
-public final class StackCacheImpl<Key: Hashable, Value>: StackCache {
+public final class StackKeyValueStorageImpl<Key: Hashable, Value>: StackKeyValueStorage {
     
     private var cache = [Key: [Value]]()
     
@@ -9,7 +9,9 @@ public final class StackCacheImpl<Key: Hashable, Value>: StackCache {
     public func obtain(for key: Key) -> Value? {
         var cachedValues = cache[key]
         let first = cachedValues?.first
-        cachedValues?.removeFirst()
+        if cachedValues?.isEmpty == false {
+            cachedValues?.removeFirst()
+        }
         cache[key] = cachedValues
         return first
     }
@@ -20,7 +22,9 @@ public final class StackCacheImpl<Key: Hashable, Value>: StackCache {
     }
     
     public func addValue(_ value: Value, for key: Key) {
-        cache[key]?.append(value)
+        var values = cache[key] ?? [Value]()
+        values.append(value)
+        cache[key] = values
     }
     
 }

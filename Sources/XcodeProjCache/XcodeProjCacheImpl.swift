@@ -8,8 +8,8 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     
     private let queue = DispatchQueue(label: "XcodeProjCache")
     private let checksumProducer: BaseURLChecksumProducer
-    private var readCache = BaseCache<String, XcodeProjCacheValue<BaseChecksum>>()
-    private var writableCache = StackCacheImpl<String, XcodeProjCacheValue<BaseChecksum>>()
+    private var readStorage = BaseKeyValueStorage<String, XcodeProjCacheValue<BaseChecksum>>()
+    private var writableStorage = StackKeyValueStorageImpl<String, XcodeProjCacheValue<BaseChecksum>>()
     private let fileManager: FileManager
     
     public static let shared: XcodeProjCacheImpl = {
@@ -32,18 +32,18 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     public func obtainXcodeProj(projectPath: String) throws -> XcodeProj {
         let xcodeProjCacheValue = try obtainCachedXcodeProj(
             projectPath: projectPath,
-            cacheProvider: { readCache.obtain(for: $0) }
+            cacheProvider: { readStorage.obtain(for: $0) }
         )
-        readCache.addValue(xcodeProjCacheValue, for: projectPath)
+        readStorage.addValue(xcodeProjCacheValue, for: projectPath)
         return xcodeProjCacheValue.xcodeProj
     }
     
     public func obtainWritableXcodeProj(projectPath: String) throws -> XcodeProj {
         let xcodeProjCacheValue = try obtainCachedXcodeProj(
             projectPath: projectPath,
-            cacheProvider: { writableCache.obtain(for: $0) }
+            cacheProvider: { writableStorage.obtain(for: $0) }
         )
-        writableCache.clear(for: projectPath) { cacheValue in
+        writableStorage.clear(for: projectPath) { cacheValue in
             guard cacheValue.modificationDate == xcodeProjCacheValue.modificationDate,
                 cacheValue.checksum != xcodeProjCacheValue.checksum
                 else { return true }
@@ -59,7 +59,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
                 projectPath: projectPath,
                 cacheProvider: { _ in return nil }
             )
-            writableCache.addValue(xcodeProj, for: projectPath)
+            writableStorage.addValue(xcodeProj, for: projectPath)
         }
     }
     

@@ -1,5 +1,5 @@
 import Foundation
 
-public protocol MutableCache: Cache {
+public protocol MutableKeyValueStorage: KeyValueStorage {
     func addValue(_ value: Value, for key: Key)
 }

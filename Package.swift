@@ -399,6 +399,13 @@ let package = Package(
                 "SPMUtility"
             ]
         ),
+        // MARK: Toolkit
+        .testTarget(
+            name: "ToolkitTests",
+            dependencies: [
+                "Toolkit"
+            ]
+        ),
         // MARK: Mock
         .target(
             name: "Mock",

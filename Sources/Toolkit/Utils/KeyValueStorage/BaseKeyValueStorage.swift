@@ -1,6 +1,6 @@
 import Foundation
 
-public final class BaseCache<Key: Hashable, Value>: MutableCache  {
+public final class BaseKeyValueStorage<Key: Hashable, Value>: MutableKeyValueStorage  {
     
     private var cache = [Key: Value]()
     
