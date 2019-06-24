@@ -18,9 +18,9 @@ public final class StartDaemonCommand: Command {
         // If another daemon instance is already running, new instance will die because socket is already reserved/busy
         Logger.info("Run daemon pid \(getpid())")
         
-        let operationQueue = OperationQueue()
-        operationQueue.qualityOfService = .userInitiated
-        operationQueue.maxConcurrentOperationCount = 1
+        let operationQueue = OperationQueue.createSerialQueue(
+            qualityOfService: .userInitiated
+        )
 
         let warmupper = WarmupperFactory().createWarmupper(
             warmupOperationQueue: operationQueue
