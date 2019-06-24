@@ -22,14 +22,16 @@ public final class StartDaemonCommand: Command {
             qualityOfService: .userInitiated
         )
         let fileManager = FileManager.default
-        let warmerFactory = WarmerFactory(fileManager: fileManager)
-        let warmer = warmerFactory.createWarmer(
+        let warmerFactory = WarmerManagerFactory(
+            fileManager: fileManager
+        )
+        let warmerManager = warmerFactory.createWarmerManager(
             warmupOperationQueue: operationQueue
         )
         let daemon = Daemon(
             commandRunOperationQueue: operationQueue,
             commandRunner: runner,
-            warmer: warmer
+            warmerManager: warmerManager
         )
         try daemon.run()
     }

@@ -1,6 +1,9 @@
 import Foundation
+import FileWatcher
 
 public protocol Warmer {
-    func start()
-    func warmup()
+    func warmup(
+        for event: WarmerEvent,
+        perform: @escaping (Operation) -> ()
+    )
 }

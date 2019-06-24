@@ -9,10 +9,11 @@ public final class Daemon {
     
     private let server = HttpServer()
     private let commandRunner: CommandRunner
-    private let warmer: Warmer
+    private let warmerManager: WarmerManager
 
     private let commandRunOperationQueue: OperationQueue
     private let serverPort = 9080
+    private let warmerDebouncer = Debouncer(delay: 120)
     
     var commandStateHolder: CommandStateHolder?
     var sessionWriter: WebSocketSessionWriter?
@@ -20,11 +21,11 @@ public final class Daemon {
     public init(
         commandRunOperationQueue: OperationQueue,
         commandRunner: CommandRunner,
-        warmer: Warmer)
+        warmerManager: WarmerManager)
     {
         self.commandRunOperationQueue = commandRunOperationQueue
         self.commandRunner = commandRunner
-        self.warmer = warmer
+        self.warmerManager = warmerManager
     }
     
     public func run() throws {
@@ -83,7 +84,7 @@ public final class Daemon {
             }
         })
         try server.start(in_port_t(serverPort))
-        warmer.start()
+        warmerManager.start()
         RunLoop.main.run()
     }
     
@@ -116,6 +117,9 @@ public final class Daemon {
             Logger.info("Command run result \(code)")
             
             self.sendExitCommand(code: code)
+            self.warmerDebouncer.debounce {
+                self.warmerManager.warmup()
+            }
         }
         operation.queuePriority = .veryHigh
         commandRunOperationQueue.addOperation(operation)
