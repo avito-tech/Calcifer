@@ -3,7 +3,7 @@ import Toolkit
 
 public class FileWatcherImpl: FileWatcher {
     
-    private var closures = [(FileWatcherEvent) -> ()]()
+    private var subscribers = [(FileWatcherEvent) -> ()]()
     
     private var started = false
     private var streamRef: FSEventStreamRef?
@@ -16,8 +16,8 @@ public class FileWatcherImpl: FileWatcher {
         stop()
     }
     
-    public func subscribe(_ closure: @escaping (_ event: FileWatcherEvent) -> ()) {
-        closures.append(closure)
+    public func subscribe(_ subscriber: @escaping FileEventSubscriber) {
+        subscribers.append(subscriber)
     }
     
     private let eventCallback: FSEventStreamCallback = {
@@ -53,8 +53,8 @@ public class FileWatcherImpl: FileWatcher {
             path: eventPath,
             flags: FileWatcherEventFlag(rawValue: eventFlags)
         )
-        for closure in closures {
-            closure(event)
+        for subscriber in subscribers {
+            subscriber(event)
         }
     }
     
