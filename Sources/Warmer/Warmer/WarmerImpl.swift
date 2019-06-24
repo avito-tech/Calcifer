@@ -1,7 +1,6 @@
 import Foundation
 import FileWatcher
 import XcodeBuildEnvironmentParametersParser
-import XcodeProjCache
 import Toolkit
 
 final class WarmerImpl: Warmer {
@@ -9,18 +8,18 @@ final class WarmerImpl: Warmer {
     private let warmupOperationQueue: OperationQueue
     private let projectFileMonitor: ProjectFileMonitor
     private let calciferPathProvider: CalciferPathProvider
-    private let xcodeProjCache: XcodeProjCache
+    private let xcodeProjCacheWarmer: XcodeProjCacheWarmer
     
     init(
         warmupOperationQueue: OperationQueue,
         projectFileMonitor: ProjectFileMonitor,
         calciferPathProvider: CalciferPathProvider,
-        xcodeProjCache: XcodeProjCache)
+        xcodeProjCacheWarmer: XcodeProjCacheWarmer)
     {
         self.warmupOperationQueue = warmupOperationQueue
         self.projectFileMonitor = projectFileMonitor
         self.calciferPathProvider = calciferPathProvider
-        self.xcodeProjCache = xcodeProjCache
+        self.xcodeProjCacheWarmer = xcodeProjCacheWarmer
     }
     
     func start() {
@@ -57,11 +56,7 @@ final class WarmerImpl: Warmer {
     private func performWarmup(projectPath: String) {
         do {
             Logger.verbose("Perform warmup for \(projectPath)")
-            try TimeProfiler.measure("Fill xcode project cache") {
-                try xcodeProjCache.fillXcodeProjCache(
-                    projectPath: projectPath
-                )
-            }
+            try xcodeProjCacheWarmer.warmup(projectPath: projectPath)
             Logger.verbose("Warmup for \(projectPath) completed")
         } catch {
             Logger.warning("Warmup failed with error \(error)")
