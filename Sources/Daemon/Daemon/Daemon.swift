@@ -39,7 +39,7 @@ public final class Daemon {
             
             let data = Data(binary)
             let decoder = JSONDecoder()
-            Logger.verbose("Daemon receive data")
+            Logger.verbose("Daemon received data")
             do {
                 let config = try decoder.decode(CommandRunConfig.self, from: data)
                 self.executeCommand(config: config, for: session)

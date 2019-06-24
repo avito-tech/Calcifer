@@ -61,7 +61,7 @@ public final class DaemonClientImpl: DaemonClient {
             },
             onExitCodeMessage: { exitCodeMessage in
                 exitCode = exitCodeMessage.code
-                Logger.verbose("Receive exit code \(exitCodeMessage.code) for command \(commandRunConfig)")
+                Logger.verbose("Client: Command \(commandRunConfig) completed with exit code \(exitCodeMessage.code)")
                 self.socket.disconnect()
             }
         )
