@@ -117,10 +117,10 @@ In order to upload the cache for the device or for different configurations, you
 ## Logs
 
 You can find detailed logs inside the Calcifer folder - `~ /.calcifer.noindex/logs`, `~ /.calcifer.noindex/buildlogs` `~ /.calcifer.noindex/launchctl`.
-All the necessary environment variables of your last build will be in the file - `calciferenv.json`.
 
 ## Environment parameters
 
+All the necessary environment variables of your last build will be in the file - `~/.calcifer.noindex/calciferenv.json`.
 All environment Parameters that affect the calculation of the checksum can be found in the logs:
 ```
 INFO: Build parameters checksum: c0b8a254dac07f3a236fe0b404e79bcf from ["-DDEBUG -Onone ... "120200"]
@@ -129,7 +129,7 @@ These parameters should be the same for all developers and on the CI.
 
 ## Checksum
 
-Nearby you can find a file with checksums of the latest build  - `сhecksum.json`.
+Nearby environment file you can find a file with checksums of the latest build  - `~ /.calcifer.noindex/сhecksum.json`.
 If you want to find the difference you can use the command:
 ```
 ~/.calcifer.noindex/Calcifer diff --firstChecksumPath ~/.calcifer.noindex/сhecksum.json --secondChecksumPath ~/.calcifer.noindex/сhecksum2.json
