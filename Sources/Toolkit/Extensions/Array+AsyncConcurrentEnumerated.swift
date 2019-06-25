@@ -7,7 +7,7 @@ public extension Array {
         let dispatchGroup = DispatchGroup()
         let array = NSArray(array: self)
         var eachError: Error?
-        array.enumerateObjects(options: .concurrent) { obj, key, stop in
+        array.enumerateObjects(options: .concurrent) { obj, _, stop in
             guard let object = obj as? Element else {
                 return
             }

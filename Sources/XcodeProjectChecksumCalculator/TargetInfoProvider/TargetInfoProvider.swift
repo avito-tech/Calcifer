@@ -60,7 +60,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         ) -> TargetChecksumHolder<ChecksumType>?
     {
         return targetChecksumHolders().first {
-            return filter($0)
+            filter($0)
         }
     }
     

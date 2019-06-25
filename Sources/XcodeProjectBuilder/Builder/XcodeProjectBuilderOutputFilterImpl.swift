@@ -25,7 +25,7 @@ public final class XcodeProjectBuilderOutputFilterImpl: XcodeProjectBuilderOutpu
                 containList: [
                     Filter.note.rawValue,
                     Filter.warning.rawValue,
-                    Filter.error.rawValue,
+                    Filter.error.rawValue
                 ]
             )
         case .warning:
@@ -33,14 +33,14 @@ public final class XcodeProjectBuilderOutputFilterImpl: XcodeProjectBuilderOutpu
                 data,
                 containList: [
                     Filter.warning.rawValue,
-                    Filter.error.rawValue,
+                    Filter.error.rawValue
                 ]
             )
         case .error:
             return filter(
                 data,
                 containList: [
-                    Filter.error.rawValue,
+                    Filter.error.rawValue
                 ]
             )
         }

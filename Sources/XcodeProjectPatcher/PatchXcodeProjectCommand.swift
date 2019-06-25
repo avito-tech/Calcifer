@@ -22,7 +22,6 @@ public final class PatchXcodeProjectCommand: Command {
     private let targetsArgument: OptionArgument<[String]>
     private let environmentFilePathArgument: OptionArgument<String>
     
-    
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
         projectPathArgument = subparser.add(

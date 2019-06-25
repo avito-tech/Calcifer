@@ -35,7 +35,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
         let destinationURL = fileManager.createTemporaryDirectory()
             .appendingPathComponent(calciferBinaryName)
         
-        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+        let shellCommandExecutor = ShellCommandExecutorStub { command in
             XCTFail(
                 "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
             )

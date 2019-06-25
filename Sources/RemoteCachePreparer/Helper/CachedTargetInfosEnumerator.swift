@@ -51,7 +51,7 @@ final class CachedTargetInfosEnumerator {
                     checksumValue: targetInfo.checksum.stringValue
                 )
             }
-            fatalError()
+            fatalError("Unable to obtain local cache")
         }
     }
     

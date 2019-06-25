@@ -7,7 +7,7 @@ public class FileWatcherImpl: FileWatcher {
     
     private var started = false
     private var streamRef: FSEventStreamRef?
-    private let latency: TimeInterval = 1/60
+    private let latency: TimeInterval = 1.0 / 60.0
     private var lastEventId = FSEventStreamEventId(kFSEventStreamEventIdSinceNow)
     
     public init() {}

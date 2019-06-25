@@ -35,7 +35,7 @@ public final class XcodeProjectPatcher {
         patchBuildSetting(in: agregateTarget.buildConfigurationList, params: params)
         var targetsForRemoving = [String]()
 
-        project.targets.enumerated().forEach { index, target in
+        project.targets.enumerated().forEach { _, target in
             if targets.contains(target.name) {
                 patchBuildSetting(in: target.buildConfigurationList, params: params)
                 let dependency = PBXTargetDependency(

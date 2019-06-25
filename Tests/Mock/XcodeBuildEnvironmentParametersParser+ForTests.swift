@@ -15,7 +15,6 @@ extension XcodeBuildEnvironmentParameters {
     }
     
     private static func environment(podsRoot: String) -> [String: String] {
-        // swiftlint:disable line_length
         return [
             "TARGETNAME": "Some",
             "PROJECT": "Some",

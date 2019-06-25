@@ -20,13 +20,13 @@ final class XcodeProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
     
     func build(projectPath: String) throws -> XcodeProjChecksumHolder<Builder.ChecksumType> {
         let xcodeproject = try TimeProfiler.measure("Obtain XcodeProj") {
-            return try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
+            try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
         }
         let pbxproj = xcodeproject.pbxproj
         let path = Path(projectPath)
         let sourceRoot = Path(components: Array(path.components.dropLast()))
         let projChecksum = try TimeProfiler.measure("Build XcodeProj checksum") {
-            return try builder.build(pbxproj: pbxproj, sourceRoot: sourceRoot)
+            try builder.build(pbxproj: pbxproj, sourceRoot: sourceRoot)
         }
         return XcodeProjChecksumHolder(
             proj: projChecksum,

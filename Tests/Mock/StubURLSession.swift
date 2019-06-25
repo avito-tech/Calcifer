@@ -2,9 +2,11 @@ import Foundation
 
 public final class StubURLSession: URLSession {
     
-    public override init() {}
+    override public init() {}
     
+    // swiftlint:disable:next large_tuple
     public var downloadStub: ((URLRequest) -> (URL?, URLResponse?, Error?))?
+    // swiftlint:disable:next large_tuple
     public var uploadStub: ((URLRequest, URL) -> (Data?, URLResponse?, Error?))?
     
     override public func downloadTask(

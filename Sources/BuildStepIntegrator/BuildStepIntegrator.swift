@@ -11,7 +11,7 @@ public final class BuildStepIntegrator {
         let xcodeproject = try XcodeProj(path: path)
         let pbxproj = xcodeproject.pbxproj
         guard let project = try pbxproj.rootProject() else { return }
-        try project.targets.enumerated().forEach { index, target in
+        try project.targets.enumerated().forEach { _, target in
             if targets.contains(target.name) {
                 try removePodsFramework(
                     target: target,
@@ -31,8 +31,11 @@ public final class BuildStepIntegrator {
         guard let frameworkBuildPhase = try target.frameworksBuildPhase() else { return }
         let podsFilePath = "Pods_\(target.name).framework"
         guard let frameworkBuildPhaseFiles = frameworkBuildPhase.files,
-            let frameworkFile = frameworkBuildPhaseFiles.first(where: { $0.file?.path == podsFilePath})
-            else { return }
+            let frameworkFile = frameworkBuildPhaseFiles.first(
+                where: {
+                    $0.file?.path == podsFilePath
+                }
+            ) else { return }
         guard let frameworkFileIndex = frameworkBuildPhaseFiles.firstIndex(of: frameworkFile)
             else { return }
         frameworkBuildPhase.files?.remove(at: frameworkFileIndex)

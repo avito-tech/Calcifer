@@ -2,7 +2,6 @@ import Foundation
 import ArgumentsParser
 import LaunchdManager
 import ShellCommand
-import Foundation
 import SPMUtility
 import Toolkit
 

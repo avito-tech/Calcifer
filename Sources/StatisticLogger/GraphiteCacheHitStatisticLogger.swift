@@ -22,8 +22,8 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
         static let architecturesKey = "architectures"
         
         enum MetricType: String {
-            case short = "short"
-            case full = "full"
+            case short
+            case full
         }
     }
     

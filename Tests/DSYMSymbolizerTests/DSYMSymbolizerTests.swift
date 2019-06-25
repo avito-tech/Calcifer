@@ -44,7 +44,7 @@ public final class DSYMSymbolizerTests: XCTestCase {
             
             // Then
             guard let plistContent = NSDictionary(contentsOfFile: plistPath)
-                as? Dictionary<String, String>
+                as? [String: String]
                 else {
                     XCTFail("Empty plist content")
                     return
@@ -64,7 +64,7 @@ public final class DSYMSymbolizerTests: XCTestCase {
         architecture: String)
         -> DSYMSymbolizer
     {
-        let shellCommandExecutor = ShellCommandExecutorStub() { command in
+        let shellCommandExecutor = ShellCommandExecutorStub { command in
             XCTFail(
                 "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
             )

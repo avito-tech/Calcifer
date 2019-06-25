@@ -30,13 +30,11 @@ public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
             switch result {
             case let .result(value):
                 completion(.result(value))
-                break
             case .notExist:
                 self?.obtainFromRemoteCache(
                     cacheKey: cacheKey,
                     completion: completion
                 )
-                break
             }
         }
     }
@@ -61,10 +59,8 @@ public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
                         at: value.path,
                         completion: completion
                     )
-                    break
                 case .notExist:
                     completion()
-                    break
                 }
             }
         }
@@ -85,11 +81,9 @@ public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
                         completion(localResult)
                     }
                 }
-                break
             case .notExist:
                 Logger.verbose("Cache doesn't exist for \(cacheKey.productName) \(cacheKey.productType) - \(cacheKey.checksum.stringValue)")
                 completion(result)
-                break
             }
         }
     }

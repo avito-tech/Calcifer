@@ -3,7 +3,7 @@ import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
 import Checksum
 
-final class BuildProductCacheKeyBuilder {
+public final class BuildProductCacheKeyBuilder {
     
     public init() {}
     

@@ -2,13 +2,13 @@ import Foundation
 import XCTest
 @testable import BuildProductCacheStorage
 
-final class GradleBuildCacheClientMock: GradleBuildCacheClient {    
+public final class GradleBuildCacheClientMock: GradleBuildCacheClient {
     
     public var key: String?
     public var uploadFileURL: URL?
     public var downloadResultURL: URL?
     
-    func download(
+    public func download(
         key: String,
         completion: @escaping (BuildCacheClientResult<URL>) -> ())
     {
@@ -18,7 +18,7 @@ final class GradleBuildCacheClientMock: GradleBuildCacheClient {
         }
     }
     
-    func upload(
+    public func upload(
         fileURL: URL,
         key: String,
         completion: @escaping (BuildCacheClientResult<Void>) -> ())

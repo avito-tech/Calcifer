@@ -3,7 +3,7 @@ import Toolkit
 
 public final class CalciferPathProviderStub: CalciferPathProviderImpl {
     
-    public var stubedCalciferDirectory: String? = nil
+    public var stubedCalciferDirectory: String?
     
     override public func calciferDirectory() -> String {
         guard let stubedCalciferDirectory = stubedCalciferDirectory else {

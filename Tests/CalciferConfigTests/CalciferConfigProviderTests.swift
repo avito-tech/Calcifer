@@ -18,7 +18,6 @@ public final class CalciferConfigProviderTests: XCTestCase {
     lazy var localConfigPath = projectDirectoryPath
         .appendingPathComponent("CalciferConfig.local.json")
     
-    
     func test_obtainDefaultConfig() {
         // Given
         

@@ -113,7 +113,7 @@ public final class BuildSourcePathProviderImpl: BuildSourcePathProvider {
             }
         }
         let uniqPathList = Array(Set(sources.values))
-        if uniqPathList.count == 0 {
+        if uniqPathList.isEmpty {
             throw DSYMSymbolizerError.emptyPathList(
                 binaryPath: binaryPath
             )

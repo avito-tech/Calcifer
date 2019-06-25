@@ -64,8 +64,8 @@ final class CalciferVersionShipperImpl: CalciferVersionShipper {
                     },
                     onFailure: { error in
                         completion(.failure(error))
-                }
-            )
+                    }
+                )
         }
     }
     
@@ -126,7 +126,7 @@ final class CalciferVersionShipperImpl: CalciferVersionShipper {
                 forHTTPHeaderField: "Authorization"
             )
         }
-        session.uploadTask(with: request, fromFile: file) { (_, response, error) in
+        session.uploadTask(with: request, fromFile: file) { (_, _, error) in
             if let error = error  {
                 completion(.failure(error))
             } else {

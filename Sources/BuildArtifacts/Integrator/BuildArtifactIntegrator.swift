@@ -26,7 +26,7 @@ public final class BuildArtifactIntegrator {
         >()
         let artifactsArray = artifacts as NSArray
         var intagrateError: Error?
-        artifactsArray.enumerateObjects(options: .concurrent) { obj, key, stop in
+        artifactsArray.enumerateObjects(options: .concurrent) { obj, _, stop in
             if let artifact = obj as? TargetBuildArtifact<ChecksumType> {
                 let productCurrentURL = URL(fileURLWithPath: artifact.productPath)
                 let productDestinationURL = obtainProductDestination(for: artifact, at: path)

@@ -2,7 +2,7 @@ import Foundation
 import XcodeProjectChecksumCalculator
 import Checksum
 
-final class BinaryPathProvider {
+public final class BinaryPathProvider {
     
     private let fileManager: FileManager
     

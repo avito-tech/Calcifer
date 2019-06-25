@@ -3,6 +3,7 @@
 
 import PackageDescription
 
+// swiftlint:disable file_length
 let package = Package(
     name: "Calcifer",
     platforms: [
@@ -37,7 +38,7 @@ let package = Package(
         .package(
             url: "https://github.com/avito-tech/GraphiteClient.git",
             .exact("0.1.0")
-        ),
+        )
     ],
     targets: [
         // MARK: Calcifer
@@ -68,7 +69,7 @@ let package = Package(
             name: "CommandRunner",
             dependencies: [
                 "Toolkit",
-                "ArgumentsParser",
+                "ArgumentsParser"
             ]
         ),
         // MARK: ArgumentsParser
@@ -90,7 +91,8 @@ let package = Package(
         .testTarget(
             name: "StatisticLoggerTests",
             dependencies: [
-                "StatisticLogger"
+                "StatisticLogger",
+                "Mock"
             ]
         ),
         // MARK: RemoteCachePreparer
@@ -229,7 +231,8 @@ let package = Package(
             name: "XcodeBuildEnvironmentParametersParserTests",
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
-                "Toolkit"
+                "Toolkit",
+                "Mock"
             ]
         ),
         // MARK: LaunchdManager
@@ -421,6 +424,6 @@ let package = Package(
                 "ShellCommand"
             ],
             path: "Tests/Mock/"
-        ),
+        )
     ]
 )

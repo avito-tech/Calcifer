@@ -82,7 +82,7 @@ public final class SendCommandToDaemonCommand: Command {
     {
         var arguments = [commandName]
         if let commandArguments = commandArguments {
-            arguments = arguments + commandArguments.split(separator: " ").map { String($0) }
+            arguments += commandArguments.split(separator: " ").map { String($0) }
         }
         return CommandRunConfig(
             identifier: UUID().uuidString,

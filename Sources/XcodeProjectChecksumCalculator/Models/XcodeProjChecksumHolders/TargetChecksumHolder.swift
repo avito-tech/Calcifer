@@ -25,7 +25,6 @@ class TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         self.dependencies = dependencies
     }
     
-    
     private var cachedAllFlatDependencies: [TargetChecksumHolder<C>]?
     
     var allFlatDependencies: [TargetChecksumHolder<C>] {

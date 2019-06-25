@@ -6,7 +6,7 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
     private let fileManager: FileManager
     private let observableStandardStream: ObservableStandardStream
     private let outputFilter: XcodeProjectBuilderOutputFilter
-    private var fileHandle: FileHandle? = nil
+    private var fileHandle: FileHandle?
     
     public init(
         fileManager: FileManager,
