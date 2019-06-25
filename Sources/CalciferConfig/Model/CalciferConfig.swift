@@ -1,6 +1,7 @@
 import Foundation
 
 public struct CalciferConfig: Codable, Equatable {
+    // TODO: Rename to calciferIsEnabled
     public let enabled: Bool
     public let statisticLoggerConfig: StatisticLoggerConfig?
     public let buildConfig: XcodeBuildConfig?
