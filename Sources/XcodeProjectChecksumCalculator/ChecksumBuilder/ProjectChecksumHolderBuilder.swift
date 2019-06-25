@@ -21,7 +21,7 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
         let targets = NSArray(array: project.targets)
         let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>()
         var buildError: Error?
-        targets.enumerateObjects(options: .concurrent) { obj, key, stop in
+        targets.enumerateObjects(options: .concurrent) { obj, _, stop in
             if let target = obj as? PBXTarget {
                 do {
                     try builder.build(

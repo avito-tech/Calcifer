@@ -49,7 +49,7 @@ public final class FileDownloaderImplTests: XCTestCase {
                 XCTFail("Failed to stub session")
                 return (nil, nil, nil)
             }
-            var url: URL? = nil
+            var url: URL?
             if requestURL == downloadURL {
                 url = onRequest()
             } else {

@@ -122,7 +122,7 @@ public final class DSYMSymbolizer {
                 dsymPath: dsymBundlePath
             )
         }
-        if content.count == 0 {
+        if content.isEmpty {
             throw DSYMSymbolizerError.unableToFindDWARFFileInDSYM(
                 dsymPath: dsymBundlePath
             )

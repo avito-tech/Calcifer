@@ -4,7 +4,7 @@ import FileWatcher
 import XcodeProjCache
 import Toolkit
 
-final class XcodeProjCacheWarmer: Warmer {
+public final class XcodeProjCacheWarmer: Warmer {
         
     private let xcodeProjCache: XcodeProjCache
     private let calciferPathProvider: CalciferPathProvider

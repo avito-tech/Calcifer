@@ -12,7 +12,7 @@ public final class Logger {
     
     public static var minLogLevel: SwiftyBeaver.Level {
         let minLogLevel: SwiftyBeaver.Level
-        if let _ = ProcessInfo.processInfo.environment["VERBOSE"] {
+        if ProcessInfo.processInfo.environment["VERBOSE"] != nil {
             minLogLevel = .verbose
         } else {
             minLogLevel = isDebuggerAttached ? .verbose : .info

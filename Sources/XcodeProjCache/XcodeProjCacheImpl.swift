@@ -57,7 +57,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
         try [0...3].forEach { _ in
             let xcodeProj = try obtainCachedXcodeProj(
                 projectPath: projectPath,
-                cacheProvider: { _ in return nil }
+                cacheProvider: { _ in nil }
             )
             writableStorage.addValue(xcodeProj, for: projectPath)
         }

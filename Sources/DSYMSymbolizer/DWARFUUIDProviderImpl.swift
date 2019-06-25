@@ -45,7 +45,7 @@ public final class DWARFUUIDProviderImpl: DWARFUUIDProvider {
             }
             return nil
         }
-        if dwarfUUIDs.count == 0 {
+        if dwarfUUIDs.isEmpty {
             throw DSYMSymbolizerError.unableToObtainDWARFDumpUUID(
                 path: path,
                 code: result.terminationStatus,

@@ -14,7 +14,7 @@ public class BuildTargetChecksumProviderFactoryImpl: BuildTargetChecksumProvider
     private let checksumProducer: BaseURLChecksumProducer
     
     private lazy var targetInfoProviderFactory: TargetInfoProviderFactory<BaseURLChecksumProducer> = {
-        return TargetInfoProviderFactory(
+        TargetInfoProviderFactory(
             checksumProducer: checksumProducer
         )
     }()

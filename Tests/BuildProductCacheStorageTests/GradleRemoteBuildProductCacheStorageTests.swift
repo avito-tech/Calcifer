@@ -95,7 +95,7 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
             return zipFileURL
         } catch {
             XCTFail("Failed create zip")
-            fatalError()
+            fatalError("Failed create zip")
         }
     }
 }

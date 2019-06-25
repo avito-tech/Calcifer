@@ -14,7 +14,7 @@ final class WebSocketSessionWriter {
     
     var state: SessionWriterState {
         set {
-            switch state {
+            switch newValue {
             case .active:
                 operationQueue.isSuspended = false
             case .suspended:

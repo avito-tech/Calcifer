@@ -24,9 +24,8 @@ final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
         }
         var summarizedChecksums = [Builder.ChecksumType]()
         let dependenciesTargets = target.dependencies.compactMap { $0.target }
-        let dependenciesChecksums = try dependenciesTargets.map {
-            dependency -> TargetChecksumHolder<Builder.ChecksumType> in
-            return try build(
+        let dependenciesChecksums = try dependenciesTargets.map { dependency -> TargetChecksumHolder<Builder.ChecksumType> in
+            try build(
                 target: dependency,
                 sourceRoot: sourceRoot,
                 cache: cache

@@ -1,6 +1,5 @@
 import Foundation
 import ArgumentsParser
-import Foundation
 import ShellCommand
 import SPMUtility
 import Toolkit

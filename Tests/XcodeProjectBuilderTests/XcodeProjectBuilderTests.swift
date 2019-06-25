@@ -10,7 +10,7 @@ public final class XcodeProjectBuilderTests: XCTestCase {
     func test_symbolizer() {
         XCTAssertNoThrow(try {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            let shellCommandExecutor = ShellCommandExecutorStub { command in
                 XCTFail(
                     "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
                 )

@@ -2,7 +2,6 @@ import Foundation
 import XcodeBuildEnvironmentParametersParser
 import ArgumentsParser
 import CalciferConfig
-import Foundation
 import SPMUtility
 import Toolkit
 

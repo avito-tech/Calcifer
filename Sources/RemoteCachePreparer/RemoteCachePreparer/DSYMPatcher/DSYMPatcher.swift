@@ -4,7 +4,7 @@ import BuildArtifacts
 import Checksum
 import Toolkit
 
-final class DSYMPatcher {
+public final class DSYMPatcher {
     
     private let symbolizer: DSYMSymbolizer
     private let binaryPathProvider: BinaryPathProvider
@@ -30,7 +30,7 @@ final class DSYMPatcher {
     {
         let artifactsArray = artifacts as NSArray
         var symbolizeError: Error?
-        artifactsArray.enumerateObjects(options: .concurrent) { obj, key, stop in
+        artifactsArray.enumerateObjects(options: .concurrent) { obj, _, stop in
             if let artifact = obj as? TargetBuildArtifact<BaseChecksum> {
                 do {
                     let dsymPath = artifact.dsymPath

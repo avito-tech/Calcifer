@@ -4,7 +4,7 @@ import ShellCommand
 public final class ShellCommandExecutorStub: ShellCommandExecutor {
 
     public var stub: ((ShellCommand) -> (ShellCommandResult)) = { _ in
-        return ShellCommandResult(
+        ShellCommandResult(
             terminationStatus: 0,
             output: nil,
             error: nil
@@ -47,7 +47,7 @@ public final class ShellCommandExecutorStub: ShellCommandExecutor {
     public func stubCommand(_ stubs: [ShellCommandStub]) {
         stub = { [weak self] command in
             guard let stub = stubs.first(where: { stub in
-                return stub.launchPath == command.launchPath && stub.arguments == command.arguments
+                stub.launchPath == command.launchPath && stub.arguments == command.arguments
             }) else {
                 self?.onMismatch(command)
                 return ShellCommandResult(terminationStatus: 1)

@@ -99,7 +99,7 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         let command = BaseShellCommand(
             launchPath: binaryPath,
             arguments: [
-                "installCalciferBinary",
+                "installCalciferBinary"
             ],
             environment: [:]
         )

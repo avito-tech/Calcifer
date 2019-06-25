@@ -10,7 +10,7 @@ import ShellCommand
 import Checksum
 import Toolkit
 
-final class PatchedProjectBuilder {
+public final class PatchedProjectBuilder {
     
     private let cacheStorage: BuildProductCacheStorage
     private let checksumProducer: BaseURLChecksumProducer
@@ -95,7 +95,7 @@ final class PatchedProjectBuilder {
         // The bundle targets are filtered out because they are already inside some framework (cocoapods does this)
         // If any file in the bundle has changed, then all dependencies will be rebuilt.
         // Because their checksum has changed.
-        if targetNamesForBuild.count > 0 {
+        if !targetNamesForBuild.isEmpty {
             Logger.verbose("Target for build: \(targetNamesForBuild)")
             try TimeProfiler.measure("patch project") {
                 try patchProject(
@@ -145,7 +145,6 @@ final class PatchedProjectBuilder {
             }
         }
     }
-    
     
     private func obtainTargetsForBuild(
         cacheStorage: BuildProductCacheStorage,
@@ -266,7 +265,7 @@ final class PatchedProjectBuilder {
         at path: String) throws
     {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
-        try artifacts.asyncConcurrentEnumerated { (artifact, completion, stop) in
+        try artifacts.asyncConcurrentEnumerated { (artifact, completion, _) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: artifact.targetInfo)
             let dsymCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: artifact.targetInfo)
             cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath) {
@@ -285,7 +284,7 @@ final class PatchedProjectBuilder {
             TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>
             >()
         
-        try targetInfos.asyncConcurrentEnumerated { (targetInfo, completion, stop) in
+        try targetInfos.asyncConcurrentEnumerated { (targetInfo, completion, _) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in

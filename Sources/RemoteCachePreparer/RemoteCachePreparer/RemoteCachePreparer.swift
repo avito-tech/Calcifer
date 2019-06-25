@@ -25,7 +25,6 @@ final class RemoteCachePreparer {
     private let xcodeProjCache: XcodeProjCache
     private let artifactBuildSourcePathCache: ArtifactBuildSourcePathCache
     
-    
     init(
         fileManager: FileManager,
         calciferPathProvider: CalciferPathProvider,

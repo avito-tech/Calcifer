@@ -23,14 +23,14 @@ public final class GraphiteCacheHitStatisticLoggerTests: XCTestCase {
     }()
     
     lazy var client: GraphiteClient = {
-        return GraphiteClient(easyOutputStream: easyOutputStream)
+        GraphiteClient(easyOutputStream: easyOutputStream)
     }()
     
     let rootKey = "rootKey"
     let params = catchError { try XcodeBuildEnvironmentParameters.forTests() }
     
     lazy var logger: GraphiteCacheHitStatisticLogger = {
-        return GraphiteCacheHitStatisticLogger(
+        GraphiteCacheHitStatisticLogger(
             client: client,
             rootKey: [rootKey]
         )

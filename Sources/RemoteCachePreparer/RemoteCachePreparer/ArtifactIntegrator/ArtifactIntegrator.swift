@@ -5,7 +5,7 @@ import BuildArtifacts
 import Checksum
 import Toolkit
 
-final class ArtifactIntegrator {
+public final class ArtifactIntegrator {
     
     private let integrator: BuildArtifactIntegrator
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder

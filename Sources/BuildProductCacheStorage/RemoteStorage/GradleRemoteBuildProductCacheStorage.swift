@@ -46,7 +46,7 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
             fileURLWithPath: path.deletingLastPathComponent()
         ).appendingPathComponent(key + ".zip")
         catchError { try fileManager.zipItem(at: artifactURL, to: zipFileURL) }
-        gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { result in
+        gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { _ in
             catchError { [weak self] in
                 try self?.fileManager.removeItem(at: zipFileURL)
             }
@@ -72,11 +72,9 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
                     completion: completion
                 )
             }
-            break
         case let .failure(error):
             Logger.verbose("Download cache for \(cacheKey) failure \(error?.localizedDescription ?? "-")")
             completion(.notExist)
-            break
         }
     }
     

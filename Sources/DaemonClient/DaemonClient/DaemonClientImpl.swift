@@ -21,7 +21,7 @@ public final class DaemonClientImpl: DaemonClient {
     
     public func sendToDaemon(commandRunConfig: CommandRunConfig) throws {
         let commandData = try commandRunConfig.encode()
-        var exitCode: Int32? = nil
+        var exitCode: Int32?
         setupSocketCallbacks(
             onConnect: {
                 Logger.info("websocket is connected")

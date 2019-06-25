@@ -9,7 +9,7 @@ public final class DWARFUUIDProviderImplTests: XCTestCase {
     func test_provider() {
         XCTAssertNoThrow(try {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub() { command in
+            let shellCommandExecutor = ShellCommandExecutorStub { command in
                 XCTFail(
                     "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
                 )
@@ -21,7 +21,7 @@ public final class DWARFUUIDProviderImplTests: XCTestCase {
                 "/Users/a/.calcifer/localCache/Unbox/9d4f...10f1/Unbox.framework/Unbox"
             ].joined(separator: " ")
             shellCommandExecutor.stub = { command in
-                return ShellCommandResult(
+                ShellCommandResult(
                     terminationStatus: 0,
                     output: output,
                     error: nil

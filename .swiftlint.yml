@@ -10,9 +10,11 @@ disabled_rules:
   - redundant_nil_coalescing # I want to convert double optionals to single optionals with `x ?? nil`. TODO: Maybe to add a function.
   - identifier_name # i don't like those limits. TODO: Enable partially, configure
   - type_name # same as with identifier_name
-  - todo # i fix todos sometimes
+  - todo
   - operator_whitespace # i don't like this rule
   - function_parameter_count # i like such functions in tests...
+  - trailing_whitespace # i don't like this rule
+  - for_where # Sometimes for lopp is prefered
   
 opt_in_rules:
   - array_init
@@ -87,6 +89,18 @@ opt_in_rules:
   - weak_delegate
 
 # Rule configurations
+
+function_body_length:
+  warning: 100
+  error: 200
+
+type_body_length:
+  warning: 300
+  error: 400
+
+nesting:
+  type_level:
+    warning: 2
 
 array_init:
   severity: error

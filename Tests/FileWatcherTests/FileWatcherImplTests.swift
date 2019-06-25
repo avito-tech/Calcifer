@@ -11,7 +11,7 @@ public final class FileWatcherImplTests: XCTestCase {
     lazy var directory = fileManager.home()
         .appendingPathComponent(UUID().uuidString)
     
-    public override func setUp() {
+    override public func setUp() {
         super.setUp()
         try? fileManager.createDirectory(
             atPath: directory,
@@ -31,7 +31,6 @@ public final class FileWatcherImplTests: XCTestCase {
         let eventExpectation = expectation(description: "Expect event")
         let fileWatcher = FileWatcherImpl()
         var fileWatcherEvent: FileWatcherEvent?
-
 
         let filePath = directory
             .appendingPathComponent(UUID().uuidString)
