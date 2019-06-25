@@ -40,6 +40,7 @@ public final class GraphiteCacheHitStatisticLogger: CacheHitStatisticLogger {
         guard let hitValue = statistic.hitRate else {
             return
         }
+        Logger.info("Hit rate \(hitValue)")
         let timestamp = Date()
         
         let shortKey = shortMetricKey(for: params)

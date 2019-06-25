@@ -9,15 +9,18 @@ final class DSYMPatcher {
     private let symbolizer: DSYMSymbolizer
     private let binaryPathProvider: BinaryPathProvider
     private let buildSourcePathProvider: BuildSourcePathProvider
+    private let artifactBuildSourcePathCache: ArtifactBuildSourcePathCache
     
     public init(
         symbolizer: DSYMSymbolizer,
         binaryPathProvider: BinaryPathProvider,
-        buildSourcePathProvider: BuildSourcePathProvider)
+        buildSourcePathProvider: BuildSourcePathProvider,
+        artifactBuildSourcePathCache: ArtifactBuildSourcePathCache)
     {
         self.symbolizer = symbolizer
         self.binaryPathProvider = binaryPathProvider
         self.buildSourcePathProvider = buildSourcePathProvider
+        self.artifactBuildSourcePathCache = artifactBuildSourcePathCache
     }
     
     public func patchDSYM(
@@ -51,9 +54,10 @@ final class DSYMPatcher {
                         targetInfo: artifact.targetInfo
                     )
                     
-                    let buildSourcePath = try buildSourcePathProvider.obtainBuildSourcePath(
-                        sourcePath: sourcePath,
-                        binaryPath: binaryPath
+                    let buildSourcePath = try obtainBuildSourcePath(
+                        artifacts: artifact,
+                        binaryPath: binaryPath,
+                        sourcePath: sourcePath
                     )
                     
                     if buildSourcePath == sourcePath {
@@ -79,6 +83,30 @@ final class DSYMPatcher {
         if let error = symbolizeError {
             throw error
         }
+    }
+    
+    private func obtainBuildSourcePath(
+        artifacts: TargetBuildArtifact<BaseChecksum>,
+        binaryPath: String,
+        sourcePath: String)
+        throws -> String
+    {
+        if let buildSourcePathCache = artifactBuildSourcePathCache.buildSourcePath(
+            for: artifacts.targetInfo,
+            sourcePath: sourcePath)
+        {
+            return buildSourcePathCache
+        }
+        let buildSourcePath = try buildSourcePathProvider.obtainBuildSourcePath(
+            sourcePath: sourcePath,
+            binaryPath: binaryPath
+        )
+        artifactBuildSourcePathCache.save(
+            buildSourcePath: buildSourcePath,
+            for: artifacts.targetInfo,
+            sourcePath: sourcePath
+        )
+        return buildSourcePath
     }
     
     private func obtainPathToBinaryInApp(

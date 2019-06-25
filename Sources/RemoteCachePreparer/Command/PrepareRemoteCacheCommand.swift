@@ -89,6 +89,7 @@ public final class PrepareRemoteCacheCommand: Command {
             unzip: unzip
         )
         let xcodeProjCache = XcodeProjCacheImpl.shared
+        let artifactBuildSourcePathCache = ArtifactBuildSourcePathCacheImpl.shared
         return RemoteCachePreparer(
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
@@ -96,7 +97,8 @@ public final class PrepareRemoteCacheCommand: Command {
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory,
-            xcodeProjCache: xcodeProjCache
+            xcodeProjCache: xcodeProjCache,
+            artifactBuildSourcePathCache: artifactBuildSourcePathCache
         )
     }
     
