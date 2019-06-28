@@ -69,7 +69,8 @@ Of course, you can, and vice versa, turn off the remote cache for all developers
 
 ## Integrate with CocoaPods
 
-Download the calcifer.rb file and put it next to your Podfile.
+Download the `calcifer.rb` file and put it next to your Podfile.
+Download the `remote_cache_build_step.sh` file and put it to git root.
 Add the following code to Podfile:
 
 ```ruby
