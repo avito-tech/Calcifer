@@ -42,7 +42,7 @@ def setup_remote_cache(installer, remote_cache_targets)
     phase_name = '[Calcifer] Remote Cache'
     shell = [
       "root_path=$(builtin cd $SRCROOT && git rev-parse --show-toplevel)",
-      "${root_path}/Avito/Utils/remote_cache.sh"
+      "${root_path}/remote_cache_build_step.sh"
     ].join("\n")
     resources_index = target.build_phases.find_index { |phase| phase.class == Xcodeproj::Project::PBXResourcesBuildPhase }
     sources_index = target.build_phases.find_index { |phase| phase.class == Xcodeproj::Project::PBXSourcesBuildPhase }
