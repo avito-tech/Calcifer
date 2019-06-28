@@ -1,6 +1,7 @@
 # Calcifer
-
-[![Swift Package Manager](https://img.shields.io/badge/swift%20package%20manager-compatible-brightgreen.svg)](https://swift.org/package-manager/)
+![Xcode](https://img.shields.io/badge/xcode-10.13-brightgreen.svg)
+![OSX](https://img.shields.io/badge/osx-10.13-brightgreen.svg)
+![Lang](https://img.shields.io/badge/swift-5.0-brightgreen.svg)
 
 Calcifer is a tool that enables remote build cache functionality for Xcode projects that use [CocoaPods](https://cocoapods.org/) dependency manager.
 
@@ -8,8 +9,8 @@ Calcifer is a tool that enables remote build cache functionality for Xcode proje
 
 **⚠️ The project is in alpha ⚠️**
 
-- Use remote cache only if you have a Continuous Integration process that upload the cache to storage, otherwise there is no point in the remote cache.
-- The version of Xcode should be the same for developers and for CI.
+- It makes sense to use remote cache when you have a Continuous Integration process that uploads the build artifacts to your storage. You can probably also upload from the developer machines, but CI is a recommended way of setting up the remote cache.
+- The version of Xcode affects framework checksum.
 - Your project file and Podfile should be indexed by git.
 - Initial build will take more time to finish because the remote cache is empty. Subsequent builds will then benefit from using remotely cached build artifacts.
 
@@ -48,7 +49,7 @@ You need to create a Project Config file - `/repository/CalciferConfig.json`, ne
 
 ```json
 {
-	"enabled": true, // True by default
+	"enabled": true,
 	"storageConfig": {
 		"gradleHost": "http://PUT-HERE-YOUR-GRADLE-NODE_URL.com"
 	}
@@ -99,7 +100,7 @@ You can also check that the project is patched correctly:
 Follow the same steps to run Calcifer daemon on CI.
 To upload the cache, build the desired target using the `xcodebuild` command and execute the following command:
 
-```
+```shell
 ./Calcifer uploadRemoteCache
 ```
 Attention, if your target depends on another target, then only the results of the last builded target will be uploaded. In the future, this problem will be fixed.
@@ -132,8 +133,10 @@ These parameters should be the same for all developers and on the CI.
 `~ /.calcifer.noindex/сhecksum.json` file contains all checksums of the latest build.
 If you want to find the difference between two checksum files you can use the command:
 
-```
-~/.calcifer.noindex/Calcifer diff --firstChecksumPath ~/.calcifer.noindex/сhecksum.json --secondChecksumPath ~/.calcifer.noindex/сhecksum2.json
+```shell
+~/.calcifer.noindex/Calcifer diff \
+--firstChecksumPath ~/.calcifer.noindex/сhecksum.json \
+--secondChecksumPath ~/.calcifer.noindex/сhecksum2.json
 ```
 This is helpful when you want to investigate why Calcifer haven't provided remote build artifacts when you expected it to provide them.
 
