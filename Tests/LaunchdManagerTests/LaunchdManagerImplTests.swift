@@ -22,22 +22,26 @@ public final class LaunchdManagerImplTests: XCTestCase {
             standardOutPath: UUID().uuidString,
             standardErrorPath: UUID().uuidString
         )
+        let userId = UUID().uuidString
         shellCommandExecutor.stubCommand(
             LaunchctlShellCommand(
+                plist: plist,
                 plistPath: plistPath,
                 type: .unload,
-                sessionType: plist.sessionType
+                domain: .user(userId: userId)
             )
         )
+        let userIdentifierProvider = UserIdentifierProviderStub(userId: userId)
         let manager = LaunchdManagerImpl(
             fileManager: fileManager,
-            shellExecutor: shellCommandExecutor
+            shellExecutor: shellCommandExecutor,
+            userIdentifierProvider: userIdentifierProvider
         )
         
         // When
         XCTAssertNoThrow(
             try manager.unloadPlistFromLaunchctl(
-                sessionType: plist.sessionType,
+                plist: plist,
                 plistPath: plistPath
             )
         )
@@ -64,27 +68,41 @@ public final class LaunchdManagerImplTests: XCTestCase {
                 "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
             )
         }
+        let userId = UUID().uuidString
         shellCommandExecutor.stubCommand(
             [
                 ShellCommandStub(
                     LaunchctlShellCommand(
+                        plist: plist,
                         plistPath: plistPath,
                         type: .unload,
-                        sessionType: plist.sessionType
+                        domain: .user(userId: userId)
                     )
                 ),
                 ShellCommandStub(
                     LaunchctlShellCommand(
+                        plist: plist,
+                        plistPath: plistPath,
+                        type: .enable,
+                        domain: .user(userId: userId)
+                    )
+                ),
+                ShellCommandStub(
+                    LaunchctlShellCommand(
+                        plist: plist,
                         plistPath: plistPath,
                         type: .load,
-                        sessionType: plist.sessionType
+                        domain: .user(userId: userId)
                     )
                 )
             ]
         )
+        
+        let userIdentifierProvider = UserIdentifierProviderStub(userId: userId)
         let manager = LaunchdManagerImpl(
             fileManager: fileManager,
-            shellExecutor: shellCommandExecutor
+            shellExecutor: shellCommandExecutor,
+            userIdentifierProvider: userIdentifierProvider
         )
         
         // When

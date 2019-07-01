@@ -6,29 +6,42 @@ public final class LaunchdManagerImpl: LaunchdManager {
     
     private let fileManager: FileManager
     private let shellExecutor: ShellCommandExecutor
+    private let userIdentifierProvider: UserIdentifierProvider
     
     public init(
         fileManager: FileManager,
-        shellExecutor: ShellCommandExecutor)
+        shellExecutor: ShellCommandExecutor,
+        userIdentifierProvider: UserIdentifierProvider)
     {
         self.fileManager = fileManager
         self.shellExecutor = shellExecutor
+        self.userIdentifierProvider = userIdentifierProvider
     }
     
     public func loadPlistToLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
-        try unloadPlistFromLaunchctl(sessionType: plist.sessionType, plistPath: plistPath)
+        try unloadPlistFromLaunchctl(plist: plist, plistPath: plistPath)
         try fileManager.write(plist.content, to: plistPath)
         try createOutputDirectory(plist.standardOutPath.deletingLastPathComponent())
         try createOutputDirectory(plist.standardErrorPath.deletingLastPathComponent())
+        let userId = try userIdentifierProvider.currentUserIdentifier()
+        let enableCommand = LaunchctlShellCommand(
+            plist: plist,
+            plistPath: plistPath,
+            type: .enable,
+            domain: .user(userId: userId)
+        )
+        let enableResult = shellExecutor.execute(command: enableCommand)
+        Logger.verbose("Launchctl enable command \(enableCommand) completed with result \(enableResult)")
         let loadCommand = LaunchctlShellCommand(
+            plist: plist,
             plistPath: plistPath,
             type: .load,
-            sessionType: plist.sessionType
+            domain: .user(userId: userId)
         )
-        let result = shellExecutor.execute(command: loadCommand)
-        Logger.verbose("Launchctl load with result \(result)")
-        if result.terminationStatus != 0 {
-            throw LaunchdManagerError.failedToLoadPlistToLaunchctl(error: result.error)
+        let loadResult = shellExecutor.execute(command: loadCommand)
+        Logger.verbose("Launchctl load command \(loadCommand) completed with result \(loadResult)")
+        if loadResult.terminationStatus != 0 {
+            throw LaunchdManagerError.failedToLoadPlistToLaunchctl(error: loadResult.error)
         }
     }
     
@@ -42,14 +55,16 @@ public final class LaunchdManagerImpl: LaunchdManager {
         }
     }
     
-    public func unloadPlistFromLaunchctl(sessionType: LaunchdSessionType, plistPath: String) throws {
+    public func unloadPlistFromLaunchctl(plist: LaunchdPlist, plistPath: String) throws {
+        let userId = try userIdentifierProvider.currentUserIdentifier()
         let unloadCommand = LaunchctlShellCommand(
+            plist: plist,
             plistPath: plistPath,
             type: .unload,
-            sessionType: sessionType
+            domain: .user(userId: userId)
         )
         let result = shellExecutor.execute(command: unloadCommand)
-        Logger.verbose("Launchctl unload with result \(result)")
+        Logger.verbose("Launchctl unload command \(unloadCommand) completed with result \(result)")
     }
     
 }

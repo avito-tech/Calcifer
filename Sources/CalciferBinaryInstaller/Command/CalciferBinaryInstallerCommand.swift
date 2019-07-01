@@ -31,9 +31,13 @@ public final class CalciferBinaryInstallerCommand: Command {
 
         let fileManager = FileManager.default
         let shellExecutor = ShellCommandExecutorImpl()
+        let userIdentifierProvider = UserIdentifierProviderImpl(
+            shellExecutor: shellExecutor
+        )
         let launchdManager = LaunchdManagerImpl(
             fileManager: fileManager,
-            shellExecutor: shellExecutor
+            shellExecutor: shellExecutor,
+            userIdentifierProvider: userIdentifierProvider
         )
         let installer = CalciferBinaryInstallerImpl(
             fileManager: fileManager,
