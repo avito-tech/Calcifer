@@ -240,7 +240,8 @@ let package = Package(
             name: "LaunchdManager",
             dependencies: [
                 "ShellCommand",
-                "Toolkit"
+                "Toolkit",
+                "ArgumentsParser"
             ]
         ),
         .testTarget(
