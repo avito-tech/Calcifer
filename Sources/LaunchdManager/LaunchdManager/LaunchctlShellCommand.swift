@@ -4,29 +4,51 @@ import ShellCommand
 struct LaunchctlShellCommand: ShellCommand {
     
     enum CommandType: String {
-        case load
-        case unload
+        case load = "bootstrap"
+        case unload = "bootout"
+        case enable
+        case disable
     }
     private let type: CommandType
-    private let sessionType: LaunchdSessionType
+    private let domain: LaunchdDomain
+    private let plist: LaunchdPlist
     private let plistPath: String
     
     let launchPath = "/bin/launchctl"
     var arguments: [String] {
-        return [
-            type.rawValue,
-            "-w",
-            "-S",
-            sessionType.rawValue,
-            plistPath
-        ]
+        switch type {
+        case .load:
+            return [
+                type.rawValue,
+                domain.valueForLaunchArgument,
+                plistPath
+            ]
+        case .unload:
+            return [
+                type.rawValue,
+                domain.valueForLaunchArgument,
+                plistPath
+            ]
+        case .enable:
+            return [
+                type.rawValue,
+                "\(domain.valueForLaunchArgument)/\(plist.label)"
+            ]
+        case .disable:
+            return [
+                type.rawValue,
+                "\(domain.valueForLaunchArgument)/\(plist.label)"
+            ]
+        }
+
     }
     var environment = [String: String]()
     
-    init(plistPath: String, type: CommandType, sessionType: LaunchdSessionType) {
+    init(plist: LaunchdPlist, plistPath: String, type: CommandType, domain: LaunchdDomain) {
+        self.plist = plist
         self.plistPath = plistPath
         self.type = type
-        self.sessionType = sessionType
+        self.domain = domain
     }
     
 }

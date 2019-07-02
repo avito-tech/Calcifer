@@ -24,9 +24,14 @@ public final class LaunchdLoadCommand: Command {
             standardOutPath: calciferPathProvider.launchctlStandardOutPath(),
             standardErrorPath: calciferPathProvider.launchctlStandardErrorPath()
         )
+        let shellExecutor = ShellCommandExecutorImpl()
+        let userIdentifierProvider = UserIdentifierProviderImpl(
+            shellExecutor: shellExecutor
+        )
         let launchdManager = LaunchdManagerImpl(
             fileManager: fileManager,
-            shellExecutor: ShellCommandExecutorImpl()
+            shellExecutor: shellExecutor,
+            userIdentifierProvider: userIdentifierProvider
         )
         let plistPath = calciferPathProvider.launchAgentPlistPath(label: plist.label)
         try launchdManager.loadPlistToLaunchctl(

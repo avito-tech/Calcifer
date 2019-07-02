@@ -18,7 +18,7 @@ public final class CalciferBinaryInstallerImpl: CalciferBinaryInstaller {
         plistPath: String)
         throws
     {
-        try launchdManager.unloadPlistFromLaunchctl(sessionType: plist.sessionType, plistPath: plistPath)
+        try launchdManager.unloadPlistFromLaunchctl(plist: plist, plistPath: plistPath)
         if fileManager.fileExists(atPath: destinationBinaryPath) {
             try fileManager.removeItem(atPath: destinationBinaryPath)
         }
