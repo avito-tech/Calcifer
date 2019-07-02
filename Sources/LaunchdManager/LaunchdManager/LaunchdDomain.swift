@@ -5,7 +5,7 @@ public enum LaunchdDomain {
     case user(userId: String)
     case gui(userId: String)
     
-    var stringValue: String {
+    var valueForLaunchArgument: String {
         switch self {
         case .system:
             return "system"

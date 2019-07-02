@@ -20,24 +20,24 @@ struct LaunchctlShellCommand: ShellCommand {
         case .load:
             return [
                 type.rawValue,
-                domain.stringValue,
+                domain.valueForLaunchArgument,
                 plistPath
             ]
         case .unload:
             return [
                 type.rawValue,
-                domain.stringValue,
+                domain.valueForLaunchArgument,
                 plistPath
             ]
         case .enable:
             return [
                 type.rawValue,
-                "\(domain.stringValue)/\(plist.label)"
+                "\(domain.valueForLaunchArgument)/\(plist.label)"
             ]
         case .disable:
             return [
                 type.rawValue,
-                "\(domain.stringValue)/\(plist.label)"
+                "\(domain.valueForLaunchArgument)/\(plist.label)"
             ]
         }
 
