@@ -13,6 +13,7 @@ public final class DaemonClientImpl: DaemonClient {
         label: "DaemonClientQueue",
         qos: .userInitiated
     )
+    private let processDataOperationQueue = OperationQueue.createSerialQueue()
     
     public init(daemonURL: URL) {
         self.daemonURL = daemonURL
@@ -88,18 +89,20 @@ public final class DaemonClientImpl: DaemonClient {
     
     private func processSocketData(
         data: Data,
-        onExitCodeMessage: (CommandExitCodeMessage) -> ())
+        onExitCodeMessage: @escaping (CommandExitCodeMessage) -> ())
     {
-        guard let message: DaemonMessage = try? data.decode() else {
-            return
-        }
-        switch message {
-        case let .standardStream(standardStreamMessage):
-            redirect(standardStreamMessage)
-        case let .logger(LoggerMessage):
-            redirect(LoggerMessage)
-        case let .exitCode(exitCodeMessage):
-            onExitCodeMessage(exitCodeMessage)
+        processDataOperationQueue.addOperation { [weak self] in
+            guard let message: DaemonMessage = try? data.decode() else {
+                return
+            }
+            switch message {
+            case let .standardStream(standardStreamMessage):
+                self?.redirect(standardStreamMessage)
+            case let .logger(LoggerMessage):
+                self?.redirect(LoggerMessage)
+            case let .exitCode(exitCodeMessage):
+                onExitCodeMessage(exitCodeMessage)
+            }
         }
     }
     

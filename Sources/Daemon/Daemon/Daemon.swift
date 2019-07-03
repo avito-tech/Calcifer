@@ -137,6 +137,7 @@ public final class Daemon {
         let destination = CustomLoggerDestination(onNewMessage: { message in
             writer.write(DaemonMessage.logger(message))
         })
+        destination.minLevel = .verbose
         Logger.addDestination(destination)
     }
     

@@ -20,10 +20,19 @@ public final class Logger {
         return minLogLevel
     }
     
+    private static func setupLevelString(_ destination: BaseDestination) {
+        destination.levelString.verbose = "verbose"
+        destination.levelString.debug = "debug"
+        destination.levelString.info = "info"
+        destination.levelString.warning = "warning"
+        destination.levelString.error = "error"
+    }
+    
     public static func addConsoleDestination() {
         let swiftyBeaver = SwiftyBeaver.self
         let consoleDestination = ConsoleDestination()
         consoleDestination.format = "$L: $M"
+        setupLevelString(consoleDestination)
         consoleDestination.asynchronously = false
         consoleDestination.useTerminalColors = isDebuggerAttached == false
         consoleDestination.minLevel = minLogLevel
@@ -34,12 +43,18 @@ public final class Logger {
         let swiftyBeaver = SwiftyBeaver.self
         let fileDestination = FileDestination()
         fileDestination.format = "$L: $M"
+        setupLevelString(fileDestination)
         let logFile = logFileURL()
         fileDestination.logFileURL = logFile
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
-        swiftyBeaver.addDestination(fileDestination)
+        let filter = Filters.Path.contains(
+            "CommandRunnerImpl",
+            required: true
+        )
+        fileDestination.addFilter(filter)
         SwiftyBeaver.info("Write logs to \(logFile)")
+        swiftyBeaver.addDestination(fileDestination)
     }
     
     public static func addDestination(_ destination: BaseDestination) {
@@ -62,23 +77,48 @@ public final class Logger {
         }
     }
     
-    public static func verbose(_ message: String) {
+    public static func verbose(
+        _ message: String,
+        _ file: String = #file,
+        _ function: String = #function,
+        _ line: Int = #line)
+    {
         logger.verbose(message)
     }
     
-    public static func debug(_ message: String) {
+    public static func debug(
+        _ message: String,
+        _ file: String = #file,
+        _ function: String = #function,
+        _ line: Int = #line)
+    {
         logger.debug(message)
     }
     
-    public static func info(_ message: String) {
+    public static func info(
+        _ message: String,
+        _ file: String = #file,
+        _ function: String = #function,
+        _ line: Int = #line)
+    {
         logger.info(message)
     }
     
-    public static func warning(_ message: String) {
+    public static func warning(
+        _ message: String,
+        _ file: String = #file,
+        _ function: String = #function,
+        _ line: Int = #line)
+    {
         logger.warning(message)
     }
     
-    public static func error(_ message: String) {
+    public static func error(
+        _ message: String,
+        _ file: String = #file,
+        _ function: String = #function,
+        _ line: Int = #line)
+    {
         logger.error(message)
     }
     
