@@ -48,11 +48,16 @@ public final class Logger {
         fileDestination.logFileURL = logFile
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
-        let filter = Filters.Path.contains(
+        let commandRunnerFilter = Filters.Path.contains(
             "CommandRunnerImpl",
             required: true
         )
-        fileDestination.addFilter(filter)
+        fileDestination.addFilter(commandRunnerFilter)
+        let loggerFilter = Filters.Path.contains(
+            "Logger",
+            required: true
+        )
+        fileDestination.addFilter(loggerFilter)
         SwiftyBeaver.info("Write logs to \(logFile)")
         swiftyBeaver.addDestination(fileDestination)
     }
@@ -83,7 +88,7 @@ public final class Logger {
         _ function: String = #function,
         _ line: Int = #line)
     {
-        logger.verbose(message)
+        logger.verbose(message, file, function, line: line)
     }
     
     public static func debug(
@@ -92,7 +97,7 @@ public final class Logger {
         _ function: String = #function,
         _ line: Int = #line)
     {
-        logger.debug(message)
+        logger.debug(message, file, function, line: line)
     }
     
     public static func info(
@@ -101,7 +106,7 @@ public final class Logger {
         _ function: String = #function,
         _ line: Int = #line)
     {
-        logger.info(message)
+        logger.info(message, file, function, line: line)
     }
     
     public static func warning(
@@ -110,7 +115,7 @@ public final class Logger {
         _ function: String = #function,
         _ line: Int = #line)
     {
-        logger.warning(message)
+        logger.warning(message, file, function, line: line)
     }
     
     public static func error(
