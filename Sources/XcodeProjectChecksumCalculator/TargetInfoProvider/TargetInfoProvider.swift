@@ -1,5 +1,6 @@
 import Foundation
 import Checksum
+import Toolkit
 
 public final class TargetInfoProvider<ChecksumType: Checksum> {
     
@@ -9,50 +10,66 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         self.checksumHolder = checksumHolder
     }
     
-    public func dependencies(
+    public func dependencies<ChecksumProducer: URLChecksumProducer>(
         for target: String,
-        buildParametersChecksum: ChecksumType) throws -> [TargetInfo<ChecksumType>] {
+        checksumProducer: ChecksumProducer,
+        buildParametersChecksum: ChecksumType)
+        throws -> [TargetInfo<ChecksumType>]
+        where ChecksumProducer.ChecksumType == ChecksumType
+    {
         guard let checksumHolder = targetChecksumHolder({ $0.targetName == target }) else {
             throw XcodeProjectChecksumCalculatorError.emptyTargetChecksum(targetName: target)
         }
         let allFlatDependencies = checksumHolder.allFlatDependencies
         let result: [TargetInfo<ChecksumType>] = try allFlatDependencies.map({ targetChecksumHolder in
-            let targeChecksum = try targetChecksumHolder.checksum + buildParametersChecksum
+            let targetChecksum = try targetChecksumHolder.obtainChecksum(checksumProducer: checksumProducer)
+            let agregateChecksum = try [
+                targetChecksum,
+                buildParametersChecksum
+            ].aggregate()
             return TargetInfo(
                 targetName: targetChecksumHolder.targetName,
                 productName: targetChecksumHolder.productName,
                 productType: targetChecksumHolder.productType,
-                dependencies: targetChecksumHolder.dependencies.map { $0.targetName },
-                checksum: targeChecksum
+                dependencies: targetChecksumHolder.dependencies.values.map { $0.targetName },
+                checksum: agregateChecksum
             )
         })
         return result
     }
     
-    public func targetInfo(
+    public func targetInfo<ChecksumProducer: URLChecksumProducer>(
         for productName: String,
+        checksumProducer: ChecksumProducer,
         buildParametersChecksum: ChecksumType)
         throws -> TargetInfo<ChecksumType>
+        where ChecksumProducer.ChecksumType == ChecksumType
     {
         guard let checksumHolder = targetChecksumHolder({ $0.productName == productName }) else {
             throw XcodeProjectChecksumCalculatorError.emptyProductChecksum(
                 productName: productName
             )
         }
-        let targeChecksum = try checksumHolder.checksum + buildParametersChecksum
+        let targetChecksum = try checksumHolder.obtainChecksum(checksumProducer: checksumProducer)
+        let agregateChecksum = try [
+            targetChecksum,
+            buildParametersChecksum
+        ].aggregate()
         return TargetInfo(
             targetName: checksumHolder.targetName,
             productName: checksumHolder.productName,
             productType: checksumHolder.productType,
-            dependencies: checksumHolder.dependencies.map { $0.targetName },
-            checksum: targeChecksum
+            dependencies: checksumHolder.dependencies.values.map { $0.targetName },
+            checksum: agregateChecksum
         )
     }
     
     public func saveChecksum(to path: String) throws {
-        let data = try checksumHolder.encode()
-        let outputFileURL = URL(fileURLWithPath: path)
-        try data.write(to: outputFileURL)
+        try TimeProfiler.measure("Save checksum to file") {
+            let data = try checksumHolder.node().encode()
+            let outputFileURL = URL(fileURLWithPath: path)
+            try data.write(to: outputFileURL)
+        }
     }
 
     private func targetChecksumHolder(
@@ -65,7 +82,12 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
     }
     
     private func targetChecksumHolders() -> [TargetChecksumHolder<ChecksumType>] {
-        return checksumHolder.proj.projects.flatMap({ $0.targets })
+        let targets = checksumHolder.projs
+            .compactMap({ $0.value })
+            .compactMap { $0 }
+            .flatMap { $0.projects.values }
+            .flatMap { $0.targets.values }
+        return targets
     }
     
 }

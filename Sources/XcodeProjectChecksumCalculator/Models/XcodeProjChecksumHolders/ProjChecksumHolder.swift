@@ -1,20 +1,31 @@
 import Foundation
 import Checksum
 
-struct ProjChecksumHolder<C: Checksum>: ChecksumHolder {
-    let projects: [ProjectChecksumHolder<C>]
-    let description = "PBXProj"
-    let checksum: C
-}
-
-extension ProjChecksumHolder: TreeNodeConvertable {
+class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    func node() -> TreeNode<C> {
-        return TreeNode(
-            name: description,
-            value: checksum,
-            children: projects.nodeList()
-        )
+    var projects = [String: ProjectChecksumHolder<ChecksumType>]()
+    
+    override var children: [String: BaseChecksumHolder<ChecksumType>] {
+        return projects
     }
     
+    init(name: String, parent: XcodeProjChecksumHolder<ChecksumType>) {
+        super.init(name: name, parent: parent)
+    }
+    
+    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+        throws -> ChecksumType
+        where ChecksumProducer.ChecksumType == ChecksumType
+    {
+        return try cached {
+            try projects.values.sorted().map {
+                try $0.obtainChecksum(checksumProducer: checksumProducer)
+            }.aggregate()
+        }
+    }
+    
+    func update(projects: [ProjectChecksumHolder<ChecksumType>]) {
+        self.projects = Dictionary(uniqueKeysWithValues: projects.map { ($0.name, $0) })
+        state = .notCalculated
+    }
 }

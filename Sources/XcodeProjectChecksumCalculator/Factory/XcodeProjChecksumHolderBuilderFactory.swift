@@ -7,10 +7,7 @@ final class XcodeProjChecksumHolderBuilderFactory {
     private let fullPathProvider: FileElementFullPathProvider
     private let xcodeProjCache: XcodeProjCache
     
-    init(
-        fullPathProvider: FileElementFullPathProvider,
-        xcodeProjCache: XcodeProjCache)
-    {
+    init(fullPathProvider: FileElementFullPathProvider, xcodeProjCache: XcodeProjCache) {
         self.fullPathProvider = fullPathProvider
         self.xcodeProjCache = xcodeProjCache
     }
@@ -26,6 +23,9 @@ final class XcodeProjChecksumHolderBuilderFactory {
         let targetChecksumBuilder = TargetChecksumHolderBuilder(builder: fileChecksumBuilder)
         let projectChecksumBuilder = ProjectChecksumHolderBuilder(builder: targetChecksumBuilder)
         let projChecksumBuilder = ProjChecksumHolderBuilder(builder: projectChecksumBuilder)
-        return XcodeProjChecksumHolderBuilder(builder: projChecksumBuilder, xcodeProjCache: xcodeProjCache)
+        return XcodeProjChecksumHolderBuilder(
+            builder: projChecksumBuilder,
+            xcodeProjCache: xcodeProjCache
+        )
     }
 }

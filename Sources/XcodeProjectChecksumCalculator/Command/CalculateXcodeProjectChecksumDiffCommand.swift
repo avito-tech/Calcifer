@@ -40,16 +40,19 @@ public final class CalculateXcodeProjectChecksumDiffCommand: Command {
             arguments.get(self.secondChecksumPathArgument),
             name: Arguments.secondChecksumPath.rawValue
         )
-        let firstChecksumHolder = try projectChecksumHolder(path: firstChecksumPath)
-        let secondChecksumHolder = try projectChecksumHolder(path: secondChecksumPath)
-        let diff = NodeDiff.diff(was: firstChecksumHolder.node(), became: secondChecksumHolder.node())
-        diff.printTree()
+        let firstCodableChecksumNode = try obtainCodableChecksumNode(path: firstChecksumPath)
+        let secondCodableChecksumNode  = try obtainCodableChecksumNode(path: secondChecksumPath)
+        let diff = CodableChecksumNodeDiff.diff(
+            was: firstCodableChecksumNode,
+            became: secondCodableChecksumNode
+        )
+        diff.printLeafs()
     }
     
-    private func projectChecksumHolder(path: String) throws -> XcodeProjChecksumHolder<BaseChecksum> {
+    private func obtainCodableChecksumNode(path: String) throws -> CodableChecksumNode<String> {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         return try JSONDecoder().decode(
-            XcodeProjChecksumHolder<BaseChecksum>.self,
+            CodableChecksumNode<String>.self,
             from: data
         )
     }

@@ -1,6 +1,9 @@
 import Foundation
 
-public protocol ChecksumHolder: Hashable, CustomStringConvertible, Codable {
+public protocol ChecksumHolder: class {
     associatedtype ChecksumType: Checksum
-    var checksum: ChecksumType { get }
+    func obtainChecksum<ChecksumProducer: URLChecksumProducer>(
+        checksumProducer: ChecksumProducer
+    ) throws -> ChecksumType
+    where ChecksumProducer.ChecksumType == ChecksumType
 }
