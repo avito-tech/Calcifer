@@ -26,7 +26,7 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
     
     func update(targets: [TargetChecksumHolder<ChecksumType>]) {
         self.targets = Dictionary(
-            uniqueKeysWithValues: targets.map { ($0.name, $0)}
+            uniqueKeysWithValues: targets.map { ($0.name, $0) }
         )
         state = .notCalculated
     }

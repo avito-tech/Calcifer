@@ -17,8 +17,9 @@ public enum ChecksumState<ChecksumType: Checksum>: Codable {
         {
             self = .calculated(standardStreamMessage)
             return
+        } else {
+            self = .notCalculated
         }
-        self = .notCalculated
     }
     
     public func encode(to encoder: Encoder) throws {

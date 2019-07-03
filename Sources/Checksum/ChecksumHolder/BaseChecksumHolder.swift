@@ -13,9 +13,7 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     public let parent: BaseChecksumHolder<ChecksumType>?
     
     open var children: [String: BaseChecksumHolder<ChecksumType>] {
-        let errorClosure : () -> Void = { fatalError("Must be overrided") }
-        errorClosure()
-        return [:]
+        fatalError("Must be overriden")
     }
     
     public var state: ChecksumState<ChecksumType> = .notCalculated
@@ -25,12 +23,11 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         self.parent = parent
     }
     
-    
     open func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
         throws -> ChecksumType
         where ChecksumProducer.ChecksumType == ChecksumType
     {
-        fatalError("Must be overrided")
+        fatalError("Must be overriden")
     }
     
     public func cached(_ calculate: () throws -> (ChecksumType)) throws -> ChecksumType {
@@ -74,7 +71,7 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     }
     
     func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
-        if let _ = visited[name] {
+        guard visited[name] == nil else {
             return [:]
         }
         visited[name] = self

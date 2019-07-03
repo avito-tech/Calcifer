@@ -56,7 +56,7 @@ public final class TargetChecksumHolderBuilderTests: XCTestCase {
         let expectedChecksum = [
             target.filesPaths(sourceRoot: sourceRoot),
             filesPaths
-        ].sorted().reduce("", +)
+        ].sorted().joined()
         
         let parent = BaseChecksumHolder<TestChecksum>(name: "", parent: nil)
         let checksumHolder = try? builder.build(

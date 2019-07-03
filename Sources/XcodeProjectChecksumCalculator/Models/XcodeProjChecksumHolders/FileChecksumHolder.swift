@@ -22,5 +22,4 @@ class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumTyp
             try checksumProducer.checksum(input: fileURL)
         }
     }
-
 }

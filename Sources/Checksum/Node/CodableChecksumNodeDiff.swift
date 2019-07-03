@@ -46,24 +46,24 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
     }
     
     public func printLeafs() {
-        var printed = [String: CodableChecksumNodeDiff]()
-        printLeafs(printed: &printed)
+        var alreadyPrinted = Set<String>()
+        printLeafs(alreadyPrinted: &alreadyPrinted)
     }
     
-    private func printLeafs(printed: inout [String: CodableChecksumNodeDiff]) {
+    private func printLeafs(alreadyPrinted: inout Set<String>) {
+        guard alreadyPrinted.contains(description) == false else {
+            return
+        }
         let changedChildren = children.filter { !$0.noChanged }
         if changedChildren.isEmpty {
             if case .noChanged = self {
                 return
             }
-            if let _ = printed[description] {
-                return
-            }
-            printed[description] = self
+            alreadyPrinted.insert(description)
             print(description)
         } else {
             for child in children {
-                child.printLeafs(printed: &printed)
+                child.printLeafs(alreadyPrinted: &alreadyPrinted)
             }
         }
     }
