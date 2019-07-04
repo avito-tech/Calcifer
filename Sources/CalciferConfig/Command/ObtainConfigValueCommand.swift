@@ -63,7 +63,6 @@ public final class ObtainConfigValueCommand: Command {
                 dictionary: dictionary
             )
         }
-        Logger.verbose("Obtain value for keyPath \(keyPath) from config dictionary \(dictionary)")
         return "\(value)\n"
     }
     

@@ -29,7 +29,7 @@ public final class Daemon {
     }
     
     public func run() throws {
-        Logger.disableFileLog()
+        Logger.info("Daemon started")
         server["/daemon"] = websocket(text: { session, text in
             let arguments = text.chop().split(separator: " ").map { String($0) }
             let config = CommandRunConfig(
@@ -38,12 +38,10 @@ public final class Daemon {
             )
             self.executeCommand(config: config, for: session)
         }, binary: { session, binary in
-            
             if self.sessionWriter?.session != session {
                 Logger.warning("Multiple daemon connections")
                 return
             }
-            
             let data = Data(binary)
             let decoder = JSONDecoder()
             Logger.verbose("Daemon received data")
@@ -57,7 +55,6 @@ public final class Daemon {
             }
         },
         connected: { session in
-            
             let sessionWriter: WebSocketSessionWriter
             if let currentSessionWriter = self.sessionWriter,
                 currentSessionWriter.session == session
@@ -67,9 +64,7 @@ public final class Daemon {
                 sessionWriter = WebSocketSessionWriter(session: session)
                 self.sessionWriter = sessionWriter
             }
-            
             sessionWriter.state = .active
-            
             self.redirectLogs(to: sessionWriter)
             self.redirectStandardStream(to: sessionWriter)
             Logger.info("Daemon receive connection")
@@ -89,9 +84,10 @@ public final class Daemon {
     }
     
     private func executeCommand(config: CommandRunConfig, for session: WebSocketSession) {
+        Logger.verbose("Add operation with config \(config) to queue")
         // It is very important that this code is asynchronous. ( PERFORMANCE )
         let operation = BlockOperation {
-            
+            Logger.verbose("Start execute operation with config \(config)")
             if let currentCommandStateHolder = self.commandStateHolder,
                 currentCommandStateHolder.commandIdentifier == config.identifier
             {
@@ -137,12 +133,12 @@ public final class Daemon {
         let destination = CustomLoggerDestination(onNewMessage: { message in
             writer.write(DaemonMessage.logger(message))
         })
+        destination.minLevel = .verbose
         Logger.addDestination(destination)
     }
     
     private func clearLogsRedirect() {
-        Logger.removeAllDestinations()
-        Logger.addConsoleDestination()
+        Logger.removeAllDestinations(type: CustomLoggerDestination.self)
     }
     
     private func redirectStandardStream(to writer: WebSocketSessionWriter) {

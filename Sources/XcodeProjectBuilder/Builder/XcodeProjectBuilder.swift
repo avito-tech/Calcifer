@@ -33,6 +33,7 @@ public final class XcodeProjectBuilder {
                 "-sdk",
                 config.platform.rawValue,
                 "build",
+                "-UseNewBuildSystem=NO",
                 "BUILD_DIR=\(config.buildDirectoryPath)",
                 "OBJROOT=\(config.buildDirectoryPath)",
                 "ONLY_ACTIVE_ARCH=\(onlyActiveArchitecture)",
