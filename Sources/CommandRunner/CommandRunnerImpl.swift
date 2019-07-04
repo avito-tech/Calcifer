@@ -9,6 +9,8 @@ public final class CommandRunnerImpl: CommandRunner {
         overview: "Runs specific tasks related to remote cache"
     )
     
+    private var loggerСonfigured: Bool = false
+    
     public init() {}
     
     public func register(commands: [Command.Type]) {
@@ -22,6 +24,10 @@ public final class CommandRunnerImpl: CommandRunner {
         do {
             try TimeProfiler.measure("Execute command") {
                 let (command, parsedArguments) = try registry.command(for: config.arguments)
+                if loggerСonfigured == false {
+                    Logger.addFileDestination(folderName: command.command)
+                    loggerСonfigured = true
+                }
                 try command.run(with: parsedArguments, runner: self)
             }
             exitCode = 0

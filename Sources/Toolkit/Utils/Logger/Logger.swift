@@ -6,7 +6,6 @@ public final class Logger {
     private static var logger: SwiftyBeaver.Type = {
         let swiftyBeaver = SwiftyBeaver.self
         addConsoleDestination()
-        addFileDestination()
         return swiftyBeaver
     }()
     
@@ -21,6 +20,7 @@ public final class Logger {
     }
     
     private static func setupLevelString(_ destination: BaseDestination) {
+        // lowercase for xcode highlighting
         destination.levelString.verbose = "verbose"
         destination.levelString.debug = "debug"
         destination.levelString.info = "info"
@@ -39,25 +39,15 @@ public final class Logger {
         swiftyBeaver.addDestination(consoleDestination)
     }
     
-    public static func addFileDestination() {
+    public static func addFileDestination(folderName: String) {
         let swiftyBeaver = SwiftyBeaver.self
         let fileDestination = FileDestination()
         fileDestination.format = "$L: $M"
         setupLevelString(fileDestination)
-        let logFile = logFileURL()
+        let logFile = logFileURL(folderName: folderName)
         fileDestination.logFileURL = logFile
         fileDestination.asynchronously = false
         fileDestination.minLevel = .verbose
-        let commandRunnerFilter = Filters.Path.contains(
-            "CommandRunnerImpl",
-            required: true
-        )
-        fileDestination.addFilter(commandRunnerFilter)
-        let loggerFilter = Filters.Path.contains(
-            "Logger",
-            required: true
-        )
-        fileDestination.addFilter(loggerFilter)
         SwiftyBeaver.info("Write logs to \(logFile)")
         swiftyBeaver.addDestination(fileDestination)
     }
@@ -72,12 +62,12 @@ public final class Logger {
         swiftyBeaver.removeAllDestinations()
     }
     
-    public static func disableFileLog() {
+    public static func removeAllDestinations<DestinationType: BaseDestination>(type: DestinationType.Type) {
         let swiftyBeaver = SwiftyBeaver.self
         let destinations = swiftyBeaver.destinations
         for destination in destinations {
-            if let fileDestination = destination as? FileDestination {
-                swiftyBeaver.removeDestination(fileDestination)
+            if let destinationForRemoving = destination as? DestinationType {
+                swiftyBeaver.removeDestination(destinationForRemoving)
             }
         }
     }
@@ -143,11 +133,12 @@ public final class Logger {
         }
     }
     
-    private static func logFileURL() -> URL {
+    private static func logFileURL(folderName: String) -> URL {
         let fileManager = FileManager.default
         let pathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let logDirectory = pathProvider.calciferDirectory()
             .appendingPathComponent("logs")
+            .appendingPathComponent(folderName)
         try? fileManager.createDirectory(
             atPath: logDirectory,
             withIntermediateDirectories: true
