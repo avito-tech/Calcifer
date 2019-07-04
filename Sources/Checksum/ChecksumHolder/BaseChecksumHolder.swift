@@ -30,17 +30,6 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         fatalError("Must be overriden")
     }
     
-    public func cached(_ calculate: () throws -> (ChecksumType)) throws -> ChecksumType {
-        switch state {
-        case let .calculated(checksum):
-            return checksum
-        case .notCalculated:
-            let checksum = try calculate()
-            state = .calculated(checksum)
-            return checksum
-        }
-    }
-    
     public func smartCalculate<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
         throws -> ChecksumType
         where ChecksumProducer.ChecksumType == ChecksumType
@@ -70,7 +59,18 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         return try obtainChecksum(checksumProducer: checksumProducer)
     }
     
-    func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
+    public func cached(_ calculate: () throws -> (ChecksumType)) throws -> ChecksumType {
+        switch state {
+        case let .calculated(checksum):
+            return checksum
+        case .notCalculated:
+            let checksum = try calculate()
+            state = .calculated(checksum)
+            return checksum
+        }
+    }
+    
+    private func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
         guard visited[name] == nil else {
             return [:]
         }
