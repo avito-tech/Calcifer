@@ -67,7 +67,6 @@ final class ProjectChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> 
                 } catch {
                     buildError = error
                     stop.pointee = true
-                    return
                 }
             }
         }

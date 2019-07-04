@@ -76,7 +76,6 @@ public final class DSYMPatcher {
                 } catch {
                     symbolizeError = error
                     stop.pointee = true
-                    return
                 }
             }
         }

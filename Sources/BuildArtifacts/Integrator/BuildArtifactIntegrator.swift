@@ -47,7 +47,6 @@ public final class BuildArtifactIntegrator {
                 } catch {
                     intagrateError = error
                     stop.pointee = true
-                    return
                 }
             }
         }

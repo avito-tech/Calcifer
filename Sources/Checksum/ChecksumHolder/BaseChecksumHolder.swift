@@ -46,7 +46,6 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
                     } catch {
                         calculateError = error
                         stop.pointee = true
-                        return
                     }
                 }
             }
