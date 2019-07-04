@@ -49,8 +49,8 @@ final class TargetChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
         }
         
         targetChecksumHolder.update(
-            files: filesChecksums,
-            dependencies: dependenciesChecksums
+            filesChecksums: filesChecksums,
+            dependenciesChecksums: dependenciesChecksums
         )
         
         return targetChecksumHolder

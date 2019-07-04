@@ -74,7 +74,7 @@ final class ProjectChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> 
         if let error = buildError {
             throw error
         }
-        projectChecksumHolder.update(targets: cache.values)
+        projectChecksumHolder.update(targetsChecksums: cache.values)
     }
     
     private func build(

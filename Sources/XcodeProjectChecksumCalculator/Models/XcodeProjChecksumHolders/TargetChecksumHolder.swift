@@ -68,9 +68,9 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         }
     }
     
-    func update(files: [FileChecksumHolder<ChecksumType>], dependencies: [TargetChecksumHolder<ChecksumType>]) {
-        self.files = Dictionary(uniqueKeysWithValues: files.map { ($0.name, $0) })
-        self.dependencies = Dictionary(uniqueKeysWithValues: dependencies.map { ($0.name, $0) })
+    func update(filesChecksums: [FileChecksumHolder<ChecksumType>], dependenciesChecksums: [TargetChecksumHolder<ChecksumType>]) {
+        self.files = Dictionary(uniqueKeysWithValues: filesChecksums.map { ($0.name, $0) })
+        self.dependencies = Dictionary(uniqueKeysWithValues: dependenciesChecksums.map { ($0.name, $0) })
         state = .notCalculated
     }
     

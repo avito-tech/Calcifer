@@ -29,7 +29,7 @@ final class ProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
                 sourceRoot: sourceRoot
             )
         }
-        projChecksumHolder.update(projects: projectsChecksums)
+        projChecksumHolder.update(projectsChecksums: projectsChecksums)
         return projChecksumHolder
     }
 }

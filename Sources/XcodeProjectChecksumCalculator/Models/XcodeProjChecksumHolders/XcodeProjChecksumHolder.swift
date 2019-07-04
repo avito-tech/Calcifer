@@ -27,8 +27,8 @@ class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checks
         }
     }
     
-    func update(proj: ProjChecksumHolder<ChecksumType>) {
-        self.projs = [proj.name: proj]
+    func update(projChecksum: ProjChecksumHolder<ChecksumType>) {
+        self.projs = [projChecksum.name: projChecksum]
     }
     
     required init(from decoder: Decoder) throws {

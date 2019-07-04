@@ -24,8 +24,8 @@ class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumTyp
         }
     }
     
-    func update(projects: [ProjectChecksumHolder<ChecksumType>]) {
-        self.projects = Dictionary(uniqueKeysWithValues: projects.map { ($0.name, $0) })
+    func update(projectsChecksums: [ProjectChecksumHolder<ChecksumType>]) {
+        self.projects = Dictionary(uniqueKeysWithValues: projectsChecksums.map { ($0.name, $0) })
         state = .notCalculated
     }
 }
