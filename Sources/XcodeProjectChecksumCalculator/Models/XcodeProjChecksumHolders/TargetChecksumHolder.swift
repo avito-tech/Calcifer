@@ -1,5 +1,8 @@
 import Foundation
 import Checksum
+import XcodeProj
+import PathKit
+import Toolkit
 
 class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
@@ -15,21 +18,21 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     let targetName: String
     let productName: String
     let productType: TargetProductType
+    
+    let fullPathProvider: FileElementFullPathProvider = BaseFileElementFullPathProvider()
 
     var files = [String: FileChecksumHolder<ChecksumType>]()
     var dependencies = [String: TargetChecksumHolder<ChecksumType>]()
     
     init(
-        targetName: String,
-        productName: String,
-        productType: TargetProductType,
+        updateModel: TargetUpdateModel<ChecksumType>,
         parent: BaseChecksumHolder<ChecksumType>)
     {
-        self.targetName = targetName
-        self.productName = productName
-        self.productType = productType
+        self.targetName = updateModel.targetName
+        self.productName = updateModel.productName
+        self.productType = updateModel.productType
         super.init(
-            name: "\(targetName)-\(productName)-\(productType)",
+            name: updateModel.name,
             parent: parent
         )
     }
@@ -50,28 +53,80 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         return result
     }
     
-    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+    override public func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
         throws -> ChecksumType
         where ChecksumProducer.ChecksumType == ChecksumType
     {
-        return try cached {
-            let filesChecksum = try files.values.sorted().map {
-                try $0.obtainChecksum(checksumProducer: checksumProducer)
-            }.aggregate()
-            let dependenciesChecksum = try dependencies.values.sorted().map {
-                try $0.obtainChecksum(checksumProducer: checksumProducer)
-            }.aggregate()
-            return try [
-                filesChecksum,
-                dependenciesChecksum
-            ].aggregate()
+        let filesChecksum = try files.values.sorted().map {
+            try $0.obtainChecksum(checksumProducer: checksumProducer)
+        }.aggregate()
+        let dependenciesChecksum = try dependencies.values.sorted().map {
+            try $0.obtainChecksum(checksumProducer: checksumProducer)
+        }.aggregate()
+        return try [
+            filesChecksum,
+            dependenciesChecksum
+        ].aggregate()
+    }
+    
+    open func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {
+        guard updateModel.cache.read(updateModel.target) == nil else {
+            return
+        }
+        updateModel.cache.write(self, for: updateModel.target)
+        var shouldInvalidate = false
+        if try updateDependencies(updateModel: updateModel) {
+            shouldInvalidate = true
+        }
+        if try updateFiles(updateModel: updateModel) {
+            shouldInvalidate = true
+        }
+        if shouldInvalidate {
+            invalidate()
         }
     }
     
-    func update(filesChecksums: [FileChecksumHolder<ChecksumType>], dependenciesChecksums: [TargetChecksumHolder<ChecksumType>]) {
-        self.files = Dictionary(uniqueKeysWithValues: filesChecksums.map { ($0.name, $0) })
-        self.dependencies = Dictionary(uniqueKeysWithValues: dependenciesChecksums.map { ($0.name, $0) })
-        state = .notCalculated
+    private func updateDependencies(updateModel: TargetUpdateModel<ChecksumType>) throws -> Bool {
+        let updateModels = updateModel.target.dependencies
+            .compactMap { $0.target }
+            .map { target in
+                TargetUpdateModel<ChecksumType>(
+                    target: target,
+                    sourceRoot: updateModel.sourceRoot,
+                    cache: updateModel.cache
+                )
+            }.keyValue { $0.name }
+        return try updateModels.update(
+            childrenDictionary: &dependencies,
+            update: { (dependencyChecksumHolder: TargetChecksumHolder<ChecksumType>, dependencyUpdateModel: TargetUpdateModel<ChecksumType>) in
+                try dependencyChecksumHolder.reflectUpdate(updateModel: dependencyUpdateModel)
+            }, buildValue: { updateModel in
+                TargetChecksumHolder<ChecksumType>(
+                    updateModel: updateModel,
+                    parent: self
+                )
+            }
+        )
+    }
+    
+    private func updateFiles(updateModel: TargetUpdateModel<ChecksumType>) throws -> Bool {
+        let fileUrlDictionary = try updateModel.target
+            .fileElements()
+            .map { url in
+                try fullPathProvider.fullPath(for: url, sourceRoot: updateModel.sourceRoot).url
+            }.keyValue { $0.path }
+        return try fileUrlDictionary.update(
+            childrenDictionary: &files,
+            update: { (fileChecksumHolder: FileChecksumHolder<ChecksumType>, updateModel: URL) in
+                try fileChecksumHolder.reflectUpdate(updateModel: updateModel)
+            },
+            buildValue: { url in
+                FileChecksumHolder<ChecksumType>(
+                    fileURL: url,
+                    parent: self
+                )
+            }
+        )
     }
     
     override open var nodeChildren: [CodableChecksumNode<String>] {

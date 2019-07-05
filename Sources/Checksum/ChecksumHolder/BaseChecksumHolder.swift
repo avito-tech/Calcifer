@@ -16,18 +16,25 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         fatalError("Must be overriden")
     }
     
-    public var state: ChecksumState<ChecksumType> = .notCalculated
+    private var state: ChecksumState<ChecksumType> = .notCalculated
     
     public init(name: String, parent: BaseChecksumHolder<ChecksumType>?) {
         self.name = name
         self.parent = parent
     }
     
-    open func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+    public func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
         throws -> ChecksumType
         where ChecksumProducer.ChecksumType == ChecksumType
     {
-        fatalError("Must be overriden")
+        switch state {
+        case let .calculated(checksum):
+            return checksum
+        case .notCalculated:
+            let checksum = try calculateChecksum(checksumProducer: checksumProducer)
+            state = .calculated(checksum)
+            return checksum
+        }
     }
     
     public func smartCalculate<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
@@ -58,16 +65,14 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         return try obtainChecksum(checksumProducer: checksumProducer)
     }
     
-    public func cached(_ calculate: () throws -> (ChecksumType)) throws -> ChecksumType {
-        switch state {
-        case let .calculated(checksum):
-            return checksum
-        case .notCalculated:
-            let checksum = try calculate()
-            state = .calculated(checksum)
-            return checksum
-        }
+    open func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+        throws -> ChecksumType
+        where ChecksumProducer.ChecksumType == ChecksumType
+    {
+        fatalError("Must be overriden")
     }
+    
+//    open func reflectUpdate<T>(updateModel: T) throws {  fatalError("Must override") }
     
     private func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
         guard visited[name] == nil else {
@@ -87,6 +92,16 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
             }
         }
         return result
+    }
+    
+    public func invalidate() {
+        switch state {
+        case .calculated:
+            state = .notCalculated
+            parent?.invalidate()
+        case .notCalculated:
+            return
+        }
     }
     
     // MARK: - CustomStringConvertible

@@ -1,5 +1,8 @@
 import Foundation
+import XcodeProj
+import PathKit
 import Checksum
+import Toolkit
 
 class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
@@ -13,22 +16,39 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
         super.init(name: name, parent: parent)
     }
     
-    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+    override public func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
         throws -> ChecksumType
         where ChecksumProducer.ChecksumType == ChecksumType
     {
-        return try cached {
-            try targets.values.sorted().map {
-                try $0.obtainChecksum(checksumProducer: checksumProducer)
-            }.aggregate()
-        }
+        return try targets.values.sorted().map {
+            try $0.obtainChecksum(checksumProducer: checksumProducer)
+        }.aggregate()
     }
     
-    func update(targetsChecksums: [TargetChecksumHolder<ChecksumType>]) {
-        self.targets = Dictionary(
-            uniqueKeysWithValues: targetsChecksums.map { ($0.name, $0) }
+    func reflectUpdate(updateModel: ProjectUpdateModel) throws {
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumType>>()
+        let targetUpdateModelsDictionary = updateModel.project.targets
+            .map { target in
+                TargetUpdateModel<ChecksumType>(
+                    target: target,
+                    sourceRoot: updateModel.sourceRoot,
+                    cache: cache
+                )
+            }.keyValue { $0.name }
+        let shouldInvalidate = try targetUpdateModelsDictionary.update(
+            childrenDictionary: &targets,
+            update: { targetChecksumHolder, targetUpdateModel in
+                try targetChecksumHolder.reflectUpdate(updateModel: targetUpdateModel)
+            }, buildValue: { targetUpdateModel in
+                TargetChecksumHolder<ChecksumType>(
+                    updateModel: targetUpdateModel,
+                    parent: self
+                )
+            }
         )
-        state = .notCalculated
+        if shouldInvalidate {
+            invalidate()
+        }        
     }
 
 }
