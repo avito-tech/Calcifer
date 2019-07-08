@@ -4,9 +4,9 @@ import Toolkit
 
 open class URLChecksumProducer<ChecksumType: Checksum>: ChecksumProducer {
     
-    init() {}
+    public init() {}
     
-    public func checksum(input: URL) throws -> ChecksumType {
+    open func checksum(input: URL) throws -> ChecksumType {
         fatalError("Must be overriden")
     }
     

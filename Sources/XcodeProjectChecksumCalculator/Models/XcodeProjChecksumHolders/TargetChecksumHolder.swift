@@ -25,8 +25,6 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     var files = [String: FileChecksumHolder<ChecksumType>]()
     var dependencies = [String: TargetChecksumHolder<ChecksumType>]()
     
-    var updateIdentifier: String
-    
     init(
         updateModel: TargetUpdateModel<ChecksumType>,
         parent: BaseChecksumHolder<ChecksumType>,
@@ -38,7 +36,6 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         self.productType = updateModel.productType
         self.fullPathProvider = fullPathProvider
         self.checksumProducer = checksumProducer
-        self.updateIdentifier = ""
         super.init(
             name: updateModel.name,
             parent: parent
@@ -62,16 +59,10 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     }
     
     override public func calculateChecksum() throws -> ChecksumType {
-        let filesChecksum = try files.values.sorted().map {
-            try $0.obtainChecksum()
-        }.aggregate()
-        let dependenciesChecksum = try dependencies.values.sorted().map {
-            try $0.obtainChecksum()
-        }.aggregate()
-        return try [
-            filesChecksum,
-            dependenciesChecksum
-        ].aggregate()
+        return try children.values
+            .sorted()
+            .map { try $0.obtainChecksum() }
+            .aggregate()
     }
     
     open func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {

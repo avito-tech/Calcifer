@@ -91,7 +91,6 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     public func invalidate() {
         switch state {
         case .calculated:
-            debugPrint("invalidate \(name) parent \(parent?.name ?? "-")")
             state = .notCalculated
             parent?.invalidate()
         case .notCalculated:

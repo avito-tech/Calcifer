@@ -37,4 +37,8 @@ public final class BaseChecksum: Checksum {
         return lhs.stringValue == rhs.stringValue
     }
     
+    public static func < (lhs: BaseChecksum, rhs: BaseChecksum) -> Bool {
+        return lhs.stringValue < rhs.stringValue
+    }
+    
 }

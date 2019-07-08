@@ -29,4 +29,8 @@ final class TestChecksum: Checksum {
     static func == (lhs: TestChecksum, rhs: TestChecksum) -> Bool {
         return lhs.stringValue == rhs.stringValue
     }
+    
+    static func < (lhs: TestChecksum, rhs: TestChecksum) -> Bool {
+        return lhs.stringValue < rhs.stringValue
+    }
 }
