@@ -23,24 +23,23 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         self.parent = parent
     }
     
-    public func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    public func obtainChecksum() throws -> ChecksumType {
         switch state {
         case let .calculated(checksum):
             return checksum
         case .notCalculated:
-            let checksum = try calculateChecksum(checksumProducer: checksumProducer)
+            let checksum = try calculateChecksum()
             state = .calculated(checksum)
             return checksum
         }
     }
     
-    public func smartCalculate<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    public func updateState(checksum: ChecksumType) {
+        parent?.invalidate()
+        state = .calculated(checksum)
+    }
+    
+    public func smartChecksumCalculate() throws -> ChecksumType {
         var visited = [String: BaseChecksumHolder<ChecksumType>]()
         var notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
         var calculateError: Error?
@@ -49,7 +48,7 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
             array.enumerateKeysAndObjects(options: .concurrent) { _, object, stop in
                 if let node = object as? BaseChecksumHolder<ChecksumType> {
                     do {
-                        _ = try node.obtainChecksum(checksumProducer: checksumProducer)
+                        _ = try node.obtainChecksum()
                     } catch {
                         calculateError = error
                         stop.pointee = true
@@ -62,17 +61,12 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
             visited = notCalculatedLeafs
             notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
         }
-        return try obtainChecksum(checksumProducer: checksumProducer)
+        return try obtainChecksum()
     }
     
-    open func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    open func calculateChecksum() throws -> ChecksumType {
         fatalError("Must be overriden")
     }
-    
-//    open func reflectUpdate<T>(updateModel: T) throws {  fatalError("Must override") }
     
     private func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
         guard visited[name] == nil else {
@@ -97,10 +91,20 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     public func invalidate() {
         switch state {
         case .calculated:
+            debugPrint("invalidate \(name) parent \(parent?.name ?? "-")")
             state = .notCalculated
             parent?.invalidate()
         case .notCalculated:
             return
+        }
+    }
+    
+    public var calculated: Bool {
+        switch state {
+        case .calculated:
+            return true
+        case .notCalculated:
+            return false
         }
     }
     
@@ -143,6 +147,6 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     }
     
     open var nodeChildren: [CodableChecksumNode<String>] {
-        return children.values.map { $0.node() }
+        return children.values.sorted().map { $0.node() }
     }
 }

@@ -1,7 +1,8 @@
 import Foundation
 import Checksum
+import Toolkit
 
-class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
+final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
     override var children: [String : BaseChecksumHolder<ChecksumType>] {
         return projs
@@ -9,19 +10,27 @@ class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checks
     
     var projs = [String: ProjChecksumHolder<ChecksumType>]()
     
-    init(name: String) {
+    private let fullPathProvider: FileElementFullPathProvider
+    private let checksumProducer: URLChecksumProducer<ChecksumType>
+    private let cache = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
+    private let lock =  NSLock()
+    
+    init(
+        name: String,
+        fullPathProvider: FileElementFullPathProvider,
+        checksumProducer: URLChecksumProducer<ChecksumType>)
+    {
+        self.fullPathProvider = fullPathProvider
+        self.checksumProducer = checksumProducer
         super.init(
             name: name,
             parent: nil
         )
     }
     
-    override public func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    override public func calculateChecksum() throws -> ChecksumType {
         return try projs.values.sorted().map {
-            try $0.obtainChecksum(checksumProducer: checksumProducer)
+            try $0.obtainChecksum()
         }.aggregate()
     }
     
@@ -30,7 +39,10 @@ class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checks
             .map { proj in
                 ProjUpdateModel(
                     proj: proj,
-                    sourceRoot: updateModel.sourceRoot
+                    sourceRoot: updateModel.sourceRoot,
+                    cache: cache,
+                    lock: lock,
+                    updateIdentifier: updateModel.updateIdentifier
                 )
             }.keyValue { $0.name }
         let shouldInvalidate = try projectUpdateModelsDictionary.update(
@@ -40,7 +52,9 @@ class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checks
             }, buildValue: { projUpdateModel in
                 ProjChecksumHolder(
                     name: projUpdateModel.name,
-                    parent: self
+                    parent: self,
+                    fullPathProvider: fullPathProvider,
+                    checksumProducer: checksumProducer
                 )
             }
         )

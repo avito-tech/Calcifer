@@ -19,18 +19,26 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     let productName: String
     let productType: TargetProductType
     
-    let fullPathProvider: FileElementFullPathProvider = BaseFileElementFullPathProvider()
-
+    private let fullPathProvider: FileElementFullPathProvider
+    private let checksumProducer: URLChecksumProducer<ChecksumType>
+    
     var files = [String: FileChecksumHolder<ChecksumType>]()
     var dependencies = [String: TargetChecksumHolder<ChecksumType>]()
     
+    var updateIdentifier: String
+    
     init(
         updateModel: TargetUpdateModel<ChecksumType>,
-        parent: BaseChecksumHolder<ChecksumType>)
+        parent: BaseChecksumHolder<ChecksumType>,
+        fullPathProvider: FileElementFullPathProvider,
+        checksumProducer: URLChecksumProducer<ChecksumType>)
     {
         self.targetName = updateModel.targetName
         self.productName = updateModel.productName
         self.productType = updateModel.productType
+        self.fullPathProvider = fullPathProvider
+        self.checksumProducer = checksumProducer
+        self.updateIdentifier = ""
         super.init(
             name: updateModel.name,
             parent: parent
@@ -53,15 +61,12 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         return result
     }
     
-    override public func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    override public func calculateChecksum() throws -> ChecksumType {
         let filesChecksum = try files.values.sorted().map {
-            try $0.obtainChecksum(checksumProducer: checksumProducer)
+            try $0.obtainChecksum()
         }.aggregate()
         let dependenciesChecksum = try dependencies.values.sorted().map {
-            try $0.obtainChecksum(checksumProducer: checksumProducer)
+            try $0.obtainChecksum()
         }.aggregate()
         return try [
             filesChecksum,
@@ -70,10 +75,29 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     }
     
     open func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {
-        guard updateModel.cache.read(updateModel.target) == nil else {
+//        var shouldReturn = false
+//        updateModel.lock.withLock {
+//            if let _ = updateModel.cache.read(updateModel.name) {
+//                shouldReturn = true
+//                return
+//            }
+//            updateModel.cache.write(self, for: updateModel.name)
+//        }
+//        if shouldReturn {
+//            return
+//        }
+        
+        let shouldReturn: Bool = updateModel.lock.withLock {
+            if updateIdentifier == updateModel.updateIdentifier {
+                return true
+            }
+            self.updateIdentifier = updateModel.updateIdentifier
+            return false
+        }
+        if shouldReturn {
             return
         }
-        updateModel.cache.write(self, for: updateModel.target)
+        
         var shouldInvalidate = false
         if try updateDependencies(updateModel: updateModel) {
             shouldInvalidate = true
@@ -93,7 +117,9 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 TargetUpdateModel<ChecksumType>(
                     target: target,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: updateModel.cache
+                    cache: updateModel.cache,
+                    lock: updateModel.lock,
+                    updateIdentifier: updateModel.updateIdentifier
                 )
             }.keyValue { $0.name }
         return try updateModels.update(
@@ -101,10 +127,19 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
             update: { (dependencyChecksumHolder: TargetChecksumHolder<ChecksumType>, dependencyUpdateModel: TargetUpdateModel<ChecksumType>) in
                 try dependencyChecksumHolder.reflectUpdate(updateModel: dependencyUpdateModel)
             }, buildValue: { updateModel in
-                TargetChecksumHolder<ChecksumType>(
-                    updateModel: updateModel,
-                    parent: self
-                )
+                return updateModel.lock.withLock {
+                    if let cached = updateModel.cache.read(updateModel.name) {
+                        return cached
+                    }
+                    let targetChecksumHolder = TargetChecksumHolder<ChecksumType>(
+                        updateModel: updateModel,
+                        parent: self,
+                        fullPathProvider: fullPathProvider,
+                        checksumProducer: checksumProducer
+                    )
+                    updateModel.cache.write(targetChecksumHolder, for: updateModel.name)
+                    return targetChecksumHolder
+                }
             }
         )
     }
@@ -123,7 +158,8 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
             buildValue: { url in
                 FileChecksumHolder<ChecksumType>(
                     fileURL: url,
-                    parent: self
+                    parent: self,
+                    checksumProducer: checksumProducer
                 )
             }
         )

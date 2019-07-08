@@ -2,9 +2,17 @@ import Foundation
 import PathKit
 import Toolkit
 
-public protocol URLChecksumProducer: ChecksumProducer where Input == URL {}
+open class URLChecksumProducer<ChecksumType: Checksum>: ChecksumProducer {
+    
+    init() {}
+    
+    public func checksum(input: URL) throws -> ChecksumType {
+        fatalError("Must be overriden")
+    }
+    
+}
 
-public final class BaseURLChecksumProducer: URLChecksumProducer {
+public final class BaseURLChecksumProducer: URLChecksumProducer<BaseChecksum> {
     
     private let fileManager: FileManager
     
@@ -12,7 +20,7 @@ public final class BaseURLChecksumProducer: URLChecksumProducer {
         self.fileManager = fileManager
     }
     
-    public func checksum(input: URL) throws -> BaseChecksum {
+    public override func checksum(input: URL) throws -> BaseChecksum {
         let filesChecksum = try fileManager.files(at: input.path)
             .map { URL(fileURLWithPath: $0) }
             .map { checksum(for: $0) }

@@ -4,9 +4,10 @@ import Checksum
 import XcodeProj
 import PathKit
 
-class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
+final class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
 
-    let fileURL: URL
+    private let fileURL: URL
+    private let checksumProducer: URLChecksumProducer<ChecksumType>
     
     override var children: [String: BaseChecksumHolder<ChecksumType>] {
         return [:]
@@ -14,18 +15,26 @@ class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumTyp
     
     init(
         fileURL: URL,
-        parent: BaseChecksumHolder<ChecksumType>)
+        parent: BaseChecksumHolder<ChecksumType>,
+        checksumProducer: URLChecksumProducer<ChecksumType>)
     {
         self.fileURL = fileURL
+        self.checksumProducer = checksumProducer
         super.init(name: fileURL.path, parent: parent)
     }
     
-    override public func calculateChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    override public func calculateChecksum() throws -> ChecksumType {
         return try checksumProducer.checksum(input: fileURL)
     }
     
-    open func reflectUpdate(updateModel: URL) throws {}
+    public func reflectUpdate(updateModel: URL) throws {
+        guard calculated == true else {
+            return
+        }
+        let newChecksum = try checksumProducer.checksum(input: updateModel)
+        let currentChecksum = try obtainChecksum()
+        if newChecksum != currentChecksum {
+            updateState(checksum: newChecksum)
+        }
+    }
 }

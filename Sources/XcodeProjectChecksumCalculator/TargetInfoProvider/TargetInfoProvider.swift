@@ -10,19 +10,17 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         self.checksumHolder = checksumHolder
     }
     
-    public func dependencies<ChecksumProducer: URLChecksumProducer>(
+    public func dependencies(
         for target: String,
-        checksumProducer: ChecksumProducer,
         buildParametersChecksum: ChecksumType)
         throws -> [TargetInfo<ChecksumType>]
-        where ChecksumProducer.ChecksumType == ChecksumType
     {
         guard let checksumHolder = targetChecksumHolder({ $0.targetName == target }) else {
             throw XcodeProjectChecksumCalculatorError.emptyTargetChecksum(targetName: target)
         }
         let allFlatDependencies = checksumHolder.allFlatDependencies
         let result: [TargetInfo<ChecksumType>] = try allFlatDependencies.map({ targetChecksumHolder in
-            let targetChecksum = try targetChecksumHolder.obtainChecksum(checksumProducer: checksumProducer)
+            let targetChecksum = try targetChecksumHolder.obtainChecksum()
             let agregateChecksum = try [
                 targetChecksum,
                 buildParametersChecksum
@@ -38,19 +36,17 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         return result
     }
     
-    public func targetInfo<ChecksumProducer: URLChecksumProducer>(
+    public func targetInfo(
         for productName: String,
-        checksumProducer: ChecksumProducer,
         buildParametersChecksum: ChecksumType)
         throws -> TargetInfo<ChecksumType>
-        where ChecksumProducer.ChecksumType == ChecksumType
     {
         guard let checksumHolder = targetChecksumHolder({ $0.productName == productName }) else {
             throw XcodeProjectChecksumCalculatorError.emptyProductChecksum(
                 productName: productName
             )
         }
-        let targetChecksum = try checksumHolder.obtainChecksum(checksumProducer: checksumProducer)
+        let targetChecksum = try checksumHolder.obtainChecksum()
         let agregateChecksum = try [
             targetChecksum,
             buildParametersChecksum

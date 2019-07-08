@@ -8,16 +8,22 @@ final class TargetUpdateModel<ChecksumType: Checksum> {
     
     let target: PBXTarget
     let sourceRoot: Path
-    let cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumType>>
+    let cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let lock: NSLock
+    let updateIdentifier: String
     
     init(
         target: PBXTarget,
         sourceRoot: Path,
-        cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumType>>)
+        cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>,
+        lock: NSLock,
+        updateIdentifier: String)
     {
         self.target = target
         self.sourceRoot = sourceRoot
         self.cache = cache
+        self.lock = lock
+        self.updateIdentifier = updateIdentifier
     }
     
     var targetName: String {

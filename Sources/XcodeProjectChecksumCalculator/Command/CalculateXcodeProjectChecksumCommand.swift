@@ -34,10 +34,12 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
             fullPathProvider: BaseFileElementFullPathProvider(),
             xcodeProjCache: XcodeProjCacheImpl.shared
         )
+        let xcodeProjChecksumCache = XcodeProjChecksumCacheImpl.shared
         let builder = factory.projChecksumHolderBuilder(
             checksumProducer: BaseURLChecksumProducer(
                 fileManager: FileManager.default
-            )
+            ),
+            xcodeProjChecksumCache: xcodeProjChecksumCache
         )
         let xcodeProj = try TimeProfiler.measure("Obtain XcodeProj") {
             try XcodeProjCacheImpl.shared.obtainXcodeProj(projectPath: projectPath)

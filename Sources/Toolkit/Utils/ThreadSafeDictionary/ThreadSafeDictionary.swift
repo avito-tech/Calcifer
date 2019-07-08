@@ -1,9 +1,8 @@
 import Foundation
-import Basic
 
 public final class ThreadSafeDictionary<Key: Hashable, Value> {
     
-    private let lock = Lock()
+    private let lock = NSLock()
     private var dictionary = [Key: Value]()
     
     public func read(_ key: Key) -> (Value?) {
@@ -27,4 +26,13 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     
     public init() {}
     
+}
+
+
+extension NSLock {
+    public func withLock<T> (_ body: () throws -> T) rethrows -> T {
+        lock()
+        defer { unlock() }
+        return try body()
+    }
 }
