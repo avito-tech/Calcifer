@@ -5,9 +5,31 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     private let lock = NSLock()
     private var dictionary = [Key: Value]()
     
-    public func read(_ key: Key) -> (Value?) {
+    public func read(_ key: Key) -> Value? {
         return lock.withLock {
             dictionary[key]
+        }
+    }
+    
+    public func createIfNotExist(_ key: Key, create: (Key) -> (Value)) -> Value {
+        return lock.withLock {
+            guard let value = dictionary[key] else {
+                let value = create(key)
+                dictionary[key] = value
+                return value
+            }
+            return value
+        }
+    }
+    
+    public func createIfNotExist(_ key: Key, create: (Key) throws -> (Value)) throws -> Value {
+        return try lock.withLock {
+            guard let value = dictionary[key] else {
+                let value = try create(key)
+                dictionary[key] = value
+                return value
+            }
+            return value
         }
     }
     

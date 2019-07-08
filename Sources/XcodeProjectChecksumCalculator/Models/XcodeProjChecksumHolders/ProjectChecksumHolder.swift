@@ -33,15 +33,12 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
     
     func reflectUpdate(updateModel: ProjectUpdateModel<ChecksumType>) throws {
         let cache = updateModel.cache
-        let lock =  updateModel.lock
         let targetUpdateModelsDictionary = updateModel.project.targets
             .map { target in
                 TargetUpdateModel<ChecksumType>(
                     target: target,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: cache,
-                    lock: lock,
-                    updateIdentifier: updateModel.updateIdentifier
+                    cache: cache
                 )
             }.keyValue { $0.name }
         let shouldInvalidate = try targetUpdateModelsDictionary.update(
@@ -49,21 +46,17 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
             update: { targetChecksumHolder, targetUpdateModel in
                 try targetChecksumHolder.reflectUpdate(updateModel: targetUpdateModel)
             }, buildValue: { targetUpdateModel in
-                return lock.withLock {
-                    if let cached = cache.read(targetUpdateModel.name) {                        
-                        return cached
-                    }
-                    let targetChecksumHolder = TargetChecksumHolder<ChecksumType>(
+                cache.createIfNotExist(targetUpdateModel.name) { _ in
+                    TargetChecksumHolder<ChecksumType>(
                         updateModel: targetUpdateModel,
                         parent: self,
                         fullPathProvider: fullPathProvider,
                         checksumProducer: checksumProducer
                     )
-                    cache.write(targetChecksumHolder, for: targetUpdateModel.name)
-                    return targetChecksumHolder
                 }
             }
         )
+        
         if shouldInvalidate {
             invalidate()
         }        

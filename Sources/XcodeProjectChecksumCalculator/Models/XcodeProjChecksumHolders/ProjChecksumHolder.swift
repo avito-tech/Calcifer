@@ -37,16 +37,12 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
     }
     
     func reflectUpdate(updateModel: ProjUpdateModel<ChecksumType>) throws {
-        let cache = updateModel.cache
-        let lock =  updateModel.lock
         let projectUpdateModelsDictionary = updateModel.proj.projects
             .map { project in
                 ProjectUpdateModel(
                     project: project,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: cache,
-                    lock: lock,
-                    updateIdentifier: updateModel.updateIdentifier
+                    cache: updateModel.cache
                 )
             }.keyValue { $0.name }
         let shouldInvalidate = try projectUpdateModelsDictionary.update(

@@ -58,8 +58,7 @@ final class XcodeProjChecksumHolderBuilder<ChecksumCache: XcodeProjChecksumCache
         let xcodeProjUpdateModel = XcodeProjUpdateModel(
             xcodeProj: xcodeProj,
             projectPath: projectPath,
-            sourceRoot: sourceRoot,
-            updateIdentifier: UUID().uuidString
+            sourceRoot: sourceRoot
         )
         try xcodeProjChecksumHolder.reflectUpdate(updateModel: xcodeProjUpdateModel)
         return xcodeProjChecksumHolder

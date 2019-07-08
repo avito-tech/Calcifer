@@ -75,29 +75,6 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     }
     
     open func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {
-//        var shouldReturn = false
-//        updateModel.lock.withLock {
-//            if let _ = updateModel.cache.read(updateModel.name) {
-//                shouldReturn = true
-//                return
-//            }
-//            updateModel.cache.write(self, for: updateModel.name)
-//        }
-//        if shouldReturn {
-//            return
-//        }
-        
-        let shouldReturn: Bool = updateModel.lock.withLock {
-            if updateIdentifier == updateModel.updateIdentifier {
-                return true
-            }
-            self.updateIdentifier = updateModel.updateIdentifier
-            return false
-        }
-        if shouldReturn {
-            return
-        }
-        
         var shouldInvalidate = false
         if try updateDependencies(updateModel: updateModel) {
             shouldInvalidate = true
@@ -117,28 +94,21 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 TargetUpdateModel<ChecksumType>(
                     target: target,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: updateModel.cache,
-                    lock: updateModel.lock,
-                    updateIdentifier: updateModel.updateIdentifier
+                    cache: updateModel.cache
                 )
             }.keyValue { $0.name }
         return try updateModels.update(
             childrenDictionary: &dependencies,
             update: { (dependencyChecksumHolder: TargetChecksumHolder<ChecksumType>, dependencyUpdateModel: TargetUpdateModel<ChecksumType>) in
-                try dependencyChecksumHolder.reflectUpdate(updateModel: dependencyUpdateModel)
+                // DO NOT UPDATE DEPENDENCY! THEY ALREADY UPDATED BY PROJECT
             }, buildValue: { updateModel in
-                return updateModel.lock.withLock {
-                    if let cached = updateModel.cache.read(updateModel.name) {
-                        return cached
-                    }
-                    let targetChecksumHolder = TargetChecksumHolder<ChecksumType>(
+                updateModel.cache.createIfNotExist(updateModel.name) { _ in
+                    TargetChecksumHolder<ChecksumType>(
                         updateModel: updateModel,
                         parent: self,
                         fullPathProvider: fullPathProvider,
                         checksumProducer: checksumProducer
                     )
-                    updateModel.cache.write(targetChecksumHolder, for: updateModel.name)
-                    return targetChecksumHolder
                 }
             }
         )

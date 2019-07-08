@@ -40,9 +40,7 @@ final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<
                 ProjUpdateModel(
                     proj: proj,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: cache,
-                    lock: lock,
-                    updateIdentifier: updateModel.updateIdentifier
+                    cache: cache
                 )
             }.keyValue { $0.name }
         let shouldInvalidate = try projectUpdateModelsDictionary.update(
