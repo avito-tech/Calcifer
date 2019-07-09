@@ -4,63 +4,78 @@ import Checksum
 import PathKit
 import Toolkit
 
-final class TargetChecksumHolderBuilder<Builder: URLChecksumProducer> {
+final class TargetChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
         
-    let builder: FileChecksumHolderBuilder<Builder>
+    let builder: FileChecksumHolderBuilder<ChecksumProducer>
     
-    init(builder: FileChecksumHolderBuilder<Builder>) {
+    init(builder: FileChecksumHolderBuilder<ChecksumProducer>) {
         self.builder = builder
     }
     
     @discardableResult
     func build(
+        parent: BaseChecksumHolder<ChecksumProducer.ChecksumType>,
         target: PBXTarget,
         sourceRoot: Path,
-        cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>)
-        throws -> TargetChecksumHolder<Builder.ChecksumType>
+        cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumProducer.ChecksumType>>)
+        throws -> TargetChecksumHolder<ChecksumProducer.ChecksumType>
     {
         if let cachedChecksum = cache.read(target) {
             return cachedChecksum
         }
-        var summarizedChecksums = [Builder.ChecksumType]()
+        let targetChecksumHolder = try createTargetChecksumHolder(
+            target: target,
+            parent: parent
+        )
+        cache.write(targetChecksumHolder, for: target)
+        
         let dependenciesTargets = target.dependencies.compactMap { $0.target }
-        let dependenciesChecksums = try dependenciesTargets.map { dependency -> TargetChecksumHolder<Builder.ChecksumType> in
+        let dependenciesChecksums = try dependenciesTargets.map {
+                dependency -> TargetChecksumHolder<ChecksumProducer.ChecksumType> in
             try build(
+                parent: targetChecksumHolder,
                 target: dependency,
                 sourceRoot: sourceRoot,
                 cache: cache
             )
         }
-        let dependenciesChecksum = try dependenciesChecksums.checksum()
-        summarizedChecksums.append(dependenciesChecksum)
         
         let filesChecksums = try target.fileElements().map { file in
-            try builder.build(file: file, sourceRoot: sourceRoot)
+            try builder.build(
+                parent: targetChecksumHolder,
+                file: file,
+                sourceRoot: sourceRoot
+            )
         }
-        let filesChecksum = try filesChecksums.checksum()
-        summarizedChecksums.append(filesChecksum)
         
-        let summarizedChecksum = try summarizedChecksums.aggregate()
+        targetChecksumHolder.update(
+            files: filesChecksums,
+            dependencies: dependenciesChecksums
+        )
         
+        return targetChecksumHolder
+    }
+    
+    private func createTargetChecksumHolder(target: PBXTarget, parent: BaseChecksumHolder<ChecksumProducer.ChecksumType>)
+        throws -> TargetChecksumHolder<ChecksumProducer.ChecksumType>
+    {
         var productType: TargetProductType
         if let productTypeName = target.productType?.rawValue,
             let currentProductType = TargetProductType(rawValue: productTypeName) {
-             productType = currentProductType
+            productType = currentProductType
         } else {
             productType = .none
         }
         
         let productName = try obtainProductName(for: target, type: productType)
         
-        let targetChecksumHolder = TargetChecksumHolder<Builder.ChecksumType>(
+        let targetChecksumHolder = TargetChecksumHolder<ChecksumProducer.ChecksumType>(
             targetName: target.name,
             productName: productName,
             productType: productType,
-            checksum: summarizedChecksum,
-            files: filesChecksums,
-            dependencies: dependenciesChecksums
+            parent: parent
         )
-        cache.write(targetChecksumHolder, for: target)
+        
         return targetChecksumHolder
     }
     

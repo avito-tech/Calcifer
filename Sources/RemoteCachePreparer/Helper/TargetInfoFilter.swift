@@ -13,11 +13,13 @@ public final class TargetInfoFilter {
     
     public func obtainRequiredTargets(
         targetName: String,
+        checksumProducer: BaseURLChecksumProducer,
         buildParametersChecksum: BaseChecksum)
         throws -> [TargetInfo<BaseChecksum>]
     {
         let targetInfos = try targetInfoProvider.dependencies(
             for: targetName,
+            checksumProducer: checksumProducer,
             buildParametersChecksum: buildParametersChecksum
         )
         return targetInfos

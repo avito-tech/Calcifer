@@ -1,20 +1,25 @@
 import Foundation
 import Checksum
 
-struct FileChecksumHolder<C: Checksum>: ChecksumHolder {
-    let description: String
-    let checksum: C
-}
+class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
 
-extension FileChecksumHolder: TreeNodeConvertable {
+    let fileURL: URL
     
-    func node() -> TreeNode<C> {
-        let children = [TreeNode<C>]()
-        return TreeNode<C>(
-            name: description,
-            value: checksum,
-            children: children
-        )
+    override var children: [String: BaseChecksumHolder<ChecksumType>] {
+        return [:]
     }
     
+    init(fileURL: URL, parent: BaseChecksumHolder<ChecksumType>) {
+        self.fileURL = fileURL
+        super.init(name: fileURL.path, parent: parent)
+    }
+    
+    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+        throws -> ChecksumType
+        where ChecksumProducer.ChecksumType == ChecksumType
+    {
+        return try cached {
+            try checksumProducer.checksum(input: fileURL)
+        }
+    }
 }

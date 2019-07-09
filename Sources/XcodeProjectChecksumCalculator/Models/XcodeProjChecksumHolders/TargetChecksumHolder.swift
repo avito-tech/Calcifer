@@ -1,38 +1,47 @@
 import Foundation
 import Checksum
 
-class TargetChecksumHolder<C: Checksum>: ChecksumHolder {
+class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
+    
+    override var children: [String: BaseChecksumHolder<ChecksumType>] {
+        var childrenChecksums = [String: BaseChecksumHolder<ChecksumType>]()
+        let filesChecksums = files as [String: BaseChecksumHolder<ChecksumType>]
+        let dependenciesChecksums = dependencies as [String: BaseChecksumHolder<ChecksumType>]
+        childrenChecksums = childrenChecksums.merging(filesChecksums, uniquingKeysWith: { (first, _) in first })
+        childrenChecksums = childrenChecksums.merging(dependenciesChecksums, uniquingKeysWith: { (first, _) in first })
+        return childrenChecksums
+    }
+    
     let targetName: String
     let productName: String
     let productType: TargetProductType
-    let checksum: C
-    let files: [FileChecksumHolder<C>]
-    let dependencies: [TargetChecksumHolder<C>]
+
+    var files = [String: FileChecksumHolder<ChecksumType>]()
+    var dependencies = [String: TargetChecksumHolder<ChecksumType>]()
     
     init(
         targetName: String,
         productName: String,
         productType: TargetProductType,
-        checksum: C,
-        files: [FileChecksumHolder<C>],
-        dependencies: [TargetChecksumHolder<C>])
+        parent: BaseChecksumHolder<ChecksumType>)
     {
         self.targetName = targetName
         self.productName = productName
         self.productType = productType
-        self.checksum = checksum
-        self.files = files
-        self.dependencies = dependencies
+        super.init(
+            name: "\(targetName)-\(productName)-\(productType)",
+            parent: parent
+        )
     }
     
-    private var cachedAllFlatDependencies: [TargetChecksumHolder<C>]?
+    private var cachedAllFlatDependencies: [TargetChecksumHolder<ChecksumType>]?
     
-    var allFlatDependencies: [TargetChecksumHolder<C>] {
+    var allFlatDependencies: [TargetChecksumHolder<ChecksumType>] {
         if let cachedAllDependencies = cachedAllFlatDependencies {
             return cachedAllDependencies
         }
-        let all = dependencies + dependencies.flatMap { $0.allFlatDependencies }
-        var uniq = [String: TargetChecksumHolder<C>]()
+        let all = dependencies.values + dependencies.flatMap { $0.value.allFlatDependencies }
+        var uniq = [String: TargetChecksumHolder<ChecksumType>]()
         for dependency in all {
             uniq[dependency.targetName] = dependency
         }
@@ -41,68 +50,40 @@ class TargetChecksumHolder<C: Checksum>: ChecksumHolder {
         return result
     }
     
-    // MARK: - CustomStringConvertible
-    var description: String {
-        return targetName
+    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+        throws -> ChecksumType
+        where ChecksumProducer.ChecksumType == ChecksumType
+    {
+        return try cached {
+            let filesChecksum = try files.values.sorted().map {
+                try $0.obtainChecksum(checksumProducer: checksumProducer)
+            }.aggregate()
+            let dependenciesChecksum = try dependencies.values.sorted().map {
+                try $0.obtainChecksum(checksumProducer: checksumProducer)
+            }.aggregate()
+            return try [
+                filesChecksum,
+                dependenciesChecksum
+            ].aggregate()
+        }
     }
     
-    // MARK: - Codable
-    enum CodingKeys: String, CodingKey {
-        case targetName
-        case productName
-        case productType
-        case checksum
-        case files
-        case dependencies
+    func update(files: [FileChecksumHolder<ChecksumType>], dependencies: [TargetChecksumHolder<ChecksumType>]) {
+        self.files = Dictionary(uniqueKeysWithValues: files.map { ($0.name, $0) })
+        self.dependencies = Dictionary(uniqueKeysWithValues: dependencies.map { ($0.name, $0) })
+        state = .notCalculated
     }
     
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(targetName, forKey: .targetName)
-        try container.encode(productName, forKey: .productName)
-        try container.encode(productType.rawValue, forKey: .productType)
-        try container.encode(checksum, forKey: .checksum)
-        try container.encode(files, forKey: .files)
-        // Performance issue
-        let dependenciesNames = dependencies.map({ $0.targetName })
-        try container.encode(dependenciesNames, forKey: .dependencies)
-    }
-    
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        targetName = try container.decode(String.self, forKey: .targetName)
-        productName = try container.decode(String.self, forKey: .productName)
-        productType = try container.decode(TargetProductType.self, forKey: .productType)
-        checksum = try container.decode(C.self, forKey: .checksum)
-        files = try container.decode([FileChecksumHolder<C>].self, forKey: .files)
-        // Performance issue
-        dependencies = [TargetChecksumHolder<C>]()
-    }
-    
-    static func == (lhs: TargetChecksumHolder<C>, rhs: TargetChecksumHolder<C>) -> Bool {
-        return lhs.targetName == rhs.targetName &&
-            lhs.productName == rhs.productName &&
-            lhs.productType == rhs.productType &&
-            lhs.checksum == rhs.checksum
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(targetName)
-        hasher.combine(productName)
-        hasher.combine(productType)
-        hasher.combine(checksum)
-    }
-}
-
-extension TargetChecksumHolder: TreeNodeConvertable {
-    
-    func node() -> TreeNode<C> {
-        let children = files.nodeList() + dependencies.nodeList()
-        return TreeNode<C>(
-            name: targetName,
-            value: checksum,
-            children: children
-        )
+    override open var nodeChildren: [CodableChecksumNode<String>] {
+        let dependenciesNodes = dependencies.values.map { dependency in
+            CodableChecksumNode<String>(
+                name: dependency.name,
+                value: dependency.nodeValue,
+                children: []
+            )
+        }
+        let filesNodes = files.values.map{ $0.node() }
+        return dependenciesNodes + filesNodes
     }
     
 }

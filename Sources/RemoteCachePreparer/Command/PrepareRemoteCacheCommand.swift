@@ -6,6 +6,7 @@ import CalciferConfig
 import Foundation
 import ShellCommand
 import SPMUtility
+import Checksum
 import Toolkit
 
 public final class PrepareRemoteCacheCommand: Command {
@@ -66,10 +67,13 @@ public final class PrepareRemoteCacheCommand: Command {
             shellExecutor: shellExecutor
         )
         
+        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        
         try TimeProfiler.measure("Prepare remote cache") {
             try preparer.prepare(
                 config: config,
                 params: params,
+                checksumProducer: checksumProducer,
                 sourcePath: sourcePath
             )
         }

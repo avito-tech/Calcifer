@@ -1,20 +1,37 @@
 import Foundation
 import Checksum
 
-struct XcodeProjChecksumHolder<C: Checksum>: ChecksumHolder {
-    let proj: ProjChecksumHolder<C>
-    let description: String
-    let checksum: C
-}
-
-extension XcodeProjChecksumHolder: TreeNodeConvertable {
+class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    func node() -> TreeNode<C> {
-        return TreeNode(
-            name: description,
-            value: checksum,
-            children: [proj.node()]
+    override var children: [String : BaseChecksumHolder<ChecksumType>] {
+        return projs
+    }
+    
+    var projs = [String: ProjChecksumHolder<ChecksumType>]()
+    
+    init(name: String) {
+        super.init(
+            name: name,
+            parent: nil
         )
     }
     
+    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
+        throws -> ChecksumType
+        where ChecksumProducer.ChecksumType == ChecksumType
+    {
+        return try cached {
+            try projs.values.sorted().map {
+                try $0.obtainChecksum(checksumProducer: checksumProducer)
+            }.aggregate()
+        }
+    }
+    
+    func update(proj: ProjChecksumHolder<ChecksumType>) {
+        self.projs = [proj.name: proj]
+    }
+    
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
+    }
 }

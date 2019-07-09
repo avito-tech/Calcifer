@@ -5,33 +5,31 @@ import Checksum
 import PathKit
 import Toolkit
 
-final class XcodeProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
+final class XcodeProjChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
     
-    private let builder: ProjChecksumHolderBuilder<Builder>
+    private let builder: ProjChecksumHolderBuilder<ChecksumProducer>
     private let xcodeProjCache: XcodeProjCache
     
     init(
-        builder: ProjChecksumHolderBuilder<Builder>,
+        builder: ProjChecksumHolderBuilder<ChecksumProducer>,
         xcodeProjCache: XcodeProjCache)
     {
         self.builder = builder
         self.xcodeProjCache = xcodeProjCache
     }
     
-    func build(projectPath: String) throws -> XcodeProjChecksumHolder<Builder.ChecksumType> {
-        let xcodeproject = try TimeProfiler.measure("Obtain XcodeProj") {
-            try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
-        }
-        let pbxproj = xcodeproject.pbxproj
+    func build(xcodeProj: XcodeProj, projectPath: String) throws -> XcodeProjChecksumHolder<ChecksumProducer.ChecksumType> {
+        let pbxproj = xcodeProj.pbxproj
         let path = Path(projectPath)
         let sourceRoot = Path(components: Array(path.components.dropLast()))
-        let projChecksum = try TimeProfiler.measure("Build XcodeProj checksum") {
-            try builder.build(pbxproj: pbxproj, sourceRoot: sourceRoot)
-        }
-        return XcodeProjChecksumHolder(
-            proj: projChecksum,
-            description: projectPath,
-            checksum: projChecksum.checksum
+        
+        let xcodeProjChecksumHolder = XcodeProjChecksumHolder<ChecksumProducer.ChecksumType>(
+            name: path.url.path
         )
+        
+        let projChecksum = try builder.build(parent: xcodeProjChecksumHolder, pbxproj: pbxproj, sourceRoot: sourceRoot)
+        xcodeProjChecksumHolder.update(proj: projChecksum)
+        
+        return xcodeProjChecksumHolder
     }
 }

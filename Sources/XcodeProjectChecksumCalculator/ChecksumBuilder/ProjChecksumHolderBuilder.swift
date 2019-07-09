@@ -12,18 +12,24 @@ final class ProjChecksumHolderBuilder<Builder: URLChecksumProducer> {
     }
     
     func build(
+        parent: XcodeProjChecksumHolder<Builder.ChecksumType>,
         pbxproj: PBXProj,
         sourceRoot: Path)
         throws
         -> ProjChecksumHolder<Builder.ChecksumType>
     {
-        let projectsChecksums = try pbxproj.projects.map { project in
-            try builder.build(project: project, sourceRoot: sourceRoot)
-        }
-        let checksum = try projectsChecksums.checksum()
-        return ProjChecksumHolder<Builder.ChecksumType>(
-            projects: projectsChecksums,
-            checksum: checksum
+        let projChecksumHolder = ProjChecksumHolder<Builder.ChecksumType>(
+            name: "pbxproj-\(pbxproj.objectVersion)-\(pbxproj.archiveVersion)",
+            parent: parent
         )
+        let projectsChecksums = try pbxproj.projects.map { project in
+            try builder.build(
+                parent: projChecksumHolder,
+                project: project,
+                sourceRoot: sourceRoot
+            )
+        }
+        projChecksumHolder.update(projects: projectsChecksums)
+        return projChecksumHolder
     }
 }

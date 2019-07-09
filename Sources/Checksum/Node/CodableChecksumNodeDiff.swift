@@ -1,15 +1,15 @@
 import Foundation
 
-public enum NodeDiff<Value: Checksum>: CustomStringConvertible {
+public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConvertible {
     case noChanged
-    case changed(was: TreeNode<Value>, became: TreeNode<Value>, children: [NodeDiff])
-    case appear(became: TreeNode<Value>, children: [NodeDiff])
-    case disappear(was: TreeNode<Value>, children: [NodeDiff])
+    case changed(was: CodableChecksumNode<Value>, became: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
+    case appear(became: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
+    case disappear(was: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
     
-    public var children: [NodeDiff] {
+    public var children: [CodableChecksumNodeDiff] {
         switch self {
         case .noChanged:
-            return [NodeDiff]()
+            return [CodableChecksumNodeDiff]()
         case let .changed(_, _, children):
             return children
         case let .appear(_, children):
@@ -32,26 +32,50 @@ public enum NodeDiff<Value: Checksum>: CustomStringConvertible {
         }
     }
     
-    public func printTree(level: Int = 0) {
-        if case .noChanged = self {
-            return
-        }
-        let offset = String(repeating: " ", count: level)
-        print("\(offset)\(self.description)")
-        
-        for child in children {
-            child.printTree(level: level + 4)
+    public var noChanged: Bool {
+        switch self {
+        case .noChanged:
+            return true
+        case .changed(_, _, _):
+            return false
+        case .appear(_, _):
+            return false
+        case .disappear(_, _):
+            return false
         }
     }
     
-    public static func diff(was: TreeNode<Value>?, became: TreeNode<Value>?) -> NodeDiff {
+    public func printLeafs() {
+        var alreadyPrinted = Set<String>()
+        printLeafs(alreadyPrinted: &alreadyPrinted)
+    }
+    
+    private func printLeafs(alreadyPrinted: inout Set<String>) {
+        guard alreadyPrinted.contains(description) == false else {
+            return
+        }
+        let changedChildren = children.filter { !$0.noChanged }
+        if changedChildren.isEmpty {
+            if case .noChanged = self {
+                return
+            }
+            alreadyPrinted.insert(description)
+            print(description)
+        } else {
+            for child in children {
+                child.printLeafs(alreadyPrinted: &alreadyPrinted)
+            }
+        }
+    }
+    
+    public static func diff(was: CodableChecksumNode<Value>?, became: CodableChecksumNode<Value>?) -> CodableChecksumNodeDiff {
         
         if was == became {
             return .noChanged
         }
         
         var allChildren = [String]()
-        var wasChildren = [String: TreeNode<Value>]()
+        var wasChildren = [String: CodableChecksumNode<Value>]()
         if let was = was {
             wasChildren = Dictionary(uniqueKeysWithValues:
                 was.children.compactMap({ ($0.name, $0) })
@@ -62,7 +86,7 @@ public enum NodeDiff<Value: Checksum>: CustomStringConvertible {
                 allChildren.append($0)
             }
         }
-        var becameChildren = [String: TreeNode<Value>]()
+        var becameChildren = [String: CodableChecksumNode<Value>]()
         if let became = became {
             becameChildren = Dictionary(uniqueKeysWithValues:
                 became.children.compactMap({ ($0.name, $0) })

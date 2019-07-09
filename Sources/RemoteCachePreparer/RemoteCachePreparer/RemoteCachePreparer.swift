@@ -48,12 +48,12 @@ final class RemoteCachePreparer {
     func prepare(
         config: CalciferConfig,
         params: XcodeBuildEnvironmentParameters,
+        checksumProducer: BaseURLChecksumProducer,
         sourcePath: String)
         throws
     {
         let podsProjectPath = params.podsProjectPath
         
-        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
         let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
         
         try params.save(to: calciferPathProvider.calciferEnvironmentFilePath())
@@ -63,7 +63,9 @@ final class RemoteCachePreparer {
                 podsProjectPath: podsProjectPath
             )
         }
-        try targetChecksumProvider.saveChecksum(to: calciferPathProvider.calciferChecksumFilePath())
+        try targetChecksumProvider.saveChecksum(
+            to: calciferPathProvider.calciferChecksumFilePath()
+        )
         
         let storageConfig = config.storageConfig
         guard let gradleHost = storageConfig.gradleHost else {
@@ -83,6 +85,7 @@ final class RemoteCachePreparer {
             try requiredTargetsProvider.obtainRequiredTargets(
                 params: params,
                 targetInfoFilter: targetInfoFilter,
+                checksumProducer: checksumProducer,
                 buildParametersChecksum: paramsChecksum
             )
         }

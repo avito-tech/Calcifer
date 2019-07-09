@@ -4,27 +4,62 @@ import PathKit
 import Checksum
 import Toolkit
 
-final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
+final class ProjectChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
     
-    let builder: TargetChecksumHolderBuilder<Builder>
+    private let builder: TargetChecksumHolderBuilder<ChecksumProducer>
     
-    init(builder: TargetChecksumHolderBuilder<Builder>) {
+    init(builder: TargetChecksumHolderBuilder<ChecksumProducer>) {
         self.builder = builder
     }
     
     func build(
+        parent: ProjChecksumHolder<ChecksumProducer.ChecksumType>,
         project: PBXProject,
-        sourceRoot: Path)
+        sourceRoot: Path,
+        concurrent: Bool = true)
         throws
-        -> ProjectChecksumHolder<Builder.ChecksumType>
+        -> ProjectChecksumHolder<ChecksumProducer.ChecksumType>
     {
+        
+        let projectChecksumHolder = ProjectChecksumHolder<ChecksumProducer.ChecksumType>(
+            name: project.name,
+            parent: parent
+        )
+        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumProducer.ChecksumType>>()
+        if concurrent {
+            try concurrentBuild(
+                project: project,
+                projectChecksumHolder: projectChecksumHolder,
+                sourceRoot: sourceRoot,
+                cache: cache
+            )
+        } else {
+            try build(
+                project: project,
+                projectChecksumHolder: projectChecksumHolder,
+                sourceRoot: sourceRoot,
+                cache: cache
+            )
+        }
+        return projectChecksumHolder
+    }
+    
+    private func concurrentBuild(
+        project: PBXProject,
+        projectChecksumHolder: ProjectChecksumHolder<ChecksumProducer.ChecksumType>,
+        sourceRoot: Path,
+        cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumProducer.ChecksumType>>)
+        throws
+    {
+        
         let targets = NSArray(array: project.targets)
-        let cache = ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<Builder.ChecksumType>>()
         var buildError: Error?
+        
         targets.enumerateObjects(options: .concurrent) { obj, _, stop in
             if let target = obj as? PBXTarget {
                 do {
                     try builder.build(
+                        parent: projectChecksumHolder,
                         target: target,
                         sourceRoot: sourceRoot,
                         cache: cache
@@ -39,14 +74,23 @@ final class ProjectChecksumHolderBuilder<Builder: URLChecksumProducer> {
         if let error = buildError {
             throw error
         }
-        let summarizedChecksums = cache.values.sorted(by: {left, right -> Bool in
-                left.targetName > right.targetName
-        })
-        let summarizedChecksum = try summarizedChecksums.checksum()
-        return ProjectChecksumHolder<Builder.ChecksumType>(
-            targets: summarizedChecksums,
-            description: project.name,
-            checksum: summarizedChecksum
-        )
+        projectChecksumHolder.update(targets: cache.values)
+    }
+    
+    private func build(
+        project: PBXProject,
+        projectChecksumHolder: ProjectChecksumHolder<ChecksumProducer.ChecksumType>,
+        sourceRoot: Path,
+        cache: ThreadSafeDictionary<PBXTarget, TargetChecksumHolder<ChecksumProducer.ChecksumType>>)
+        throws
+    {
+        try project.targets.forEach {
+            try builder.build(
+                parent: projectChecksumHolder,
+                target: $0,
+                sourceRoot: sourceRoot,
+                cache: cache
+            )
+        }
     }
 }
