@@ -5,33 +5,6 @@ import Checksum
 import PathKit
 import Toolkit
 
-protocol XcodeProjChecksumCache {
-    associatedtype ChecksumType: Checksum
-    func obtain(for projectPath: String) -> XcodeProjChecksumHolder<ChecksumType>?
-    func save(_ xcodeProjChecksumHolder: XcodeProjChecksumHolder<ChecksumType>, for projectPath: String)
-}
-
-final class XcodeProjChecksumCacheImpl: XcodeProjChecksumCache {
-    
-    let storage = BaseKeyValueStorage<String, XcodeProjChecksumHolder<BaseChecksum>>()
-    
-    public static let shared: XcodeProjChecksumCacheImpl = {
-        return XcodeProjChecksumCacheImpl()
-    }()
-    
-    init() {}
-    
-    func obtain(for projectPath: String) -> XcodeProjChecksumHolder<BaseChecksum>? {
-        return storage.obtain(for: projectPath)
-    }
-    
-    func save(_ xcodeProjChecksumHolder: XcodeProjChecksumHolder<BaseChecksum>, for projectPath: String) {
-        storage.addValue(xcodeProjChecksumHolder, for: projectPath)
-    }
-    
-    
-}
-
 final class XcodeProjChecksumHolderBuilder<ChecksumCache: XcodeProjChecksumCache> {
     
     private let xcodeProjCache: XcodeProjCache
