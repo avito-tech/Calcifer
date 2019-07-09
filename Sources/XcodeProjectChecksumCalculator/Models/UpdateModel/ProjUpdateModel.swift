@@ -6,20 +6,23 @@ import Toolkit
 
 final class ProjUpdateModel<ChecksumType: Checksum> {
     let proj: PBXProj
+    let projectPath: String
     let sourceRoot: Path
     let cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
     
     init(
         proj: PBXProj,
+        projectPath: String,
         sourceRoot: Path,
         cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>)
     {
         self.proj = proj
+        self.projectPath = projectPath
         self.sourceRoot = sourceRoot
         self.cache = cache
     }
     
     var name: String {
-        return "pbxproj-\(proj.objectVersion)-\(proj.archiveVersion)"
+        return "pbxproj-\(projectPath)"
     }
 }

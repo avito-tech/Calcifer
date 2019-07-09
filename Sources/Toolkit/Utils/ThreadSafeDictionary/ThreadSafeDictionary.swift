@@ -39,7 +39,6 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     
 }
 
-
 extension NSLock {
     public func withLock<T> (_ body: () throws -> T) rethrows -> T {
         lock()

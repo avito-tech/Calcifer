@@ -39,6 +39,7 @@ final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<
             .map { proj in
                 ProjUpdateModel(
                     proj: proj,
+                    projectPath: updateModel.projectPath,
                     sourceRoot: updateModel.sourceRoot,
                     cache: cache
                 )
