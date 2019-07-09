@@ -58,14 +58,14 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         return result
     }
     
-    override public func calculateChecksum() throws -> ChecksumType {
+    override func calculateChecksum() throws -> ChecksumType {
         return try children.values
             .sorted()
             .map { try $0.obtainChecksum() }
             .aggregate()
     }
     
-    open func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {
+    func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {
         var shouldInvalidate = false
         if try updateDependencies(updateModel: updateModel) {
             shouldInvalidate = true
@@ -87,14 +87,14 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                     sourceRoot: updateModel.sourceRoot,
                     cache: updateModel.cache
                 )
-            }.keyValue { $0.name }
+            }.toDictionary { $0.name }
         return try updateModels.update(
             childrenDictionary: &dependencies,
             update: { (dependencyChecksumHolder: TargetChecksumHolder<ChecksumType>, dependencyUpdateModel: TargetUpdateModel<ChecksumType>) in
                 // DO NOT UPDATE DEPENDENCY! THEY ALREADY UPDATED BY PROJECT
             }, buildValue: { updateModel in
                 updateModel.cache.createIfNotExist(updateModel.name) { _ in
-                    TargetChecksumHolder<ChecksumType>(
+                    TargetChecksumHolder(
                         updateModel: updateModel,
                         parent: self,
                         fullPathProvider: fullPathProvider,
@@ -110,7 +110,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
             .fileElements()
             .map { url in
                 try fullPathProvider.fullPath(for: url, sourceRoot: updateModel.sourceRoot).url
-            }.keyValue { $0.path }
+            }.toDictionary { $0.path }
         return try fileUrlDictionary.update(
             childrenDictionary: &files,
             update: { (fileChecksumHolder: FileChecksumHolder<ChecksumType>, updateModel: URL) in
@@ -126,7 +126,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         )
     }
     
-    override open var nodeChildren: [CodableChecksumNode<String>] {
+    override var nodeChildren: [CodableChecksumNode<String>] {
         let dependencyNodes = dependencies.values.map { dependency in
             CodableChecksumNode<String>(
                 name: dependency.name,

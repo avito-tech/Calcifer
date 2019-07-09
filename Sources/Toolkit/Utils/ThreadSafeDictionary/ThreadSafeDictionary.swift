@@ -11,18 +11,7 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
         }
     }
     
-    public func createIfNotExist(_ key: Key, create: (Key) -> (Value)) -> Value {
-        return lock.withLock {
-            guard let value = dictionary[key] else {
-                let value = create(key)
-                dictionary[key] = value
-                return value
-            }
-            return value
-        }
-    }
-    
-    public func createIfNotExist(_ key: Key, create: (Key) throws -> (Value)) throws -> Value {
+    public func createIfNotExist(_ key: Key, create: (Key) throws -> (Value)) rethrows -> Value {
         return try lock.withLock {
             guard let value = dictionary[key] else {
                 let value = try create(key)

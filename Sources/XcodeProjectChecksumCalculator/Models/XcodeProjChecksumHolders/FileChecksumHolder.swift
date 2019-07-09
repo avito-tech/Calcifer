@@ -23,11 +23,11 @@ final class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
         super.init(name: fileURL.path, parent: parent)
     }
     
-    override public func calculateChecksum() throws -> ChecksumType {
+    override func calculateChecksum() throws -> ChecksumType {
         return try checksumProducer.checksum(input: fileURL)
     }
     
-    public func reflectUpdate(updateModel: URL) throws {
+    func reflectUpdate(updateModel: URL) throws {
         guard calculated == true else {
             return
         }

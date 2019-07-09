@@ -3,7 +3,7 @@ import Foundation
 public extension Dictionary {
     func enumerateKeysAndObjects(
         options opts: NSEnumerationOptions = [],
-        using block: (Key, Value, UnsafeMutablePointer<ObjCBool>) throws -> Void
+        using closure: (Key, Value, inout Bool) throws -> Void
     ) throws {
         var blockError: Error?
         // For performance it is very important to create a separate dictionary instance.
@@ -11,8 +11,10 @@ public extension Dictionary {
         let dictionary = NSDictionary(dictionary: self)
         dictionary.enumerateKeysAndObjects(options: opts) { key, object, stops in
             do {
+                var localStops = false
                 if let castedObject = object as? Value, let castedKey = key as? Key {
-                    try block(castedKey, castedObject, stops)
+                    try closure(castedKey, castedObject, &localStops)
+                    stops.pointee = ObjCBool(localStops)
                 }
             } catch {
                 blockError = error

@@ -12,7 +12,7 @@ final class ProjectUpdateModel<ChecksumType: Checksum> {
     init(
         project: PBXProject,
         sourceRoot: Path,
-        cache: ThreadSafeDictionary<String,TargetChecksumHolder<ChecksumType>>)
+        cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>)
     {
         self.project = project
         self.sourceRoot = sourceRoot

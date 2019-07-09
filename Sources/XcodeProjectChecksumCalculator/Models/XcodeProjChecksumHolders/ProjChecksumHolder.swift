@@ -26,7 +26,7 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
         super.init(name: name, parent: parent)
     }
     
-    override public func calculateChecksum() throws -> ChecksumType {
+    override func calculateChecksum() throws -> ChecksumType {
         return try projects.values.sorted().map {
             try $0.obtainChecksum()
         }.aggregate()
@@ -44,7 +44,7 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
                     sourceRoot: updateModel.sourceRoot,
                     cache: updateModel.cache
                 )
-            }.keyValue { $0.name }
+            }.toDictionary { $0.name }
         let shouldInvalidate = try projectUpdateModelsDictionary.update(
             childrenDictionary: &projects,
             update: { projectChecksumHolder, projectUpdateModel in
