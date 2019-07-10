@@ -89,8 +89,8 @@ public final class BuildArtifactIntegrator {
             return false
         }
         
-        let artifactFiles = fileManager.files(at: artifactPath.path)
-        var destinationFiles = fileManager.files(at: artifactDestination.path)
+        let artifactFiles = try fileManager.files(at: artifactPath.path)
+        var destinationFiles = try fileManager.files(at: artifactDestination.path)
         
         // Filter patched dSYM plist
         if artifactDestination.lastPathComponent.contains(".framework.dSYM") {
