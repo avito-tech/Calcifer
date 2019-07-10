@@ -40,15 +40,15 @@ final class XcodeProjChecksumHolderBuilder<ChecksumCache: XcodeProjChecksumCache
     private func obtainXcodeProjChecksumHolder(for projectPath: String)
         -> XcodeProjChecksumHolder<ChecksumCache.ChecksumType>
     {
-        guard let cached = xcodeProjChecksumCache.obtain(for: projectPath) else {
-            let xcodeProjChecksumHolder = XcodeProjChecksumHolder<ChecksumCache.ChecksumType>(
-                name: projectPath,
-                fullPathProvider: fullPathProvider,
-                checksumProducer: checksumProducer
-            )
-            xcodeProjChecksumCache.save(xcodeProjChecksumHolder, for: projectPath)
-            return xcodeProjChecksumHolder
+        if let cached = xcodeProjChecksumCache.obtain(for: projectPath) {
+            return cached
         }
-        return cached
+        let xcodeProjChecksumHolder = XcodeProjChecksumHolder<ChecksumCache.ChecksumType>(
+            name: projectPath,
+            fullPathProvider: fullPathProvider,
+            checksumProducer: checksumProducer
+        )
+        xcodeProjChecksumCache.save(xcodeProjChecksumHolder, for: projectPath)
+        return xcodeProjChecksumHolder
     }
 }
