@@ -42,21 +42,9 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     public func smartChecksumCalculate() throws -> ChecksumType {
         var visited = [String: BaseChecksumHolder<ChecksumType>]()
         var notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
-        var calculateError: Error?
         while !notCalculatedLeafs.isEmpty {
-            let array = notCalculatedLeafs as NSDictionary
-            array.enumerateKeysAndObjects(options: .concurrent) { _, object, stop in
-                if let node = object as? BaseChecksumHolder<ChecksumType> {
-                    do {
-                        _ = try node.obtainChecksum()
-                    } catch {
-                        calculateError = error
-                        stop.pointee = true
-                    }
-                }
-            }
-            if let error = calculateError {
-                throw error
+            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, stop in
+                _ = try node.obtainChecksum()
             }
             visited = notCalculatedLeafs
             notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
