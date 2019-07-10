@@ -17,7 +17,7 @@ final class XcodeProjChecksumCacheImpl: XcodeProjChecksumCache {
         return storage.obtain(for: projectPath)
     }
     
-    func save(_ xcodeProjChecksumHolder: XcodeProjChecksumHolder<BaseChecksum>, for projectPath: String) {
+    func store(_ xcodeProjChecksumHolder: XcodeProjChecksumHolder<BaseChecksum>, for projectPath: String) {
         storage.addValue(xcodeProjChecksumHolder, for: projectPath)
     }
     

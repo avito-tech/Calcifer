@@ -48,7 +48,7 @@ final class XcodeProjChecksumHolderBuilder<ChecksumCache: XcodeProjChecksumCache
             fullPathProvider: fullPathProvider,
             checksumProducer: checksumProducer
         )
-        xcodeProjChecksumCache.save(xcodeProjChecksumHolder, for: projectPath)
+        xcodeProjChecksumCache.store(xcodeProjChecksumHolder, for: projectPath)
         return xcodeProjChecksumHolder
     }
 }
