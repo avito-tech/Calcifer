@@ -4,6 +4,14 @@ import PathKit
 import Checksum
 import Toolkit
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Xcode models structure:                                                                                                //
+// XcodeProj - root, represent *.xcodeproj file. It contains pbxproj file represented by Proj (Look below) and xcschemes. //
+// Proj - represent project.pbxproj file. It contains all references to objects - projects, files, groups, targets etc.   //
+// Project - represent build project. It contains build settings and targets.                                             //
+// Target - represent build target. It contains build phases. For example source build phase.                             //
+// File - represent source file. Can be obtained from source build phase.                                                 //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
     override var children: [String: BaseChecksumHolder<ChecksumType>] {
