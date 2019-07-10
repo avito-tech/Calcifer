@@ -135,14 +135,14 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     }
     
     override var nodeChildren: [CodableChecksumNode<String>] {
-        let dependencyNodes = dependencies.values.map { dependency in
+        let dependencyNodes = dependencies.values.sorted().map { dependency in
             CodableChecksumNode<String>(
                 name: dependency.name,
                 value: dependency.nodeValue,
                 children: []
             )
         }
-        let fileNodes = files.values.map{ $0.node() }
+        let fileNodes = files.values.sorted().map{ $0.node() }
         return dependencyNodes + fileNodes
     }
     
