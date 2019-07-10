@@ -35,7 +35,7 @@ public extension FileManager {
         return !isDirectory.boolValue
     }
     
-    func enumerateFiles(at path: String, sorted: Bool = true, onFile: (String) -> ()) {
+    func enumerateFiles(at path: String, sorted: Bool = true, onFile: (String) -> ()) throws {
         if isFile(path) {
             onFile(path)
         } else {
@@ -43,10 +43,7 @@ public extension FileManager {
                 return
             }
             let elements = sorted ? allElements.sorted() : allElements
-            (elements as NSArray).enumerateObjects(options: .concurrent) { object, _, _ in
-                guard let element = object as? String else {
-                    return
-                }
+            try elements.enumerateObjects(options: .concurrent) { element, _ in
                 if element.contains(".DS_Store") {
                     return
                 }
@@ -58,9 +55,9 @@ public extension FileManager {
         }
     }
     
-    func files(at path: String) -> [String] {
+    func files(at path: String) throws -> [String] {
         let filePathes = ThreadSafeArray<String>()
-        enumerateFiles(at: path, sorted: false) { filePath in
+        try enumerateFiles(at: path, sorted: false) { filePath in
             filePathes.append(filePath)
         }
         return filePathes.values.sorted()
