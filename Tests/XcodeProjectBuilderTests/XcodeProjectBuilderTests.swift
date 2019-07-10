@@ -68,6 +68,7 @@ public final class XcodeProjectBuilderTests: XCTestCase {
                     "-sdk",
                     config.platform.rawValue,
                     "build",
+                    "-UseNewBuildSystem=NO",
                     "BUILD_DIR=\(config.buildDirectoryPath)",
                     "OBJROOT=\(config.buildDirectoryPath)",
                     "ONLY_ACTIVE_ARCH=\(config.onlyActiveArchitecture ? "YES" : "NO")",
