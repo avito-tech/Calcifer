@@ -4,7 +4,7 @@ public protocol CalciferPathProvider {
     func calciferDirectory() -> String
     func calciferBinaryName() -> String
     func calciferBinaryPath() -> String
-    func calciferChecksumFilePath() -> String
+    func calciferChecksumFilePath(for date: Date) -> String
     func calciferEnvironmentFilePath() -> String
     func calciferBuildLogDirectory() -> String
     func launchAgentPlistPath(label: String) -> String

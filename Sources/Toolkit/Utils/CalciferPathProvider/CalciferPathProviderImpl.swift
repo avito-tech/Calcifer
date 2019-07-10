@@ -24,9 +24,10 @@ open class CalciferPathProviderImpl: CalciferPathProvider {
             .appendingPathComponent(calciferBinaryName())
     }
     
-    public func calciferChecksumFilePath() -> String {
+    public func calciferChecksumFilePath(for date: Date) -> String {
         return calciferDirectory()
-            .appendingPathComponent("сhecksum.json")
+            .appendingPathComponent("сhecksums")
+            .appendingPathComponent("сhecksum-\(date.formattedString()).json")
     }
     
     public func calciferEnvironmentFilePath() -> String {
