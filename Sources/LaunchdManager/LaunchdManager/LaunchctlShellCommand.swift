@@ -26,8 +26,7 @@ struct LaunchctlShellCommand: ShellCommand {
         case .unload:
             return [
                 type.rawValue,
-                domain.valueForLaunchArgument,
-                plistPath
+                "\(domain.valueForLaunchArgument)/\(plist.label)"
             ]
         case .enable:
             return [
