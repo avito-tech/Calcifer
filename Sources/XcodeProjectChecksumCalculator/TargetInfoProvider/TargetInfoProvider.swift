@@ -62,9 +62,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
     
     public func saveChecksum(to path: String) throws {
         try TimeProfiler.measure("Save checksum to file") {
-            let data = try checksumHolder.node().encode()
-            let outputFileURL = URL(fileURLWithPath: path)
-            try data.write(to: outputFileURL)
+            try checksumHolder.node().save(to: path)
         }
     }
 

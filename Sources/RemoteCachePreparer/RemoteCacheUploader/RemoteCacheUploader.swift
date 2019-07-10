@@ -50,7 +50,7 @@ final class RemoteCacheUploader {
             )
         }
         try targetChecksumProvider.saveChecksum(
-            to: calciferPathProvider.calciferChecksumFilePath()
+            to: calciferPathProvider.calciferChecksumFilePath(for: Date())
         )
         
         let storageConfig = config.storageConfig

@@ -11,10 +11,13 @@ public extension Encodable {
     func save(to path: String) throws {
         let data = try encode()
         let fileDirectoryPath = path.deletingLastPathComponent()
-        try FileManager.default.createDirectory(
-            atPath: fileDirectoryPath,
-            withIntermediateDirectories: true
-        )
+        let fileManager = FileManager.default
+        if fileManager.directoryExist(at: fileDirectoryPath) == false {
+            try fileManager.createDirectory(
+                atPath: fileDirectoryPath,
+                withIntermediateDirectories: true
+            )
+        }
         try data.write(to: URL(fileURLWithPath: path))
     }
 }
