@@ -54,6 +54,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     
     public func fillXcodeProjCache(projectPath: String) throws {
         _ = try obtainXcodeProj(projectPath: projectPath)
+        writableStorage.clear(for: projectPath, predicate: { _ in true })
         try [0...3].forEach { _ in
             let xcodeProj = try obtainCachedXcodeProj(
                 projectPath: projectPath,
