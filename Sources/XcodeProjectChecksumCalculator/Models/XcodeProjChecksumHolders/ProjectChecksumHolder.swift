@@ -1,6 +1,17 @@
 import Foundation
+import XcodeProj
+import PathKit
 import Checksum
+import Toolkit
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Xcode models structure:                                                                                                //
+// XcodeProj - root, represent *.xcodeproj file. It contains pbxproj file represented by Proj (Look below) and xcschemes. //
+// Proj - represent project.pbxproj file. It contains all references to objects - projects, files, groups, targets etc.   //
+// Project - represent build project. It contains build settings and targets.                                             //
+// Target - represent build target. It contains build phases. For example source build phase.                             //
+// File - represent source file. Can be obtained from source build phase.                                                 //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
     override var children: [String: BaseChecksumHolder<ChecksumType>] {
@@ -8,27 +19,55 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
     }
     
     var targets = [String: TargetChecksumHolder<ChecksumType>]()
+    private let fullPathProvider: FileElementFullPathProvider
+    private let checksumProducer: URLChecksumProducer<ChecksumType>
     
-    init(name: String, parent: ProjChecksumHolder<ChecksumType>) {
+    init(
+        name: String,
+        parent: ProjChecksumHolder<ChecksumType>,
+        fullPathProvider: FileElementFullPathProvider,
+        checksumProducer: URLChecksumProducer<ChecksumType>)
+    {
+        self.fullPathProvider = fullPathProvider
+        self.checksumProducer = checksumProducer
         super.init(name: name, parent: parent)
     }
     
-    override func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
-        return try cached {
-            try targets.values.sorted().map {
-                try $0.obtainChecksum(checksumProducer: checksumProducer)
-            }.aggregate()
-        }
+    override func calculateChecksum() throws -> ChecksumType {
+        return try targets.values.sorted().map {
+            try $0.obtainChecksum()
+        }.aggregate()
     }
     
-    func update(targets: [TargetChecksumHolder<ChecksumType>]) {
-        self.targets = Dictionary(
-            uniqueKeysWithValues: targets.map { ($0.name, $0) }
+    func reflectUpdate(updateModel: ProjectUpdateModel<ChecksumType>) throws {
+        let cache = updateModel.cache
+        let targetUpdateModelsDictionary = updateModel.project.targets
+            .map { target in
+                TargetUpdateModel<ChecksumType>(
+                    target: target,
+                    sourceRoot: updateModel.sourceRoot,
+                    cache: cache
+                )
+            }.toDictionary { $0.name }
+        let shouldInvalidate = try targetUpdateModelsDictionary.update(
+            childrenDictionary: &targets,
+            update: { targetChecksumHolder, targetUpdateModel in
+                try targetChecksumHolder.reflectUpdate(updateModel: targetUpdateModel)
+            }, buildValue: { targetUpdateModel in
+                cache.createIfNotExist(targetUpdateModel.name) { _ in
+                    TargetChecksumHolder(
+                        updateModel: targetUpdateModel,
+                        parent: self,
+                        fullPathProvider: fullPathProvider,
+                        checksumProducer: checksumProducer
+                    )
+                }
+            }
         )
-        state = .notCalculated
+        
+        if shouldInvalidate {
+            invalidate()
+        }        
     }
 
 }

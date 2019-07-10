@@ -16,61 +16,47 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         fatalError("Must be overriden")
     }
     
-    public var state: ChecksumState<ChecksumType> = .notCalculated
+    private var state: ChecksumState<ChecksumType> = .notCalculated
     
     public init(name: String, parent: BaseChecksumHolder<ChecksumType>?) {
         self.name = name
         self.parent = parent
     }
     
-    open func obtainChecksum<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
-        fatalError("Must be overriden")
-    }
-    
-    public func cached(_ calculate: () throws -> (ChecksumType)) throws -> ChecksumType {
+    public func obtainChecksum() throws -> ChecksumType {
         switch state {
         case let .calculated(checksum):
             return checksum
         case .notCalculated:
-            let checksum = try calculate()
+            let checksum = try calculateChecksum()
             state = .calculated(checksum)
             return checksum
         }
     }
     
-    public func smartCalculate<ChecksumProducer: URLChecksumProducer>(checksumProducer: ChecksumProducer)
-        throws -> ChecksumType
-        where ChecksumProducer.ChecksumType == ChecksumType
-    {
+    public func updateState(checksum: ChecksumType) {
+        parent?.invalidate()
+        state = .calculated(checksum)
+    }
+    
+    public func smartChecksumCalculate() throws -> ChecksumType {
         var visited = [String: BaseChecksumHolder<ChecksumType>]()
         var notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
-        var calculateError: Error?
         while !notCalculatedLeafs.isEmpty {
-            let array = notCalculatedLeafs as NSDictionary
-            array.enumerateKeysAndObjects(options: .concurrent) { _, object, stop in
-                if let node = object as? BaseChecksumHolder<ChecksumType> {
-                    do {
-                        _ = try node.obtainChecksum(checksumProducer: checksumProducer)
-                    } catch {
-                        calculateError = error
-                        stop.pointee = true
-                        return
-                    }
-                }
-            }
-            if let error = calculateError {
-                throw error
+            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, stop in
+                _ = try node.obtainChecksum()
             }
             visited = notCalculatedLeafs
             notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
         }
-        return try obtainChecksum(checksumProducer: checksumProducer)
+        return try obtainChecksum()
     }
     
-    func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
+    open func calculateChecksum() throws -> ChecksumType {
+        fatalError("Must be overriden")
+    }
+    
+    private func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
         guard visited[name] == nil else {
             return [:]
         }
@@ -88,6 +74,25 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
             }
         }
         return result
+    }
+    
+    public func invalidate() {
+        switch state {
+        case .calculated:
+            state = .notCalculated
+            parent?.invalidate()
+        case .notCalculated:
+            return
+        }
+    }
+    
+    public var calculated: Bool {
+        switch state {
+        case .calculated:
+            return true
+        case .notCalculated:
+            return false
+        }
     }
     
     // MARK: - CustomStringConvertible
@@ -129,6 +134,6 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     }
     
     open var nodeChildren: [CodableChecksumNode<String>] {
-        return children.values.map { $0.node() }
+        return children.values.sorted().map { $0.node() }
     }
 }

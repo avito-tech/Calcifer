@@ -15,7 +15,7 @@ public class BuildTargetChecksumProviderFactoryImpl: BuildTargetChecksumProvider
     private let checksumProducer: BaseURLChecksumProducer
     private let xcodeProjCache: XcodeProjCache
     
-    private lazy var targetInfoProviderFactory: TargetInfoProviderFactory<BaseURLChecksumProducer> = {
+    private lazy var targetInfoProviderFactory: TargetInfoProviderFactory = {
         TargetInfoProviderFactory(
             checksumProducer: checksumProducer,
             xcodeProjCache: xcodeProjCache

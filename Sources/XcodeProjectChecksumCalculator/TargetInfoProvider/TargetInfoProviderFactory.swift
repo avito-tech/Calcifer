@@ -3,14 +3,15 @@ import XcodeProjCache
 import Checksum
 import Toolkit
 
-public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProducer> {
+public final class TargetInfoProviderFactory {
     
-    private let checksumProducer: ChecksumProducer
+    private let checksumProducer: BaseURLChecksumProducer
+    private let xcodeProjChecksumCache = XcodeProjChecksumCacheImpl.shared
     private let xcodeProjCache: XcodeProjCache
     private let factory: XcodeProjChecksumHolderBuilderFactory
     
     public init(
-        checksumProducer: ChecksumProducer,
+        checksumProducer: BaseURLChecksumProducer,
         xcodeProjCache: XcodeProjCache)
     {
         self.checksumProducer = checksumProducer
@@ -24,10 +25,11 @@ public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProduc
     public func targetChecksumProvider(
         projectPath: String,
         smartCalculate: Bool = true)
-        throws -> TargetInfoProvider<ChecksumProducer.ChecksumType>
+        throws -> TargetInfoProvider<BaseChecksum>
     {
         let builder = factory.projChecksumHolderBuilder(
-            checksumProducer: checksumProducer
+            checksumProducer: checksumProducer,
+            xcodeProjChecksumCache: xcodeProjChecksumCache
         )
         let xcodeProj = try TimeProfiler.measure("Obtain XcodeProj") {
             try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
@@ -35,11 +37,11 @@ public final class TargetInfoProviderFactory<ChecksumProducer: URLChecksumProduc
         let checksumHolder = try TimeProfiler.measure("Build checksum holders") {
             try builder.build(xcodeProj: xcodeProj, projectPath: projectPath)
         }
-        let checksum: ChecksumProducer.ChecksumType = try TimeProfiler.measure("Obtain checksum") {
+        let checksum: BaseChecksum = try TimeProfiler.measure("Obtain checksum") {
             if smartCalculate {
-                return try checksumHolder.smartCalculate(checksumProducer: checksumProducer)
+                return try checksumHolder.smartChecksumCalculate()
             } else {
-                return try checksumHolder.obtainChecksum(checksumProducer: checksumProducer)
+                return try checksumHolder.obtainChecksum()
             }
         }
         Logger.info("XcodeProj checksum: \(checksum.stringValue) for \(checksumHolder.description)")

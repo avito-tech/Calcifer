@@ -19,7 +19,6 @@ public final class TargetInfoFilter {
     {
         let targetInfos = try targetInfoProvider.dependencies(
             for: targetName,
-            checksumProducer: checksumProducer,
             buildParametersChecksum: buildParametersChecksum
         )
         return targetInfos

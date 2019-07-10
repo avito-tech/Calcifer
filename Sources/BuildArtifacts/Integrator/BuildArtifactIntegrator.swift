@@ -24,40 +24,43 @@ public final class BuildArtifactIntegrator {
             TargetBuildArtifact<ChecksumType>,
             TargetBuildArtifact<ChecksumType>
         >()
-        let artifactsArray = artifacts as NSArray
-        var intagrateError: Error?
-        artifactsArray.enumerateObjects(options: .concurrent) { obj, _, stop in
-            if let artifact = obj as? TargetBuildArtifact<ChecksumType> {
-                let productCurrentURL = URL(fileURLWithPath: artifact.productPath)
-                let productDestinationURL = obtainProductDestination(for: artifact, at: path)
-                do {
-                    try integrate(at: productCurrentURL, to: productDestinationURL)
-                    
-                    let dsymCurrentURL = URL(fileURLWithPath: artifact.dsymPath)
-                    let dsymDestinationURL = obtainDSYMDestination(for: artifact, at: path)
-                    try integrate(at: dsymCurrentURL, to: dsymDestinationURL)
+        try artifacts.enumerateObjects(options: .concurrent) { artifact, _ in
 
-                    let destination = TargetBuildArtifact(
-                        targetInfo: artifact.targetInfo,
-                        productPath: productDestinationURL.path,
-                        dsymPath: dsymDestinationURL.path
-                    )
-                    
-                    destinations.write(destination, for: artifact)
-                } catch {
-                    intagrateError = error
-                    stop.pointee = true
-                    return
-                }
-            }
-        }
-        if let error = intagrateError {
-            throw error
+            let productCurrentURL = URL(fileURLWithPath: artifact.productPath)
+            let productDestinationURL = obtainProductDestination(for: artifact, at: path)
+            
+            let checksum = artifact.targetInfo.checksum
+            try integrate(
+                at: productCurrentURL,
+                to: productDestinationURL,
+                checksum: checksum
+            )
+        
+            let dsymCurrentURL = URL(fileURLWithPath: artifact.dsymPath)
+            let dsymDestinationURL = obtainDSYMDestination(for: artifact, at: path)
+            try integrate(
+                at: dsymCurrentURL,
+                to: dsymDestinationURL,
+                checksum: checksum
+            )
+
+            let destination = TargetBuildArtifact(
+                targetInfo: artifact.targetInfo,
+                productPath: productDestinationURL.path,
+                dsymPath: dsymDestinationURL.path
+            )
+        
+            destinations.write(destination, for: artifact)
         }
         return destinations.values
     }
     
-    private func integrate(at path: URL, to destination: URL) throws {
+    private func integrate<ChecksumType: Checksum>(
+        at path: URL,
+        to destination: URL,
+        checksum: ChecksumType)
+        throws
+    {
         // Performance issue in this check
         if try compareArtifacts(path, destination) == false {
             if fileManager.directoryExist(at: destination) {

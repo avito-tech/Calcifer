@@ -36,11 +36,11 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         switch self {
         case .noChanged:
             return true
-        case .changed(_, _, _):
+        case .changed:
             return false
-        case .appear(_, _):
+        case .appear:
             return false
-        case .disappear(_, _):
+        case .disappear:
             return false
         }
     }

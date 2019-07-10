@@ -1,7 +1,8 @@
 import Foundation
-import Checksum
 import XcodeProj
 import PathKit
+import Checksum
+import Toolkit
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Xcode models structure:                                                                                                //
@@ -11,37 +12,22 @@ import PathKit
 // Target - represent build target. It contains build phases. For example source build phase.                             //
 // File - represent source file. Can be obtained from source build phase.                                                 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-final class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
-
-    private let fileURL: URL
-    private let checksumProducer: URLChecksumProducer<ChecksumType>
-    
-    override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        return [:]
-    }
+final class ProjectUpdateModel<ChecksumType: Checksum> {
+    let project: PBXProject
+    let sourceRoot: Path
+    let cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
     
     init(
-        fileURL: URL,
-        parent: BaseChecksumHolder<ChecksumType>,
-        checksumProducer: URLChecksumProducer<ChecksumType>)
+        project: PBXProject,
+        sourceRoot: Path,
+        cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>)
     {
-        self.fileURL = fileURL
-        self.checksumProducer = checksumProducer
-        super.init(name: fileURL.path, parent: parent)
+        self.project = project
+        self.sourceRoot = sourceRoot
+        self.cache = cache
     }
     
-    override func calculateChecksum() throws -> ChecksumType {
-        return try checksumProducer.checksum(input: fileURL)
-    }
-    
-    func reflectUpdate(updateModel: URL) throws {
-        guard calculated == true else {
-            return
-        }
-        let newChecksum = try checksumProducer.checksum(input: updateModel)
-        let currentChecksum = try obtainChecksum()
-        if newChecksum != currentChecksum {
-            updateState(checksum: newChecksum)
-        }
+    var name: String {
+        return project.name
     }
 }

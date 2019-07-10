@@ -34,15 +34,20 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
             fullPathProvider: BaseFileElementFullPathProvider(),
             xcodeProjCache: XcodeProjCacheImpl.shared
         )
+        let xcodeProjChecksumCache = XcodeProjChecksumCacheImpl.shared
         let builder = factory.projChecksumHolderBuilder(
             checksumProducer: BaseURLChecksumProducer(
                 fileManager: FileManager.default
-            )
+            ),
+            xcodeProjChecksumCache: xcodeProjChecksumCache
         )
         let xcodeProj = try TimeProfiler.measure("Obtain XcodeProj") {
             try XcodeProjCacheImpl.shared.obtainXcodeProj(projectPath: projectPath)
         }
-        let checksumHolder = try builder.build(xcodeProj: xcodeProj, projectPath: projectPath)
+        let checksumHolder = try builder.build(
+            xcodeProj: xcodeProj,
+            projectPath: projectPath
+        )
         let codableChecksumNode = checksumHolder.node()
         let data = try codableChecksumNode.encode()
         let outputFileURL = FileManager.default.pathToHomeDirectoryFile(name: "сhecksum.json")

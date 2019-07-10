@@ -5,31 +5,50 @@ import Checksum
 import PathKit
 import Toolkit
 
-final class XcodeProjChecksumHolderBuilder<ChecksumProducer: URLChecksumProducer> {
+final class XcodeProjChecksumHolderBuilder<ChecksumCache: XcodeProjChecksumCache> {
     
-    private let builder: ProjChecksumHolderBuilder<ChecksumProducer>
     private let xcodeProjCache: XcodeProjCache
+    private let xcodeProjChecksumCache: ChecksumCache
+    private let checksumProducer: URLChecksumProducer<ChecksumCache.ChecksumType>
+    private let fullPathProvider: FileElementFullPathProvider
     
     init(
-        builder: ProjChecksumHolderBuilder<ChecksumProducer>,
-        xcodeProjCache: XcodeProjCache)
+        xcodeProjCache: XcodeProjCache,
+        xcodeProjChecksumCache: ChecksumCache,
+        checksumProducer: URLChecksumProducer<ChecksumCache.ChecksumType>,
+        fullPathProvider: FileElementFullPathProvider)
     {
-        self.builder = builder
         self.xcodeProjCache = xcodeProjCache
+        self.xcodeProjChecksumCache = xcodeProjChecksumCache
+        self.checksumProducer = checksumProducer
+        self.fullPathProvider = fullPathProvider
     }
     
-    func build(xcodeProj: XcodeProj, projectPath: String) throws -> XcodeProjChecksumHolder<ChecksumProducer.ChecksumType> {
-        let pbxproj = xcodeProj.pbxproj
-        let path = Path(projectPath)
-        let sourceRoot = Path(components: Array(path.components.dropLast()))
+    func build(xcodeProj: XcodeProj, projectPath: String) throws -> XcodeProjChecksumHolder<ChecksumCache.ChecksumType> {
         
-        let xcodeProjChecksumHolder = XcodeProjChecksumHolder<ChecksumProducer.ChecksumType>(
-            name: path.url.path
+        let sourceRoot = Path(components: Array(Path(projectPath).components.dropLast()))
+        let xcodeProjChecksumHolder = obtainXcodeProjChecksumHolder(for: projectPath)
+        let xcodeProjUpdateModel = XcodeProjUpdateModel(
+            xcodeProj: xcodeProj,
+            projectPath: projectPath,
+            sourceRoot: sourceRoot
         )
-        
-        let projChecksum = try builder.build(parent: xcodeProjChecksumHolder, pbxproj: pbxproj, sourceRoot: sourceRoot)
-        xcodeProjChecksumHolder.update(proj: projChecksum)
-        
+        try xcodeProjChecksumHolder.reflectUpdate(updateModel: xcodeProjUpdateModel)
+        return xcodeProjChecksumHolder
+    }
+    
+    private func obtainXcodeProjChecksumHolder(for projectPath: String)
+        -> XcodeProjChecksumHolder<ChecksumCache.ChecksumType>
+    {
+        if let cached = xcodeProjChecksumCache.obtain(for: projectPath) {
+            return cached
+        }
+        let xcodeProjChecksumHolder = XcodeProjChecksumHolder<ChecksumCache.ChecksumType>(
+            name: projectPath,
+            fullPathProvider: fullPathProvider,
+            checksumProducer: checksumProducer
+        )
+        xcodeProjChecksumCache.store(xcodeProjChecksumHolder, for: projectPath)
         return xcodeProjChecksumHolder
     }
 }
