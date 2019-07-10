@@ -13,7 +13,7 @@ final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<
     private let fullPathProvider: FileElementFullPathProvider
     private let checksumProducer: URLChecksumProducer<ChecksumType>
     private let cache = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
-    private let lock =  NSLock()
+    private let lock = NSLock()
     
     init(
         name: String,
