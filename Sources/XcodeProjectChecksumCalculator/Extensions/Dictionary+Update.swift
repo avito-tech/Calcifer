@@ -14,6 +14,7 @@ public extension Dictionary {
                 try update(existedValue, value)
                 return
             }
+            // For bool this is thread safe. Since it changes only in true.
             changed = true
             let newValue = buildValue(value)
             try update(newValue, value)
@@ -24,6 +25,7 @@ public extension Dictionary {
                 return
             }
             childrenDictionary.removeValue(forKey: key)
+            // For bool this is thread safe. Since it changes only in true.
             changed = true
         }
         return changed
