@@ -35,17 +35,20 @@ public extension FileManager {
         return !isDirectory.boolValue
     }
     
-    func enumerateFiles(at path: String, onFile: (String) -> ()) {
+    func enumerateFiles(at path: String, sorted: Bool = true, onFile: (String) -> ()) {
         if isFile(path) {
             onFile(path)
         } else {
             guard let allElements = enumerator(atPath: path)?.allObjects as? [String] else {
                 return
             }
-            let sortedElements = allElements.sorted()
-            for element in sortedElements {
+            let elements = sorted ? allElements.sorted() : allElements
+            (elements as NSArray).enumerateObjects(options: .concurrent) { object, _, _ in
+                guard let element = object as? String else {
+                    return
+                }
                 if element.contains(".DS_Store") {
-                    continue
+                    return
                 }
                 let elementPath = path.appendingPathComponent(element)
                 if isFile(elementPath) {
@@ -56,11 +59,11 @@ public extension FileManager {
     }
     
     func files(at path: String) -> [String] {
-        var filePathArray = [String: String]()
-        enumerateFiles(at: path) { filePath in
-            filePathArray[filePath] = filePath
+        let filePathes = ThreadSafeArray<String>()
+        enumerateFiles(at: path, sorted: false) { filePath in
+            filePathes.append(filePath)
         }
-        return Array(filePathArray.values.sorted())
+        return filePathes.values.sorted()
     }
     
     func fileSize(at path: String) throws -> UInt64 {
@@ -71,7 +74,7 @@ public extension FileManager {
     }
     
     func modificationDate(at path: String) throws -> Date {
-        let attributes = catchError { try FileManager.default.attributesOfItem(atPath: path) }
+        let attributes = try FileManager.default.attributesOfItem(atPath: path)
         guard let date = attributes[FileAttributeKey.modificationDate] as? Date
             else { throw FileManagerError.unableToObtainModificationDate(path: path) }
         return date
