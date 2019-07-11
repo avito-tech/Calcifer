@@ -14,7 +14,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     
     public static let shared: XcodeProjCacheImpl = {
         let fileManager = FileManager.default
-        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        let checksumProducer = BaseURLChecksumProducer.shared
         return XcodeProjCacheImpl(
             fileManager: fileManager,
             checksumProducer: checksumProducer
