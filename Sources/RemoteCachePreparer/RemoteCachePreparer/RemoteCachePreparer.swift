@@ -24,6 +24,7 @@ final class RemoteCachePreparer {
     private let cacheStorageFactory: CacheStorageFactory
     private let xcodeProjCache: XcodeProjCache
     private let artifactBuildSourcePathCache: ArtifactBuildSourcePathCache
+    private let targetBuildArtifactMetaInfoManager: TargetBuildArtifactMetaInfoManager
     
     init(
         fileManager: FileManager,
@@ -33,7 +34,8 @@ final class RemoteCachePreparer {
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory,
         xcodeProjCache: XcodeProjCache,
-        artifactBuildSourcePathCache: ArtifactBuildSourcePathCache)
+        artifactBuildSourcePathCache: ArtifactBuildSourcePathCache,
+        targetBuildArtifactMetaInfoManager: TargetBuildArtifactMetaInfoManager)
     {
         self.fileManager = fileManager
         self.calciferPathProvider = calciferPathProvider
@@ -43,6 +45,7 @@ final class RemoteCachePreparer {
         self.cacheStorageFactory = cacheStorageFactory
         self.xcodeProjCache = xcodeProjCache
         self.artifactBuildSourcePathCache = artifactBuildSourcePathCache
+        self.targetBuildArtifactMetaInfoManager = targetBuildArtifactMetaInfoManager
     }
     
     func prepare(
@@ -63,7 +66,7 @@ final class RemoteCachePreparer {
                 podsProjectPath: podsProjectPath
             )
         }
-        try targetChecksumProvider.saveChecksum(
+        targetChecksumProvider.saveChecksum(
             to: calciferPathProvider.calciferChecksumFilePath(for: Date())
         )
         
@@ -92,7 +95,8 @@ final class RemoteCachePreparer {
         
         let buildArtifactIntegrator = BuildArtifactIntegrator(
             fileManager: fileManager,
-            checksumProducer: checksumProducer
+            checksumProducer: checksumProducer,
+            targetBuildArtifactMetaInfoManager: targetBuildArtifactMetaInfoManager
         )
         let artifactIntegrator = ArtifactIntegrator(
             integrator: buildArtifactIntegrator,

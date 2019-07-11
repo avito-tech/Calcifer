@@ -54,7 +54,7 @@ final class RemoteCacheUploader {
                 podsProjectPath: podsProjectPath
             )
         }
-        try targetChecksumProvider.saveChecksum(
+        targetChecksumProvider.saveChecksum(
             to: calciferPathProvider.calciferChecksumFilePath(for: Date())
         )
         

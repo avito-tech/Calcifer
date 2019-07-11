@@ -20,28 +20,26 @@ public final class TargetBuildArtifactProviderTests: XCTestCase {
     }
     
     func test_obtainArtifacts() {
-        XCTAssertNoThrow(try {
-            // Given
-            let provider = TargetBuildArtifactProvider(fileManager: fileManager)
-            let targetInfo = TargetInfo(
-                targetName: "Some",
-                productName: "Some.framework",
-                productType: .framework,
-                dependencies: [],
-                checksum: BaseChecksum(UUID().uuidString)
-            )
-            let expectedPath = try ArtifactFileBuilder().createArtifactFile(
-                fileManager: fileManager,
-                targetInfo: targetInfo,
-                at: artifactsDirectoryPath
-            )
-            
-            // When
-            let artifacts = try provider.artifacts(for: [targetInfo], at: artifactsDirectoryPath)
-            
-            // Then
-            XCTAssertEqual(artifacts.first?.productPath, expectedPath)
-        }(), "Caught exception")
+        // Given
+        let provider = TargetBuildArtifactProvider(fileManager: fileManager)
+        let targetInfo = TargetInfo(
+            targetName: "Some",
+            productName: "Some.framework",
+            productType: .framework,
+            dependencies: [],
+            checksum: BaseChecksum(UUID().uuidString)
+        )
+        let expectedPath = try? ArtifactFileBuilder().createArtifactFile(
+            fileManager: fileManager,
+            targetInfo: targetInfo,
+            at: artifactsDirectoryPath
+        )
+        
+        // When
+        let artifacts = try? provider.artifacts(for: [targetInfo], at: artifactsDirectoryPath)
+        
+        // Then
+        XCTAssertEqual(artifacts?.first?.productPath, expectedPath)
     }
 
 }

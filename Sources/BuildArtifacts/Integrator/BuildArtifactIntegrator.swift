@@ -6,23 +6,26 @@ public final class BuildArtifactIntegrator {
     
     private let fileManager: FileManager
     private let checksumProducer: BaseURLChecksumProducer
+    private let targetBuildArtifactMetaInfoManager: TargetBuildArtifactMetaInfoManager
     
     public init(
         fileManager: FileManager,
-        checksumProducer: BaseURLChecksumProducer)
+        checksumProducer: BaseURLChecksumProducer,
+        targetBuildArtifactMetaInfoManager: TargetBuildArtifactMetaInfoManager)
     {
         self.fileManager = fileManager
         self.checksumProducer = checksumProducer
+        self.targetBuildArtifactMetaInfoManager = targetBuildArtifactMetaInfoManager
     }
     
     @discardableResult
-    public func integrate<ChecksumType: Checksum>(
-        artifacts: [TargetBuildArtifact<ChecksumType>],
-        to path: String) throws -> [TargetBuildArtifact<ChecksumType>]
+    public func integrate(
+        artifacts: [TargetBuildArtifact<BaseChecksum>],
+        to path: String) throws -> [TargetBuildArtifact<BaseChecksum>]
     {
         let destinations = ThreadSafeDictionary<
-            TargetBuildArtifact<ChecksumType>,
-            TargetBuildArtifact<ChecksumType>
+            TargetBuildArtifact<BaseChecksum>,
+            TargetBuildArtifact<BaseChecksum>
         >()
         try artifacts.enumerateObjects(options: .concurrent) { artifact, _ in
 
@@ -55,14 +58,14 @@ public final class BuildArtifactIntegrator {
         return destinations.values
     }
     
-    private func integrate<ChecksumType: Checksum>(
+    private func integrate(
         at path: URL,
         to destination: URL,
-        checksum: ChecksumType)
+        checksum: BaseChecksum)
         throws
     {
         // Performance issue in this check
-        if try compareArtifacts(path, destination) == false {
+        if try compareArtifacts(path, destination, checksum) == false {
             if fileManager.directoryExist(at: destination) {
                 try fileManager.removeItem(at: destination)
             }
@@ -78,19 +81,37 @@ public final class BuildArtifactIntegrator {
                 to: destination
             )
         }
+        let metaInfo = TargetBuildArtifactMetaInfo(
+            checksum: checksum
+        )
+        try targetBuildArtifactMetaInfoManager.write(
+            metaInfo: metaInfo,
+            artifactURL: destination
+        )
     }
     
     private func compareArtifacts(
         _ artifactPath: URL,
-        _ artifactDestination: URL)
+        _ artifactDestination: URL,
+        _ checksum: BaseChecksum)
         throws -> Bool
     {
         if fileManager.fileExists(atPath: artifactDestination.path) == false {
             return false
         }
         
+        let metaInfo = try? targetBuildArtifactMetaInfoManager.readMetaInfo(
+            artifactURL: artifactDestination
+        )
+        if let metaInfo = metaInfo,
+            metaInfo.checksum == checksum {
+            return true
+        }
+        
         let artifactFiles = try fileManager.files(at: artifactPath.path)
+        let metaInfoFileName = targetBuildArtifactMetaInfoManager.metaInfoFileName()
         var destinationFiles = try fileManager.files(at: artifactDestination.path)
+            .filter { !$0.contains(metaInfoFileName) }
         
         // Filter patched dSYM plist
         if artifactDestination.lastPathComponent.contains(".framework.dSYM") {
@@ -132,8 +153,8 @@ public final class BuildArtifactIntegrator {
         return true
     }
     
-    private func obtainProductDestination<ChecksumType: Checksum>(
-        for artifact: TargetBuildArtifact<ChecksumType>,
+    private func obtainProductDestination(
+        for artifact: TargetBuildArtifact<BaseChecksum>,
         at path: String)
         -> URL
     {
@@ -143,8 +164,8 @@ public final class BuildArtifactIntegrator {
         return URL(fileURLWithPath: path)
     }
     
-    private func obtainDSYMDestination<ChecksumType: Checksum>(
-        for artifact: TargetBuildArtifact<ChecksumType>,
+    private func obtainDSYMDestination(
+        for artifact: TargetBuildArtifact<BaseChecksum>,
         at path: String)
         -> URL
     {

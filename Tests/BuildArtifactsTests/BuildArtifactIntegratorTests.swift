@@ -26,7 +26,11 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
         XCTAssertNoThrow(try {
             // Given
             let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
-            let integrator = BuildArtifactIntegrator(fileManager: fileManager, checksumProducer: checksumProducer)
+            let targetBuildArtifactMetaInfoManager = TargetBuildArtifactMetaInfoManagerStub()
+            let integrator = BuildArtifactIntegrator(
+                fileManager: fileManager,
+                checksumProducer: checksumProducer,
+                targetBuildArtifactMetaInfoManager: targetBuildArtifactMetaInfoManager)
             let targetInfo = TargetInfo(
                 targetName: "Some",
                 productName: "Some.framework",
