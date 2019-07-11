@@ -39,7 +39,7 @@ public final class PrepareRemoteCacheCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let fileManager = cacheFactory.fileManager
+        let fileManager = cacheProvider.fileManager
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
         
@@ -62,9 +62,9 @@ public final class PrepareRemoteCacheCommand: Command {
         let config = try configProvider.obtainConfig(
             projectDirectoryPath: params.projectDirectory
         )
-        let checksumProducer = cacheFactory.baseURLChecksumProducer
-        let xcodeProjCache = cacheFactory.xcodeProjCache
-        let xcodeProjChecksumCache = cacheFactory.baseXcodeProjChecksumCache
+        let checksumProducer = cacheProvider.baseURLChecksumProducer
+        let xcodeProjCache = cacheProvider.xcodeProjCache
+        let xcodeProjChecksumCache = cacheProvider.baseXcodeProjChecksumCache
         let preparer = createPreparer(
             fileManager: fileManager,
             checksumProducer: checksumProducer,
@@ -111,8 +111,8 @@ public final class PrepareRemoteCacheCommand: Command {
             fileManager: fileManager,
             unzip: unzip
         )
-        let xcodeProjCache = cacheFactory.xcodeProjCache
-        let artifactBuildSourcePathCache = cacheFactory.artifactBuildSourcePathCache
+        let xcodeProjCache = cacheProvider.xcodeProjCache
+        let artifactBuildSourcePathCache = cacheProvider.artifactBuildSourcePathCache
         return RemoteCachePreparer(
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
@@ -151,7 +151,6 @@ public final class PrepareRemoteCacheCommand: Command {
         if let filePath = arguments.get(self.environmentFilePathArgument) {
             return try XcodeBuildEnvironmentParameters.decode(from: filePath)
         } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
-            let fileManager = cacheFactory.fileManager
             let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
             let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
             try environmentParams.save(to: environmentFilePath)

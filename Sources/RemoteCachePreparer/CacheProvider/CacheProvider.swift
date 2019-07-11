@@ -3,7 +3,7 @@ import XcodeProjectChecksumCalculator
 import XcodeProjCache
 import Checksum
 
-public protocol CacheFactory {
+public protocol CacheProvider {
     var fileManager: FileManager { get }
     var baseURLChecksumProducer: BaseURLChecksumProducer { get }
     var xcodeProjCache: XcodeProjCache { get }

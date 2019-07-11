@@ -3,14 +3,14 @@ import XcodeProjectChecksumCalculator
 import XcodeProjCache
 import Checksum
 
-public final class CacheFactoryImpl: CacheFactory {
+public final class CacheProviderImpl: CacheProvider {
     
     // Can be changed in tests
-    static var sharedBuild: () -> (CacheFactory) = {
-        CacheFactoryImpl()
+    static var sharedBuild: () -> (CacheProvider) = {
+        CacheProviderImpl()
     }
     
-    public static let shared: CacheFactory = {
+    public static let shared: CacheProvider = {
         sharedBuild()
     }()
     

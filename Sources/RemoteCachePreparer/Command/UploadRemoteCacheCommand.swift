@@ -39,7 +39,7 @@ public final class UploadRemoteCacheCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let fileManager = cacheFactory.fileManager
+        let fileManager = cacheProvider.fileManager
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
         
@@ -57,9 +57,9 @@ public final class UploadRemoteCacheCommand: Command {
         )
         Logger.verbose("sourcePath \(sourcePath)")
 
-        let checksumProducer = cacheFactory.baseURLChecksumProducer
-        let xcodeProjCache = cacheFactory.xcodeProjCache
-        let xcodeProjChecksumCache = cacheFactory.baseXcodeProjChecksumCache
+        let checksumProducer = cacheProvider.baseURLChecksumProducer
+        let xcodeProjCache = cacheProvider.xcodeProjCache
+        let xcodeProjChecksumCache = cacheProvider.baseXcodeProjChecksumCache
         let uploader = createUploader(
             calciferPathProvider: calciferPathProvider,
             checksumProducer: checksumProducer,

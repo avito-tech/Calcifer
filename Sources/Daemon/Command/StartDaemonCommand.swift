@@ -22,10 +22,10 @@ public final class StartDaemonCommand: Command {
         let operationQueue = OperationQueue.createSerialQueue(
             qualityOfService: .userInitiated
         )
-        let fileManager = cacheFactory.fileManager
+        let fileManager = cacheProvider.fileManager
         let warmerFactory = WarmerManagerFactory(
             fileManager: fileManager,
-            xcodeProjCache: cacheFactory.xcodeProjCache
+            xcodeProjCache: cacheProvider.xcodeProjCache
         )
         let warmerManager = warmerFactory.createWarmerManager(
             warmupOperationQueue: operationQueue
