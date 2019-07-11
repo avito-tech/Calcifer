@@ -1,10 +1,13 @@
 import XcodeBuildEnvironmentParametersParser
+import XcodeProjectChecksumCalculator
 import BuildProductCacheStorage
+import XcodeProjCache
 import ArgumentsParser
 import CalciferConfig
 import ShellCommand
 import Foundation
 import SPMUtility
+import Checksum
 import Toolkit
 
 public final class UploadRemoteCacheCommand: Command {
@@ -36,7 +39,7 @@ public final class UploadRemoteCacheCommand: Command {
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         
-        let fileManager = FileManager.default
+        let fileManager = cacheFactory.fileManager
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
         
@@ -54,8 +57,14 @@ public final class UploadRemoteCacheCommand: Command {
         )
         Logger.verbose("sourcePath \(sourcePath)")
 
+        let checksumProducer = cacheFactory.baseURLChecksumProducer
+        let xcodeProjCache = cacheFactory.xcodeProjCache
+        let xcodeProjChecksumCache = cacheFactory.baseXcodeProjChecksumCache
         let uploader = createUploader(
             calciferPathProvider: calciferPathProvider,
+            checksumProducer: checksumProducer,
+            xcodeProjCache: xcodeProjCache,
+            xcodeProjChecksumCache: xcodeProjChecksumCache,
             fileManager: fileManager,
             shellExecutor: shellExecutor
         )
@@ -74,20 +83,39 @@ public final class UploadRemoteCacheCommand: Command {
     
     func createUploader(
         calciferPathProvider: CalciferPathProvider,
+        checksumProducer: BaseURLChecksumProducer,
+        xcodeProjCache: XcodeProjCache,
+        xcodeProjChecksumCache: BaseXcodeProjChecksumCache,
         fileManager: FileManager,
         shellExecutor: ShellCommandExecutor)
         -> RemoteCacheUploader
     {
         let unzip = Unzip(shellExecutor: shellExecutor)
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl.shared
+        let fullPathProvider = BaseFileElementFullPathProvider()
+        let xcodeProjChecksumHolderBuilderFactory = XcodeProjChecksumHolderBuilderFactory(
+            fullPathProvider: fullPathProvider,
+            xcodeProjCache: xcodeProjCache
+        )
+        let targetInfoProviderFactory = TargetInfoProviderFactory(
+            checksumProducer: checksumProducer,
+            xcodeProjChecksumCache: xcodeProjChecksumCache,
+            xcodeProjCache: xcodeProjCache,
+            xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory
+        )
+        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(
+            targetInfoProviderFactory: targetInfoProviderFactory
+        )
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let cacheStorageFactory = CacheStorageFactoryImpl(
             fileManager: fileManager,
             unzip: unzip
         )
+        let cacheKeyBuilder = BuildProductCacheKeyBuilder()
         return RemoteCacheUploader(
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
+            checksumProducer: checksumProducer,
+            cacheKeyBuilder: cacheKeyBuilder,
             buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory
@@ -120,7 +148,6 @@ public final class UploadRemoteCacheCommand: Command {
         if let filePath = arguments.get(self.environmentFilePathArgument) {
             return try XcodeBuildEnvironmentParameters.decode(from: filePath)
         } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
-            let fileManager = FileManager.default
             let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
             let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
             try environmentParams.save(to: environmentFilePath)

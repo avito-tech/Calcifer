@@ -2,12 +2,12 @@ import Foundation
 import XcodeProjCache
 import Checksum
 
-final class XcodeProjChecksumHolderBuilderFactory {
+public final class XcodeProjChecksumHolderBuilderFactory {
     
     private let fullPathProvider: FileElementFullPathProvider
     private let xcodeProjCache: XcodeProjCache
     
-    init(fullPathProvider: FileElementFullPathProvider, xcodeProjCache: XcodeProjCache) {
+    public init(fullPathProvider: FileElementFullPathProvider, xcodeProjCache: XcodeProjCache) {
         self.fullPathProvider = fullPathProvider
         self.xcodeProjCache = xcodeProjCache
     }

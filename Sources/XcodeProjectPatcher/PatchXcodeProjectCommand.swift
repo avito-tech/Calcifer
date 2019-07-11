@@ -2,6 +2,7 @@ import ArgumentsParser
 import XcodeBuildEnvironmentParametersParser
 import XcodeProjCache
 import Foundation
+import Checksum
 import SPMUtility
 import Toolkit
 
@@ -69,9 +70,15 @@ public final class PatchXcodeProjectCommand: Command {
                 return try XcodeBuildEnvironmentParameters()
             }
         }
+        let fileManager = FileManager.default
+        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        let xcodeProjCache = XcodeProjCacheImpl(
+            fileManager: fileManager,
+            checksumProducer: checksumProducer
+        )
         let patcher = XcodeProjectPatcher(
-            xcodeProjCache: XcodeProjCacheImpl.shared,
-            fileManager: FileManager.default
+            xcodeProjCache: xcodeProjCache,
+            fileManager: fileManager
         )
         try patcher.patch(
             projectPath: projectPath,

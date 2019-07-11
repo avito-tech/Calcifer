@@ -25,7 +25,7 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
     func test_obtainArtifacts() {
         XCTAssertNoThrow(try {
             // Given
-            let checksumProducer = BaseURLChecksumProducer.shared
+            let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
             let integrator = BuildArtifactIntegrator(fileManager: fileManager, checksumProducer: checksumProducer)
             let targetInfo = TargetInfo(
                 targetName: "Some",

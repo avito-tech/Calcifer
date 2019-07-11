@@ -12,16 +12,7 @@ public final class XcodeProjCacheImpl: XcodeProjCache {
     private var writableStorage = StackKeyValueStorageImpl<String, XcodeProjCacheValue<BaseChecksum>>()
     private let fileManager: FileManager
     
-    public static let shared: XcodeProjCacheImpl = {
-        let fileManager = FileManager.default
-        let checksumProducer = BaseURLChecksumProducer.shared
-        return XcodeProjCacheImpl(
-            fileManager: fileManager,
-            checksumProducer: checksumProducer
-        )
-    }()
-    
-    private init(
+    public init(
         fileManager: FileManager,
         checksumProducer: BaseURLChecksumProducer)
     {

@@ -23,13 +23,7 @@ public final class BaseURLChecksumProducer: URLChecksumProducer<BaseChecksum> {
     
     private let fileManager: FileManager
     
-    public static let shared: BaseURLChecksumProducer = {
-        BaseURLChecksumProducer(
-            fileManager: FileManager.default
-        )
-    }()
-    
-    private init(fileManager: FileManager) {
+    public init(fileManager: FileManager) {
         self.fileManager = fileManager
     }
     

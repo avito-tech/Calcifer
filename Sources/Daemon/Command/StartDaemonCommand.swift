@@ -1,4 +1,5 @@
 import Foundation
+import RemoteCachePreparer
 import ArgumentsParser
 import ShellCommand
 import SPMUtility
@@ -21,9 +22,10 @@ public final class StartDaemonCommand: Command {
         let operationQueue = OperationQueue.createSerialQueue(
             qualityOfService: .userInitiated
         )
-        let fileManager = FileManager.default
+        let fileManager = cacheFactory.fileManager
         let warmerFactory = WarmerManagerFactory(
-            fileManager: fileManager
+            fileManager: fileManager,
+            xcodeProjCache: cacheFactory.xcodeProjCache
         )
         let warmerManager = warmerFactory.createWarmerManager(
             warmupOperationQueue: operationQueue

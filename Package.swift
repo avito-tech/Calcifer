@@ -283,6 +283,7 @@ let package = Package(
                 "DaemonModels",
                 "CalciferConfig",
                 "ArgumentsParser",
+                "RemoteCachePreparer",
                 "CommandRunner",
                 "ShellCommand",
                 "Warmer",
