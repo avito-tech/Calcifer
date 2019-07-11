@@ -6,20 +6,20 @@ import Toolkit
 public final class TargetInfoProviderFactory {
     
     private let checksumProducer: BaseURLChecksumProducer
-    private let xcodeProjChecksumCache = XcodeProjChecksumCacheImpl.shared
+    private let xcodeProjChecksumCache: BaseXcodeProjChecksumCache
     private let xcodeProjCache: XcodeProjCache
-    private let factory: XcodeProjChecksumHolderBuilderFactory
+    private let xcodeProjChecksumHolderBuilderFactory: XcodeProjChecksumHolderBuilderFactory
     
     public init(
         checksumProducer: BaseURLChecksumProducer,
-        xcodeProjCache: XcodeProjCache)
+        xcodeProjChecksumCache: BaseXcodeProjChecksumCache,
+        xcodeProjCache: XcodeProjCache,
+        xcodeProjChecksumHolderBuilderFactory: XcodeProjChecksumHolderBuilderFactory)
     {
         self.checksumProducer = checksumProducer
+        self.xcodeProjChecksumCache = xcodeProjChecksumCache
         self.xcodeProjCache = xcodeProjCache
-        self.factory = XcodeProjChecksumHolderBuilderFactory(
-            fullPathProvider: BaseFileElementFullPathProvider(),
-            xcodeProjCache: xcodeProjCache
-        )
+        self.xcodeProjChecksumHolderBuilderFactory = xcodeProjChecksumHolderBuilderFactory
     }
     
     public func targetChecksumProvider(
@@ -27,7 +27,7 @@ public final class TargetInfoProviderFactory {
         smartCalculate: Bool = true)
         throws -> TargetInfoProvider<BaseChecksum>
     {
-        let builder = factory.projChecksumHolderBuilder(
+        let builder = xcodeProjChecksumHolderBuilderFactory.projChecksumHolderBuilder(
             checksumProducer: checksumProducer,
             xcodeProjChecksumCache: xcodeProjChecksumCache
         )

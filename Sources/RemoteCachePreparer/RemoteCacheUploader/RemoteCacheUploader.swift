@@ -15,7 +15,8 @@ final class RemoteCacheUploader {
     
     private let fileManager: FileManager
     private let calciferPathProvider: CalciferPathProvider
-    private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
+    private let checksumProducer: BaseURLChecksumProducer
+    private let cacheKeyBuilder: BuildProductCacheKeyBuilder
     private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
@@ -23,12 +24,16 @@ final class RemoteCacheUploader {
     init(
         fileManager: FileManager,
         calciferPathProvider: CalciferPathProvider,
+        checksumProducer: BaseURLChecksumProducer,
+        cacheKeyBuilder: BuildProductCacheKeyBuilder,
         buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory)
     {
         self.fileManager = fileManager
         self.calciferPathProvider = calciferPathProvider
+        self.checksumProducer = checksumProducer
+        self.cacheKeyBuilder = cacheKeyBuilder
         self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
@@ -65,7 +70,6 @@ final class RemoteCacheUploader {
         let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost
         )
-        let checksumProducer = BaseURLChecksumProducer.shared
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try requiredTargetsProvider.obtainRequiredTargets(

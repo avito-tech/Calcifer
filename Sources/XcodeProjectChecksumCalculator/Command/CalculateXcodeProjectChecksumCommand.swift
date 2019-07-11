@@ -30,17 +30,24 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
         )
-        let factory = XcodeProjChecksumHolderBuilderFactory(
-            fullPathProvider: BaseFileElementFullPathProvider(),
-            xcodeProjCache: XcodeProjCacheImpl.shared
+        let fileManager = FileManager.default
+        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        let xcodeProjCache = XcodeProjCacheImpl(
+            fileManager: fileManager,
+            checksumProducer: checksumProducer
         )
-        let xcodeProjChecksumCache = XcodeProjChecksumCacheImpl.shared
-        let builder = factory.projChecksumHolderBuilder(
-            checksumProducer: BaseURLChecksumProducer.shared,
+        let fullPathProvider = BaseFileElementFullPathProvider()
+        let xcodeProjChecksumHolderBuilderFactory = XcodeProjChecksumHolderBuilderFactory(
+            fullPathProvider: fullPathProvider,
+            xcodeProjCache: xcodeProjCache
+        )
+        let xcodeProjChecksumCache = XcodeProjChecksumCacheImpl()
+        let builder = xcodeProjChecksumHolderBuilderFactory.projChecksumHolderBuilder(
+            checksumProducer: checksumProducer,
             xcodeProjChecksumCache: xcodeProjChecksumCache
         )
         let xcodeProj = try TimeProfiler.measure("Obtain XcodeProj") {
-            try XcodeProjCacheImpl.shared.obtainXcodeProj(projectPath: projectPath)
+            try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
         }
         let checksumHolder = try builder.build(
             xcodeProj: xcodeProj,
@@ -48,7 +55,7 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
         )
         let codableChecksumNode = checksumHolder.node()
         let data = try codableChecksumNode.encode()
-        let outputFileURL = FileManager.default.pathToHomeDirectoryFile(name: "сhecksum.json")
+        let outputFileURL = fileManager.pathToHomeDirectoryFile(name: "сhecksum.json")
         try data.write(to: outputFileURL)
         print(codableChecksumNode.value)
         print(outputFileURL)

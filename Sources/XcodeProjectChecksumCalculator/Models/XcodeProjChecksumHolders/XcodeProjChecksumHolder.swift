@@ -10,9 +10,9 @@ import Toolkit
 // Target - represent build target. It contains build phases. For example source build phase.                             //
 // File - represent source file. Can be obtained from source build phase.                                                 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
+public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    override var children: [String : BaseChecksumHolder<ChecksumType>] {
+    override public var children: [String : BaseChecksumHolder<ChecksumType>] {
         return projs
     }
     
@@ -36,7 +36,7 @@ final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<
         )
     }
     
-    override func calculateChecksum() throws -> ChecksumType {
+    override public func calculateChecksum() throws -> ChecksumType {
         return try projs.values.sorted().map {
             try $0.obtainChecksum()
         }.aggregate()

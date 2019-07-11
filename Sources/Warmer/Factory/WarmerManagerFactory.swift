@@ -6,9 +6,14 @@ import Toolkit
 public final class WarmerManagerFactory {
     
     private let fileManager: FileManager
+    private let xcodeProjCache: XcodeProjCache
     
-    public init(fileManager: FileManager) {
+    public init(
+        fileManager: FileManager,
+        xcodeProjCache: XcodeProjCache)
+    {
         self.fileManager = fileManager
+        self.xcodeProjCache = xcodeProjCache
     }
     
     public func createWarmerManager(warmupOperationQueue: OperationQueue) -> WarmerManager {
@@ -16,7 +21,7 @@ public final class WarmerManagerFactory {
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let xcodeProjCacheWarmer = DebouncingWarmer(
             warmer: XcodeProjCacheWarmer(
-                xcodeProjCache: XcodeProjCacheImpl.shared,
+                xcodeProjCache: xcodeProjCache,
                 calciferPathProvider: calciferPathProvider
             ),
             delay: 1

@@ -11,36 +11,10 @@ public protocol BuildTargetChecksumProviderFactory {
 
 public class BuildTargetChecksumProviderFactoryImpl: BuildTargetChecksumProviderFactory {
     
-    private let fileManager: FileManager
-    private let checksumProducer: BaseURLChecksumProducer
-    private let xcodeProjCache: XcodeProjCache
+    private let targetInfoProviderFactory: TargetInfoProviderFactory
     
-    private lazy var targetInfoProviderFactory: TargetInfoProviderFactory = {
-        TargetInfoProviderFactory(
-            checksumProducer: checksumProducer,
-            xcodeProjCache: xcodeProjCache
-        )
-    }()
-    
-    public static let shared: BuildTargetChecksumProviderFactory = {
-        let fileManager = FileManager.default
-        let checksumProducer = BaseURLChecksumProducer.shared
-        let xcodeProjCache = XcodeProjCacheImpl.shared
-        return BuildTargetChecksumProviderFactoryImpl(
-            fileManager: fileManager,
-            checksumProducer: checksumProducer,
-            xcodeProjCache: xcodeProjCache
-        )
-    }()
-    
-    private init(
-        fileManager: FileManager,
-        checksumProducer: BaseURLChecksumProducer,
-        xcodeProjCache: XcodeProjCache)
-    {
-        self.fileManager = fileManager
-        self.checksumProducer = checksumProducer
-        self.xcodeProjCache = xcodeProjCache
+    public init(targetInfoProviderFactory: TargetInfoProviderFactory) {
+        self.targetInfoProviderFactory = targetInfoProviderFactory
     }
     
     public func createBuildTargetChecksumProvider(
