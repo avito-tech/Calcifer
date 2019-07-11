@@ -24,7 +24,7 @@ public class BuildTargetChecksumProviderFactoryImpl: BuildTargetChecksumProvider
     
     public static let shared: BuildTargetChecksumProviderFactory = {
         let fileManager = FileManager.default
-        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        let checksumProducer = BaseURLChecksumProducer.shared
         let xcodeProjCache = XcodeProjCacheImpl.shared
         return BuildTargetChecksumProviderFactoryImpl(
             fileManager: fileManager,

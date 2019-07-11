@@ -67,7 +67,7 @@ public final class PrepareRemoteCacheCommand: Command {
             shellExecutor: shellExecutor
         )
         
-        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        let checksumProducer = BaseURLChecksumProducer.shared
         
         try TimeProfiler.measure("Prepare remote cache") {
             try preparer.prepare(

@@ -65,7 +65,7 @@ final class RemoteCacheUploader {
         let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost
         )
-        let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+        let checksumProducer = BaseURLChecksumProducer.shared
         let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try requiredTargetsProvider.obtainRequiredTargets(
