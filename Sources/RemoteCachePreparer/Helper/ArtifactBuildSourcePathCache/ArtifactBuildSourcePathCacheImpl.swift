@@ -5,13 +5,9 @@ import Toolkit
 
 public final class ArtifactBuildSourcePathCacheImpl: ArtifactBuildSourcePathCache {
     
-    private let storage = BaseKeyValueStorage<ArtifactBuildSourcePathCacheKey, String>()
+    private let storage = ThreadSafeKeyValueStorage<ArtifactBuildSourcePathCacheKey, String>()
     
-    public static let shared: ArtifactBuildSourcePathCacheImpl = {
-        return ArtifactBuildSourcePathCacheImpl()
-    }()
-    
-    private init() {}
+    public init() {}
     
     public func buildSourcePath(
         for targetInfo: TargetInfo<BaseChecksum>,
