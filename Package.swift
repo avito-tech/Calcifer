@@ -147,7 +147,8 @@ let package = Package(
         .testTarget(
             name: "BuildArtifactsTests",
             dependencies: [
-                "BuildArtifacts"
+                "BuildArtifacts",
+                "Mock"
             ]
         ),
         // MARK: XcodeProjectBuilder

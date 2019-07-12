@@ -11,11 +11,7 @@ public final class UserIdentifierProviderImplTests: XCTestCase {
     
     func test_unload() {
         // Given
-        let shellCommandExecutor = ShellCommandExecutorStub { command in
-            XCTFail(
-                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-            )
-        }
+        let shellCommandExecutor = ShellCommandExecutorStub()
         let epectedUserId = UUID().uuidString
         shellCommandExecutor.stubCommand(
             BaseShellCommand(

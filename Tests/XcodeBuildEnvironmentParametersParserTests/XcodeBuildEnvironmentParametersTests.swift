@@ -8,7 +8,9 @@ public final class XcodeBuildEnvironmentParametersTests: XCTestCase {
     // MARK: - Lifecycle
     
     func test_parameters_create() {
-        XCTAssertNoThrow(try XcodeBuildEnvironmentParameters.forTests())
+        assertNoThrow {
+            try XcodeBuildEnvironmentParameters.forTests()
+        }
     }
     
 }

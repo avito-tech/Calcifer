@@ -4,8 +4,9 @@ import BuildProductCacheStorage
 import ArgumentsParser
 import XcodeProjCache
 import CalciferConfig
-import Foundation
+import BuildArtifacts
 import ShellCommand
+import Foundation
 import SPMUtility
 import Checksum
 import Toolkit
@@ -113,6 +114,9 @@ public final class PrepareRemoteCacheCommand: Command {
         )
         let xcodeProjCache = cacheProvider.xcodeProjCache
         let artifactBuildSourcePathCache = cacheProvider.artifactBuildSourcePathCache
+        let targetBuildArtifactMetaInfoManager = TargetBuildArtifactMetaInfoManagerImpl(
+            fileManager: fileManager
+        )
         return RemoteCachePreparer(
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
@@ -121,7 +125,8 @@ public final class PrepareRemoteCacheCommand: Command {
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory,
             xcodeProjCache: xcodeProjCache,
-            artifactBuildSourcePathCache: artifactBuildSourcePathCache
+            artifactBuildSourcePathCache: artifactBuildSourcePathCache,
+            targetBuildArtifactMetaInfoManager: targetBuildArtifactMetaInfoManager
         )
     }
     

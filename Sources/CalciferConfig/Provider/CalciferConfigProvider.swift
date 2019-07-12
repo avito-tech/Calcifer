@@ -21,6 +21,7 @@ public final class CalciferConfigProvider {
         return try configDictionary.toObject()
     }
     
+    @discardableResult
     public func obtainConfig(projectDirectoryPath: String) throws -> CalciferConfig {
         let defaultConfigDictionary = try CalciferConfig.defaultConfig(
             calciferDirectory: calciferDirectory

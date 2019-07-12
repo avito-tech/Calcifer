@@ -5,26 +5,17 @@ import Mock
 import CalciferConfig
 @testable import CalciferUpdater
 
-public final class UpdateCheckerImplTests: XCTestCase {
+public final class UpdateCheckerImplTests: BaseTestCase {
     
-    let fileManager = FileManager.default
-    let calciferBinaryName = CalciferPathProviderImpl(
-        fileManager: FileManager.default
+    private lazy var calciferBinaryName = CalciferPathProviderImpl(
+        fileManager: fileManager
     ).calciferBinaryName()
-    let temporaryDirectory = FileManager.default.createTemporaryDirectory()
+    private lazy var binaryDirectory = createTmpDirectory()
     
     func test_shouldUpdateCalcifer_not_should() {
         // Given
-        guard let versionDownloadURL = URL(string: "http://some.com/version.json")
-            else {
-                XCTFail("Can't create url from string")
-                return
-        }
-        
-        guard let binaryContent = UUID().uuidString.data(using: .utf8) else {
-            XCTFail("Can't create data from string")
-            return
-        }
+        let versionDownloadURL = url("http://some.com/version.json")
+        let binaryContent = uuid.data(using: .utf8).unwrapOrFail()
         let binaryFileURL = createBinary(content: binaryContent)
         let downloadedVersionURL = createVersionFile(checksumData: binaryContent)
         let updateChecker = createUpdateChecker(
@@ -45,16 +36,8 @@ public final class UpdateCheckerImplTests: XCTestCase {
     
     func test_shouldUpdateCalcifer_should() {
         // Given
-        guard let versionDownloadURL = URL(string: "http://some.com/version.json")
-            else {
-                XCTFail("Can't create url from string")
-                return
-        }
-        
-        guard let binaryContent = UUID().uuidString.data(using: .utf8) else {
-            XCTFail("Can't create data from string")
-            return
-        }
+        let versionDownloadURL = url("http://some.com/version.json")
+        let binaryContent = uuid.data(using: .utf8).unwrapOrFail()
         let binaryFileURL = createBinary(content: binaryContent)
         let downloadedVersionURL = createVersionFile(checksumData: Data())
         let updateChecker = createUpdateChecker(
@@ -75,13 +58,9 @@ public final class UpdateCheckerImplTests: XCTestCase {
     
     func test_shouldUpdateCalcifer_binary_not_exist() {
         // Given
-        guard let versionDownloadURL = URL(string: "http://some.com/version.json")
-            else {
-                XCTFail("Can't create url from string")
-                return
-        }
+        let versionDownloadURL = url("http://some.com/version.json")
         
-        let binaryFileURL = temporaryDirectory
+        let binaryFileURL = binaryDirectory
             .appendingPathComponent(calciferBinaryName)
         let downloadedVersionURL = createVersionFile(checksumData: Data())
         let updateChecker = createUpdateChecker(
@@ -101,7 +80,7 @@ public final class UpdateCheckerImplTests: XCTestCase {
     }
     
     private func createBinary(content: Data) -> URL {
-        let binaryFileURL = temporaryDirectory
+        let binaryFileURL = binaryDirectory
             .appendingPathComponent(calciferBinaryName)
         fileManager.createFile(
             atPath: binaryFileURL.path,
@@ -111,7 +90,7 @@ public final class UpdateCheckerImplTests: XCTestCase {
     }
     
     private func createVersionFile(checksumData: Data) -> URL {
-        let versionURL = temporaryDirectory.appendingPathComponent("version.json")
+        let versionURL = binaryDirectory.appendingPathComponent("version.json")
         try? CalciferVersion(checksum: checksumData.md5())
             .save(to: versionURL.path)
         return versionURL
@@ -137,10 +116,7 @@ public final class UpdateCheckerImplTests: XCTestCase {
     }
     
     func check(_ result: Result<Bool, Error>?, expectedSuccess: Bool) {
-        guard let result = result else {
-            XCTFail("Failed to obtain update result")
-            return
-        }
+        let result = result.unwrapOrFail()
         switch result {
         case let .failure(error):
             XCTFail("Failed to update with error \(error)")

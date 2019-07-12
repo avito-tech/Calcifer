@@ -60,9 +60,11 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
         )
     }
     
-    public func saveChecksum(to path: String) throws {
-        try TimeProfiler.measure("Save checksum to file") {
-            try checksumHolder.node().save(to: path)
+    public func saveChecksum(to path: String) {
+        DispatchQueue.main.async {
+            TimeProfiler.measure("Save checksum to file") { [weak self] in
+                try? self?.checksumHolder.node().save(to: path)
+            }
         }
     }
 

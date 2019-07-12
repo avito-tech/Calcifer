@@ -1,26 +1,17 @@
 import Foundation
 import XCTest
 import Checksum
+import Mock
 import XcodeProjectChecksumCalculator
 @testable import BuildArtifacts
 
-public final class TargetBuildArtifactProviderTests: XCTestCase {
+public final class TargetBuildArtifactProviderTests: BaseTestCase {
     
-    private let artifactsDirectoryPath = NSTemporaryDirectory().appendingPathComponent("test_artifacts")
-    private let fileManager = FileManager.default
-    
-    override public func setUp() {
-        super.setUp()
-        try? fileManager.removeItem(atPath: artifactsDirectoryPath)
-    }
-    
-    override public func tearDown() {
-        super.tearDown()
-        try? fileManager.removeItem(atPath: artifactsDirectoryPath)
-    }
+    private lazy var artifactsDirectoryPath = createTmpDirectory()
+        .appendingPathComponent("test_artifacts").path
     
     func test_obtainArtifacts() {
-        XCTAssertNoThrow(try {
+        assertNoThrow {
             // Given
             let provider = TargetBuildArtifactProvider(fileManager: fileManager)
             let targetInfo = TargetInfo(
@@ -28,7 +19,7 @@ public final class TargetBuildArtifactProviderTests: XCTestCase {
                 productName: "Some.framework",
                 productType: .framework,
                 dependencies: [],
-                checksum: BaseChecksum(UUID().uuidString)
+                checksum: BaseChecksum(uuid)
             )
             let expectedPath = try ArtifactFileBuilder().createArtifactFile(
                 fileManager: fileManager,
@@ -41,7 +32,7 @@ public final class TargetBuildArtifactProviderTests: XCTestCase {
             
             // Then
             XCTAssertEqual(artifacts.first?.productPath, expectedPath)
-        }(), "Caught exception")
+        }
     }
 
 }

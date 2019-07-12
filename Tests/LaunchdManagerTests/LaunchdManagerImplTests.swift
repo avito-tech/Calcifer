@@ -5,18 +5,12 @@ import Mock
 import ShellCommand
 @testable import LaunchdManager
 
-public final class LaunchdManagerImplTests: XCTestCase {
-    
-    let fileManager = FileManager.default
+public final class LaunchdManagerImplTests: BaseTestCase {
     
     func test_unload() {
         // Given
         let plistPath = UUID().uuidString
-        let shellCommandExecutor = ShellCommandExecutorStub { command in
-            XCTFail(
-                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-            )
-        }
+        let shellCommandExecutor = ShellCommandExecutorStub()
         let plist = LaunchdPlist.daemonPlist(
             programPath: UUID().uuidString,
             standardOutPath: UUID().uuidString,
@@ -39,35 +33,26 @@ public final class LaunchdManagerImplTests: XCTestCase {
         )
         
         // When
-        XCTAssertNoThrow(
+        assertNoThrow {
             try manager.unloadPlistFromLaunchctl(
                 plist: plist,
                 plistPath: plistPath
             )
-        )
+        }
     }
     
     func test_load() {
         // Given
         let programPath = UUID().uuidString
-        let standardOutPath = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString).path
-        let standardErrorPath = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString).path
+        let standardOutPath = createTmpDirectory().path
+        let standardErrorPath = createTmpDirectory().path
         let plist = LaunchdPlist.daemonPlist(
             programPath: programPath,
             standardOutPath: standardOutPath,
             standardErrorPath: standardErrorPath
         )
-        let plistPath = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathComponent(plist.label)
-            .appendingPathExtension("plist").path
-        let shellCommandExecutor = ShellCommandExecutorStub { command in
-            XCTFail(
-                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-            )
-        }
+        let plistPath = createTmpFile("\(plist.label).plist").path
+        let shellCommandExecutor = ShellCommandExecutorStub()
         let userId = UUID().uuidString
         shellCommandExecutor.stubCommand(
             [
@@ -106,12 +91,12 @@ public final class LaunchdManagerImplTests: XCTestCase {
         )
         
         // When
-        XCTAssertNoThrow(
+        assertNoThrow {
             try manager.loadPlistToLaunchctl(
                 plist: plist,
                 plistPath: plistPath
             )
-        )
+        }
 
         // Then
         XCTAssertTrue(fileManager.fileExists(atPath: plistPath))

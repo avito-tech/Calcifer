@@ -5,18 +5,15 @@ import Mock
 import XcodeBuildEnvironmentParametersParser
 @testable import Warmer
 
-public final class XcodeProjCacheWarmerTests: XCTestCase {
+public final class XcodeProjCacheWarmerTests: BaseTestCase {
     
     func test_warmup() throws {
         // Given
-        let fileManager = FileManager.default
-        let stubedCalciferDirectory = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
+        let stubedCalciferDirectory = createTmpDirectory()
         let calciferPathProviderStub = CalciferPathProviderStub(
             fileManager: fileManager
         )
-        let podsRoot = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
+        let podsRoot = createTmpDirectory()
         calciferPathProviderStub.stubedCalciferDirectory = stubedCalciferDirectory.path
         let params = try XcodeBuildEnvironmentParameters.forTests(
             podsRoot: podsRoot.path

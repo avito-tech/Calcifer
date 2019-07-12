@@ -7,10 +7,7 @@ public final class GradleBuildCacheClientTests: XCTestCase {
     
     func test_download() {
         // Given
-        guard let host = URL(string: "http://stub.com") else {
-            XCTFail("Unable to create host url")
-            return
-        }
+        let host = url("http://stub.com")
         let responseURL = host.appendingPathComponent(UUID().uuidString)
         let key = UUID().uuidString
         let session = StubURLSession()
@@ -35,10 +32,7 @@ public final class GradleBuildCacheClientTests: XCTestCase {
         }
         
         // Then
-        guard let unwrappedResult = downloadResult else {
-            XCTFail("Download result is nil")
-            return
-        }
+        let unwrappedResult = downloadResult.unwrapOrFail()
         switch unwrappedResult {
         case let .failure(error):
             XCTFail("Failed download cache item \(error.debugDescription)")
@@ -51,10 +45,7 @@ public final class GradleBuildCacheClientTests: XCTestCase {
     
     func test_upload() {
         // Given
-        guard let host = URL(string: "http://stub.com") else {
-            XCTFail("Unable to create host url")
-            return
-        }
+        let host = url("http://stub.com")
         let key = UUID().uuidString
         let session = StubURLSession()
         var uploadRequest: URLRequest?
@@ -72,10 +63,7 @@ public final class GradleBuildCacheClientTests: XCTestCase {
         }
         
         // Then
-        guard let unwrappedResult = uploadResult else {
-            XCTFail("Download result is nil")
-            return
-        }
+        let unwrappedResult = uploadResult.unwrapOrFail()
         switch unwrappedResult {
         case let .failure(error):
             XCTFail("Failed download cache item \(error.debugDescription)")

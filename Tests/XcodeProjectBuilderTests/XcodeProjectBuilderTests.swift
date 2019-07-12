@@ -8,13 +8,9 @@ import Mock
 public final class XcodeProjectBuilderTests: XCTestCase {
     
     func test_symbolizer() {
-        XCTAssertNoThrow(try {
+        assertNoThrow {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub { command in
-                XCTFail(
-                    "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-                )
-            }
+            let shellCommandExecutor = ShellCommandExecutorStub()
             var shellCommand: ShellCommand?
             shellCommandExecutor.stub = { command in
                 shellCommand = command
@@ -75,7 +71,7 @@ public final class XcodeProjectBuilderTests: XCTestCase {
                     "ARCHS=\(architecture.rawValue)"
                 ]
             )
-        }(), "Caught exception")
+        }
     }
     
 }

@@ -1,12 +1,12 @@
 import Foundation
 import XCTest
+import Mock
 import Checksum
 import ShellCommand
 @testable import BuildProductCacheStorage
 
-public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
+public final class GradleRemoteBuildProductCacheStorageTests: BaseTestCase {
     
-    private let fileManager = FileManager.default
     private let client = GradleBuildCacheClientMock()
     private let unzip = Unzip(shellExecutor: ShellCommandExecutorImpl())
     
@@ -33,14 +33,8 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
         // When
         storage.add(cacheKey: key, at: fileURL.path) { [weak self] in
             // Then
-            guard let strongSelf = self else {
-                XCTFail("Failed unwrap self")
-                return
-            }
-            guard let uploadFileURL = strongSelf.client.uploadFileURL else {
-                XCTFail("UploadFileURL is nil")
-                return
-            }
+            let strongSelf = self.unwrapOrFail()
+            let uploadFileURL = strongSelf.client.uploadFileURL.unwrapOrFail()
             XCTAssertFalse(strongSelf.fileManager.fileExists(atPath: uploadFileURL.path))
         }
     }
@@ -82,12 +76,12 @@ public final class GradleRemoteBuildProductCacheStorageTests: XCTestCase {
     }
     
     private func createZipFile(key: BuildProductCacheKey<BaseChecksum>) -> URL {
-        let fileDirecotry = URL(fileURLWithPath: NSTemporaryDirectory())
+        let fileDirecotry = createTmpDirectory()
         do {
             let fileURL = fileDirecotry
                 .appendingPathComponent(key.productName)
             fileManager.createFile(atPath: fileURL.path, contents: nil)
-            let zipFileURL = URL(fileURLWithPath: NSTemporaryDirectory())
+            let zipFileURL = fileDirecotry
                 .appendingPathComponent(UUID().uuidString)
                 .appendingPathExtension("zip")
             try fileManager.zipItem(at: fileURL, to: zipFileURL)
