@@ -34,7 +34,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         self.cacheStorageFactory = cacheStorageFactory
     }
     
-    public func warmup(for event: WarmerEvent, perform: (Operation) -> ()) {
+    public func warmup(for event: WarmerEvent, perform: @escaping (Operation) -> ()) {
         guard let params = obtainEnvironmentParameters()
             else { return }
         guard let config = try? configProvider.obtainConfig(
@@ -47,23 +47,43 @@ public final class BuildProductCacheStorageWarmer: Warmer {
             Logger.error("Gradle host is not set")
             return
         }
+        let localCacheDirectoryPath = storageConfig.localCacheDirectory
+        let performClosure = { [weak self] in
+            guard let strongSelf = self else { return }
+            perform(
+                strongSelf.createOperation(
+                    params: params,
+                    localCacheDirectoryPath: localCacheDirectoryPath,
+                    gradleHost: gradleHost
+                )
+            )
+        }
         switch event {
         case .initial:
-            perform(createOperation(params: params, gradleHost: gradleHost))
+            performClosure()
         case .manual:
-            perform(createOperation(params: params, gradleHost: gradleHost))
+            performClosure()
         case let .file(fileEvent):
             guard fileEvent.path == pbxprojPath else { return }
-            perform(createOperation(params: params, gradleHost: gradleHost))
+            performClosure()
         }
         
     }
     
-    private func createOperation(params: XcodeBuildEnvironmentParameters, gradleHost: String) -> Operation{
+    private func createOperation(
+        params: XcodeBuildEnvironmentParameters,
+        localCacheDirectoryPath: String,
+        gradleHost: String)
+        -> Operation
+    {
         return BlockOperation {
             do {
                 try TimeProfiler.measure("Fill BuildProductCacheStorage") { [weak self] in
-                    try self?.fillProductCache(params: params, gradleHost: gradleHost)
+                    try self?.fillProductCache(
+                        params: params,
+                        localCacheDirectoryPath: localCacheDirectoryPath,
+                        gradleHost: gradleHost
+                    )
                 }
             } catch {
                 Logger.warning("BuildProductCacheStorage warmup failed with error \(error)")
@@ -71,21 +91,28 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         }
     }
     
-    private func fillProductCache(params: XcodeBuildEnvironmentParameters, gradleHost: String) throws -> () {
+    private func fillProductCache(
+        params: XcodeBuildEnvironmentParameters,
+        localCacheDirectoryPath: String,
+        gradleHost: String)
+        throws
+    {
         let calciferChecksumFilePath = calciferPathProvider.calciferChecksumFilePath(for: Date())
         let requiredTargets = try requiredTargetsProvider.obtainRequiredTargets(
             params: params,
             calciferChecksumFilePath: calciferChecksumFilePath
         )
         let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredTargets)
-        let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
-            gradleHost: gradleHost
+        let storage = try cacheStorageFactory.createMixedCacheStorage(
+            localCacheDirectoryPath: localCacheDirectoryPath,
+            gradleHost: gradleHost,
+            shouldUpload: false
         )
         let enumerator = CachedTargetInfosEnumerator()
         try enumerator.enumerate(
             targetInfos: frameworkTargets,
             cacheKeyBuilder: cacheKeyBuilder,
-            cacheStorage: remoteStorage) { _, completion in
+            cacheStorage: storage) { _, completion in
                 completion()
             }
     }
