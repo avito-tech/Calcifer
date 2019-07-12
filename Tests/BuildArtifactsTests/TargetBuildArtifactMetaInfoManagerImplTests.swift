@@ -2,6 +2,7 @@ import Foundation
 import XCTest
 import Checksum
 import XcodeProjectChecksumCalculator
+import Mock
 @testable import BuildArtifacts
 
 public final class TargetBuildArtifactMetaInfoManagerImplTests: XCTestCase {
@@ -20,22 +21,24 @@ public final class TargetBuildArtifactMetaInfoManagerImplTests: XCTestCase {
     }
     
     func test_write() {
-        // Given
-        let manager = TargetBuildArtifactMetaInfoManagerImpl(fileManager: fileManager)
-        let checksum = BaseChecksum(UUID().uuidString)
-        let metaInfo = TargetBuildArtifactMetaInfo(checksum: checksum)
-        let artifactURL = URL(
-            fileURLWithPath: artifactsDirectoryPath.appendingPathComponent(UUID().uuidString)
-        )
-        try? fileManager.createDirectory(
-            at: artifactURL,
-            withIntermediateDirectories: true
-        )
-        // When
-        try? manager.write(metaInfo: metaInfo, artifactURL: artifactURL)
-        let resultMetaInfo = try? manager.readMetaInfo(artifactURL: artifactURL)
-        // Then
-        XCTAssertEqual(resultMetaInfo?.checksum, metaInfo.checksum)
+        assertNoThrow {
+            // Given
+            let manager = TargetBuildArtifactMetaInfoManagerImpl(fileManager: fileManager)
+            let checksum = BaseChecksum(UUID().uuidString)
+            let metaInfo = TargetBuildArtifactMetaInfo(checksum: checksum)
+            let artifactURL = URL(
+                fileURLWithPath: artifactsDirectoryPath.appendingPathComponent(UUID().uuidString)
+            )
+            try fileManager.createDirectory(
+                at: artifactURL,
+                withIntermediateDirectories: true
+            )
+            // When
+            try manager.write(metaInfo: metaInfo, artifactURL: artifactURL)
+            let resultMetaInfo = try manager.readMetaInfo(artifactURL: artifactURL)
+            // Then
+            XCTAssertEqual(resultMetaInfo?.checksum, metaInfo.checksum)
+        }
     }
     
 }

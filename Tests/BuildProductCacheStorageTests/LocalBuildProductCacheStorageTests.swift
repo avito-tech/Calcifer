@@ -1,22 +1,12 @@
 import Foundation
 import XCTest
+import Mock
 import Checksum
 @testable import BuildProductCacheStorage
 
-public final class LocalBuildProductCacheStorageTests: XCTestCase {
+public final class LocalBuildProductCacheStorageTests: BaseTestCase {
     
-    private let cacheDirectoryPath = NSTemporaryDirectory().appendingPathComponent("test")
-    private let fileManager = FileManager.default
-    
-    override public func setUp() {
-        super.setUp()
-        try? fileManager.removeItem(atPath: cacheDirectoryPath)
-    }
-    
-    override public func tearDown() {
-        super.tearDown()
-        try? fileManager.removeItem(atPath: cacheDirectoryPath)
-    }
+    private lazy var cacheDirectoryPath = createTmpDirectory().path
     
     func test_addCache() {
         // Given

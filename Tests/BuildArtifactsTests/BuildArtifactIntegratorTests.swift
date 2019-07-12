@@ -2,28 +2,18 @@ import Foundation
 import XCTest
 import Checksum
 import XcodeProjectChecksumCalculator
+import Mock
 @testable import BuildArtifacts
 
-public final class BuildArtifactIntegratorTests: XCTestCase {
+public final class BuildArtifactIntegratorTests: BaseTestCase {
     
-    private let artifactsDirectoryPath = NSTemporaryDirectory().appendingPathComponent("test_artifacts")
-    private let artifactsDestination = NSTemporaryDirectory().appendingPathComponent("test_destination")
-    private let fileManager = FileManager.default
-    
-    override public func setUp() {
-        super.setUp()
-        try? fileManager.removeItem(atPath: artifactsDirectoryPath)
-        try? fileManager.removeItem(atPath: artifactsDestination)
-    }
-    
-    override public func tearDown() {
-        super.tearDown()
-        try? fileManager.removeItem(atPath: artifactsDirectoryPath)
-        try? fileManager.removeItem(atPath: artifactsDestination)
-    }
+    private lazy var artifactsDirectoryPath = createTmpDirectory()
+        .appendingPathComponent("test_artifacts").path
+    private lazy var artifactsDestination = createTmpDirectory()
+        .appendingPathComponent("test_destination").path
     
     func test_obtainArtifacts() {
-        XCTAssertNoThrow(try {
+        assertNoThrow {
             // Given
             let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
             let targetBuildArtifactMetaInfoManager = TargetBuildArtifactMetaInfoManagerStub()
@@ -36,7 +26,7 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
                 productName: "Some.framework",
                 productType: .framework,
                 dependencies: [],
-                checksum: BaseChecksum(UUID().uuidString)
+                checksum: BaseChecksum(uuid)
             )
             try ArtifactFileBuilder().createArtifactFile(
                 fileManager: fileManager,
@@ -67,7 +57,7 @@ public final class BuildArtifactIntegratorTests: XCTestCase {
 
             // Then
             XCTAssertTrue(fileManager.directoryExist(at: expectedPath))
-        }(), "Caught exception")
+        }
     }
     
     private func obtainExpectedPath(

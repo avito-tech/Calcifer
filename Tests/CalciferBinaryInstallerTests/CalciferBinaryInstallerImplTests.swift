@@ -5,26 +5,14 @@ import Mock
 import LaunchdManager
 @testable import CalciferBinaryInstaller
 
-public final class CalciferBinaryInstallerImplTests: XCTestCase {
+public final class CalciferBinaryInstallerImplTests: BaseTestCase {
     
     func test_install() {
         // Given
-        let fileManager = FileManager.default
         let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
         let calciferBinaryName = calciferPathProvider.calciferBinaryName()
-        let binaryPath = fileManager.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathComponent(calciferBinaryName).path
-        XCTAssertNoThrow(
-            try fileManager.createDirectory(
-                atPath: binaryPath.deletingLastPathComponent(),
-                withIntermediateDirectories: true
-            )
-        )
-        fileManager.createFile(
-            atPath: binaryPath,
-            contents: Data()
-        )
+        let binaryPath = createTmpFile(calciferBinaryName)
+        
         let destinationPath = fileManager.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathComponent(calciferBinaryName).path
@@ -56,7 +44,7 @@ public final class CalciferBinaryInstallerImplTests: XCTestCase {
         // When
         XCTAssertNoThrow(
             try installer.install(
-                binaryPath: binaryPath,
+                binaryPath: binaryPath.path,
                 destinationBinaryPath: destinationPath,
                 plist: plist,
                 plistPath: plistPath

@@ -7,13 +7,9 @@ import Mock
 public final class DWARFUUIDProviderImplTests: XCTestCase {
     
     func test_provider() {
-        XCTAssertNoThrow(try {
+        assertNoThrow {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub { command in
-                XCTFail(
-                    "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-                )
-            }
+            let shellCommandExecutor = ShellCommandExecutorStub()
             let uuid = UUID().uuidString
             let architecture = "x86_64"
             let output = [
@@ -37,7 +33,7 @@ public final class DWARFUUIDProviderImplTests: XCTestCase {
             // Then
             XCTAssertEqual(uuids.first?.uuid.uuidString, uuid)
             XCTAssertEqual(uuids.first?.architecture, architecture)
-        }(), "Caught exception")
+        }
     }
 
 }

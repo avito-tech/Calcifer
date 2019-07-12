@@ -5,12 +5,10 @@ import Toolkit
 import Mock
 @testable import DSYMSymbolizer
 
-public final class DSYMSymbolizerTests: XCTestCase {
-    
-    let fileManager = FileManager.default
+public final class DSYMSymbolizerTests: BaseTestCase {
     
     func test_symbolizer() {
-        XCTAssertNoThrow(try {
+        assertNoThrow {
             // Given
             let uuid = UUID().uuidString
             let expectedArchitecture = "x86_64"
@@ -43,18 +41,14 @@ public final class DSYMSymbolizerTests: XCTestCase {
             )
             
             // Then
-            guard let plistContent = NSDictionary(contentsOfFile: plistPath)
-                as? [String: String]
-                else {
-                    XCTFail("Empty plist content")
-                    return
-                }
+            let plistContent = (NSDictionary(contentsOfFile: plistPath)
+                as? [String: String]).unwrapOrFail()
             let architecture: String? = plistContent["DBGArchitecture"]
             XCTAssertEqual(architecture, expectedArchitecture)
             XCTAssertEqual(plistContent["DBGBuildSourcePath"], buildSourcePath)
             XCTAssertEqual(plistContent["DBGSourcePath"], sourcePath)
             XCTAssertEqual(plistContent["DBGSymbolRichExecutable"], binaryPathInApp)
-        }(), "Caught exception")
+        }
     }
     
     private func createSymbolizer(
@@ -64,11 +58,7 @@ public final class DSYMSymbolizerTests: XCTestCase {
         architecture: String)
         -> DSYMSymbolizer
     {
-        let shellCommandExecutor = ShellCommandExecutorStub { command in
-            XCTFail(
-                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-            )
-        }
+        let shellCommandExecutor = ShellCommandExecutorStub()
         let output = [
             "UUID: \(uuid) (\(architecture))",
             "/Users/a/.calcifer/localCache/Unbox/9d4f...10f1/Unbox.framework/Unbox"
@@ -94,10 +84,7 @@ public final class DSYMSymbolizerTests: XCTestCase {
     }
     
     private func createDSYM() -> String {
-        let name = UUID().uuidString
-        let dsymPath = URL(
-            fileURLWithPath: NSTemporaryDirectory()
-        ).appendingPathComponent("\(name).framework.dSYM")
+        let dsymPath = createTmpDirectory("\(UUID().uuidString).framework.dSYM")
         let dwarfDirecotry = dsymPath
             .appendingPathComponent("Contents")
             .appendingPathComponent("Resources")

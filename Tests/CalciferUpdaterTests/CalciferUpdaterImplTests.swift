@@ -7,22 +7,18 @@ import ZIPFoundation
 import ShellCommand
 @testable import CalciferUpdater
 
-public final class CalciferUpdaterImplTests: XCTestCase { 
+public final class CalciferUpdaterImplTests: BaseTestCase {
     
-    let fileManager = FileManager.default
-    let calciferBinaryName = CalciferPathProviderImpl(
-        fileManager: FileManager.default
+    private lazy var calciferBinaryName = CalciferPathProviderImpl(
+        fileManager: fileManager
     ).calciferBinaryName()
-    let temporaryDirectory = FileManager.default.createTemporaryDirectory()
+    private lazy var binaryDirectory = createTmpDirectory()
+    private lazy var destinationDirectory = createTmpDirectory()
     
     func test_updateCalcifer() {
         // Given
-        guard let versionFileURL = URL(string: "http://some.com/version.json"),
-            let zipBinaryFileURL = URL(string: "http://some.com/Calcifer.zip")
-            else {
-                XCTFail("Can't create url from string")
-                return
-        }
+        let versionFileURL = url("http://some.com/version.json")
+        let zipBinaryFileURL = url("http://some.com/Calcifer.zip")
         let config = CalciferUpdateConfig(
             versionFileURL: versionFileURL,
             zipBinaryFileURL: zipBinaryFileURL
@@ -32,14 +28,10 @@ public final class CalciferUpdaterImplTests: XCTestCase {
         let binaryFileURL = createBinary(content: binaryContent)
         let zipFileURL = createZip(binaryFileURL: binaryFileURL)
 
-        let destinationURL = fileManager.createTemporaryDirectory()
+        let destinationURL = destinationDirectory
             .appendingPathComponent(calciferBinaryName)
         
-        let shellCommandExecutor = ShellCommandExecutorStub { command in
-            XCTFail(
-                "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-            )
-        }
+        let shellCommandExecutor = ShellCommandExecutorStub()
         shellCommandExecutor.stub = { command in
             XCTAssertEqual(command.arguments, ["installCalciferBinary"])
             try? self.fileManager.copyItem(
@@ -76,10 +68,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
         }
         
         // Then
-        guard let result = updateResult else {
-            XCTFail("Failed to obtain update result")
-            return
-        }
+        let result = updateResult.unwrapOrFail()
         switch result {
         case let .failure(error):
             XCTFail("Failed to update with error \(error)")
@@ -89,7 +78,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
     }
     
     private func createBinary(content: Data) -> URL {
-        let binaryFileURL = temporaryDirectory
+        let binaryFileURL = binaryDirectory
             .appendingPathComponent(calciferBinaryName)
         fileManager.createFile(
             atPath: binaryFileURL.path,
@@ -99,7 +88,7 @@ public final class CalciferUpdaterImplTests: XCTestCase {
     }
     
     private func createZip(binaryFileURL: URL) -> URL {
-        let zipFileURL = temporaryDirectory
+        let zipFileURL = binaryDirectory
             .appendingPathComponent(calciferBinaryName)
             .appendingPathExtension("zip")
         XCTAssertNoThrow(

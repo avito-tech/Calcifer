@@ -11,15 +11,6 @@ public final class FileChecksumHolderTests: XCTestCase {
     let checksumProducer = TestURLChecksumProducer()
     let fullPathProvider = TestFileElementFullPathProvider()
     
-    // MARK: - Lifecycle
-    override public func setUp() {
-        super.setUp()
-    }
-    
-    override public func tearDown() {
-        super.tearDown()
-    }
-    
     func test_build_correctly() {
         // Given
         let filePathString = "file.swift"

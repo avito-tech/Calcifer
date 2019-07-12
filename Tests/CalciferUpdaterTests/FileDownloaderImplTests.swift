@@ -8,20 +8,16 @@ public final class FileDownloaderImplTests: XCTestCase {
     func test_uploadNewVersion() {
         // Given
         let sessionStub = StubURLSession()
-        guard let url = URL(string: "http://some.com/some")
-            else {
-                XCTFail("Can't create url from string")
-                return
-        }
+        let downloadURL = url("http://some.com/some")
         let expectedDownloadedURL = URL(fileURLWithPath: "/path/file.zip")
-        stubSession(sessionStub, downloadURL: url) {
+        stubSession(sessionStub, downloadURL: downloadURL) {
             expectedDownloadedURL
         }
         let fileDownloader = FileDownloaderImpl(session: sessionStub)
         
         var downloadResult: Result<URL, Error>?
         // When
-        fileDownloader.downloadFile(url: url) { result in
+        fileDownloader.downloadFile(url: downloadURL) { result in
             downloadResult = result
         }
         

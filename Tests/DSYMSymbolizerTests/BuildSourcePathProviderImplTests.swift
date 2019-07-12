@@ -4,25 +4,14 @@ import ShellCommand
 import Mock
 @testable import DSYMSymbolizer
 
-public final class BuildSourcePathProviderImplTests: XCTestCase {
+public final class BuildSourcePathProviderImplTests: BaseTestCase {
     
     func test_provider() {
         XCTAssertNoThrow(try {
             // Given
-            let shellCommandExecutor = ShellCommandExecutorStub { command in
-                XCTFail(
-                    "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
-                )
-            }
-            let sourcePathDirectory = URL(
-                fileURLWithPath: NSTemporaryDirectory()
-            ).appendingPathComponent("a")
-            .appendingPathComponent("Sources")
+            let shellCommandExecutor = ShellCommandExecutorStub()
+            let sourcePathDirectory = createTmpDirectory("Sources")
             let sourcePath = sourcePathDirectory.deletingLastPathComponent()
-            try FileManager.default.createDirectory(
-                atPath: sourcePathDirectory.path,
-                withIntermediateDirectories: true
-            )
             let binaryPath = UUID().uuidString
             let expectedBuildSourcePath = "/b"
             let output = "0000000000000000 - 00 0000    SO \(expectedBuildSourcePath)/Sources/"
@@ -41,7 +30,7 @@ public final class BuildSourcePathProviderImplTests: XCTestCase {
             )
             let buildSourcePathProvider = BuildSourcePathProviderImpl(
                 symbolTableProvider: symbolTableProvider,
-                fileManager: FileManager.default
+                fileManager: fileManager
             )
             
             // When
@@ -52,9 +41,6 @@ public final class BuildSourcePathProviderImplTests: XCTestCase {
             
             // Then
             XCTAssertEqual(buildSourcePath, expectedBuildSourcePath)
-            try FileManager.default.removeItem(
-                at: sourcePath
-            )
         }(), "Caught exception")
     }
     

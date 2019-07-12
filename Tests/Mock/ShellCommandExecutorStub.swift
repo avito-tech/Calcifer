@@ -1,5 +1,6 @@
 import Foundation
 import ShellCommand
+import XCTest
 
 public final class ShellCommandExecutorStub: ShellCommandExecutor {
 
@@ -11,11 +12,13 @@ public final class ShellCommandExecutorStub: ShellCommandExecutor {
         )
     }
     
-    public let onMismatch: (ShellCommand) -> ()
-    
-    public init(onMismatch: @escaping (ShellCommand) -> ()) {
-        self.onMismatch = onMismatch
+    public var onMismatch: (ShellCommand) -> () = { command in
+        XCTFail(
+            "Incorrect command launchPath \(command.launchPath) or arguments \(command.arguments)"
+        )
     }
+    
+    public init() {}
 
     public func execute(
         command: ShellCommand,
