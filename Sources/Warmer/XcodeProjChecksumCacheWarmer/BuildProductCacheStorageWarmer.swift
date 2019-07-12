@@ -13,6 +13,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let calciferPathProvider: CalciferPathProvider
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
+    private let targetInfoFilter: TargetInfoFilter
     private let cacheStorageFactory: CacheStorageFactory
     
     public init(
@@ -21,6 +22,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         requiredTargetsProvider: RequiredTargetsProvider,
         calciferPathProvider: CalciferPathProvider,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
+        targetInfoFilter: TargetInfoFilter,
         cacheStorageFactory: CacheStorageFactory)
     {
         self.configProvider = configProvider
@@ -28,6 +30,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         self.requiredTargetsProvider = requiredTargetsProvider
         self.calciferPathProvider = calciferPathProvider
         self.cacheKeyBuilder = cacheKeyBuilder
+        self.targetInfoFilter = targetInfoFilter
         self.cacheStorageFactory = cacheStorageFactory
     }
     
@@ -69,19 +72,10 @@ public final class BuildProductCacheStorageWarmer: Warmer {
     }
     
     private func fillProductCache(params: XcodeBuildEnvironmentParameters, gradleHost: String) throws -> () {
-        let projectPath = params.podsProjectPath
-        let targetInfoProvider = try targetInfoProviderFactory.targetChecksumProvider(
-            projectPath: projectPath
-        )
-        targetInfoProvider.saveChecksum(
-            to: calciferPathProvider.calciferChecksumFilePath(for: Date())
-        )
-        let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetInfoProvider)
-        let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
+        let calciferChecksumFilePath = calciferPathProvider.calciferChecksumFilePath(for: Date())
         let requiredTargets = try requiredTargetsProvider.obtainRequiredTargets(
             params: params,
-            targetInfoFilter: targetInfoFilter,
-            buildParametersChecksum: paramsChecksum
+            calciferChecksumFilePath: calciferChecksumFilePath
         )
         let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredTargets)
         let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(

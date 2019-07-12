@@ -102,7 +102,11 @@ public final class UploadRemoteCacheCommand: Command {
             xcodeProjCache: xcodeProjCache,
             xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory
         )
-        let requiredTargetsProvider = RequiredTargetsProviderImpl()
+        let targetInfoFilter = TargetInfoFilter()
+        let requiredTargetsProvider = RequiredTargetsProviderImpl(
+            targetInfoProviderFactory: targetInfoProviderFactory,
+            targetInfoFilter: targetInfoFilter
+        )
         let cacheStorageFactory = CacheStorageFactoryImpl(
             fileManager: fileManager,
             unzip: unzip
@@ -113,6 +117,7 @@ public final class UploadRemoteCacheCommand: Command {
             calciferPathProvider: calciferPathProvider,
             checksumProducer: checksumProducer,
             cacheKeyBuilder: cacheKeyBuilder,
+            targetInfoFilter: targetInfoFilter,
             targetInfoProviderFactory: targetInfoProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory

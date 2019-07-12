@@ -61,7 +61,11 @@ public final class StartDaemonCommand: Command {
             xcodeProjCache: xcodeProjCache,
             xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory
         )
-        let requiredTargetsProvider = RequiredTargetsProviderImpl()
+        let targetInfoFilter = TargetInfoFilter()
+        let requiredTargetsProvider = RequiredTargetsProviderImpl(
+            targetInfoProviderFactory: targetInfoProviderFactory,
+            targetInfoFilter: targetInfoFilter
+        )
         let cacheKeyBuilder = BuildProductCacheKeyBuilder()
         let shellExecutor = ShellCommandExecutorImpl()
         let unzip = Unzip(shellExecutor: shellExecutor)
@@ -75,6 +79,7 @@ public final class StartDaemonCommand: Command {
             requiredTargetsProvider: requiredTargetsProvider,
             calciferPathProvider: calciferPathProvider,
             cacheKeyBuilder: cacheKeyBuilder,
+            targetInfoFilter: targetInfoFilter,
             cacheStorageFactory: cacheStorageFactory)
     }
     

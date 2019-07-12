@@ -5,14 +5,17 @@ import Checksum
 
 public final class TargetInfoFilter {
     
-    private let targetInfoProvider: TargetInfoProvider<BaseChecksum>
-    
-    public init(targetInfoProvider: TargetInfoProvider<BaseChecksum>) {
-        self.targetInfoProvider = targetInfoProvider
-    }
+//    private let targetInfoProvider: TargetInfoProvider<BaseChecksum>
+//
+//    public init(targetInfoProvider: TargetInfoProvider<BaseChecksum>) {
+//        self.targetInfoProvider = targetInfoProvider
+//    }
+
+    public init() {}
     
     public func obtainRequiredTargets(
         targetName: String,
+        targetInfoProvider: TargetInfoProvider<BaseChecksum>,
         buildParametersChecksum: BaseChecksum)
         throws -> [TargetInfo<BaseChecksum>]
     {

@@ -12,6 +12,7 @@ public final class BuildProductCacheStorageWarmerFactory {
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let calciferPathProvider: CalciferPathProvider
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
+    private let targetInfoFilter: TargetInfoFilter
     private let cacheStorageFactory: CacheStorageFactory
     
     public init(
@@ -20,6 +21,7 @@ public final class BuildProductCacheStorageWarmerFactory {
         requiredTargetsProvider: RequiredTargetsProvider,
         calciferPathProvider: CalciferPathProvider,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
+        targetInfoFilter: TargetInfoFilter,
         cacheStorageFactory: CacheStorageFactory)
     {
         self.configProvider = configProvider
@@ -27,6 +29,7 @@ public final class BuildProductCacheStorageWarmerFactory {
         self.requiredTargetsProvider = requiredTargetsProvider
         self.calciferPathProvider = calciferPathProvider
         self.cacheKeyBuilder = cacheKeyBuilder
+        self.targetInfoFilter = targetInfoFilter
         self.cacheStorageFactory = cacheStorageFactory
     }
     
@@ -37,6 +40,7 @@ public final class BuildProductCacheStorageWarmerFactory {
             requiredTargetsProvider: requiredTargetsProvider,
             calciferPathProvider: calciferPathProvider,
             cacheKeyBuilder: cacheKeyBuilder,
+            targetInfoFilter: targetInfoFilter,
             cacheStorageFactory: cacheStorageFactory
         )
     }
