@@ -263,6 +263,7 @@ let package = Package(
         .target(
             name: "Warmer",
             dependencies: [
+                "RemoteCachePreparer",
                 "XcodeProjCache",
                 "CalciferConfig",
                 "ArgumentsParser",

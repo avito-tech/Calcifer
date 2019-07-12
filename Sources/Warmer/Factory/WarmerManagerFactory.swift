@@ -7,13 +7,16 @@ public final class WarmerManagerFactory {
     
     private let fileManager: FileManager
     private let xcodeProjCache: XcodeProjCache
+    private let buildProductCacheStorageWarmerFactory: BuildProductCacheStorageWarmerFactory
     
     public init(
         fileManager: FileManager,
-        xcodeProjCache: XcodeProjCache)
+        xcodeProjCache: XcodeProjCache,
+        buildProductCacheStorageWarmerFactory: BuildProductCacheStorageWarmerFactory)
     {
         self.fileManager = fileManager
         self.xcodeProjCache = xcodeProjCache
+        self.buildProductCacheStorageWarmerFactory = buildProductCacheStorageWarmerFactory
     }
     
     public func createWarmerManager(warmupOperationQueue: OperationQueue) -> WarmerManager {
@@ -24,12 +27,20 @@ public final class WarmerManagerFactory {
                 xcodeProjCache: xcodeProjCache,
                 calciferPathProvider: calciferPathProvider
             ),
-            delay: 1
+            delay: 10
         )
+        let buildProductCacheStorageWarmer = DebouncingWarmer(
+            warmer: buildProductCacheStorageWarmerFactory.build(),
+            delay: 10
+        )
+
         return WarmerManagerImpl(
             warmupOperationQueue: warmupOperationQueue,
             fileWatcher: fileWatcher,
-            warmers: [xcodeProjCacheWarmer],
+            warmers: [
+                xcodeProjCacheWarmer,
+                buildProductCacheStorageWarmer
+            ],
             calciferPathProvider: calciferPathProvider
         )
     }

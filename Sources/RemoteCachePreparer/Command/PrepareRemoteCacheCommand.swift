@@ -105,7 +105,6 @@ public final class PrepareRemoteCacheCommand: Command {
             xcodeProjCache: xcodeProjCache,
             xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory
         )
-        let buildTargetChecksumProviderFactory = BuildTargetChecksumProviderFactoryImpl(targetInfoProviderFactory: targetInfoProviderFactory)
         let requiredTargetsProvider = RequiredTargetsProviderImpl()
         let unzip = Unzip(shellExecutor: shellExecutor)
         let cacheStorageFactory = CacheStorageFactoryImpl(
@@ -121,7 +120,7 @@ public final class PrepareRemoteCacheCommand: Command {
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
             shellCommandExecutor: shellExecutor,
-            buildTargetChecksumProviderFactory: buildTargetChecksumProviderFactory,
+            targetInfoProviderFactory: targetInfoProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory,
             xcodeProjCache: xcodeProjCache,

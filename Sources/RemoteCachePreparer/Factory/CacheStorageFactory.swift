@@ -23,7 +23,7 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
     private let fileManager: FileManager
     private let unzip: Unzip
     
-    init(
+    public init(
         fileManager: FileManager,
         unzip: Unzip)
     {

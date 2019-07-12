@@ -19,7 +19,7 @@ final class RemoteCachePreparer {
     private let calciferPathProvider: CalciferPathProvider
     private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
     private let shellCommandExecutor: ShellCommandExecutor
-    private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
+    private let targetInfoProviderFactory: TargetInfoProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
     private let xcodeProjCache: XcodeProjCache
@@ -30,7 +30,7 @@ final class RemoteCachePreparer {
         fileManager: FileManager,
         calciferPathProvider: CalciferPathProvider,
         shellCommandExecutor: ShellCommandExecutor,
-        buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
+        targetInfoProviderFactory: TargetInfoProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory,
         xcodeProjCache: XcodeProjCache,
@@ -40,7 +40,7 @@ final class RemoteCachePreparer {
         self.fileManager = fileManager
         self.calciferPathProvider = calciferPathProvider
         self.shellCommandExecutor = shellCommandExecutor
-        self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
+        self.targetInfoProviderFactory = targetInfoProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
         self.xcodeProjCache = xcodeProjCache
@@ -61,12 +61,12 @@ final class RemoteCachePreparer {
         
         try params.save(to: calciferPathProvider.calciferEnvironmentFilePath())
         
-        let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
-            try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
-                podsProjectPath: podsProjectPath
+        let targetInfoProvider = try TimeProfiler.measure("Calculate checksum") {
+            try targetInfoProviderFactory.targetChecksumProvider(
+                projectPath: podsProjectPath
             )
         }
-        targetChecksumProvider.saveChecksum(
+        targetInfoProvider.saveChecksum(
             to: calciferPathProvider.calciferChecksumFilePath(for: Date())
         )
         
@@ -82,13 +82,12 @@ final class RemoteCachePreparer {
             gradleHost: gradleHost,
             shouldUpload: shouldUploadCache
         )
-        let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
+        let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetInfoProvider)
         
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try requiredTargetsProvider.obtainRequiredTargets(
                 params: params,
                 targetInfoFilter: targetInfoFilter,
-                checksumProducer: checksumProducer,
                 buildParametersChecksum: paramsChecksum
             )
         }

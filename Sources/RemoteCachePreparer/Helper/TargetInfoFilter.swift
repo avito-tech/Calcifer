@@ -13,7 +13,6 @@ public final class TargetInfoFilter {
     
     public func obtainRequiredTargets(
         targetName: String,
-        checksumProducer: BaseURLChecksumProducer,
         buildParametersChecksum: BaseChecksum)
         throws -> [TargetInfo<BaseChecksum>]
     {
