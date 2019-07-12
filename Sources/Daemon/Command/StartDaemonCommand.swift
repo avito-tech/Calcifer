@@ -75,7 +75,6 @@ public final class StartDaemonCommand: Command {
         )
         return BuildProductCacheStorageWarmerFactory(
             configProvider: configProvider,
-            targetInfoProviderFactory: targetInfoProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             calciferPathProvider: calciferPathProvider,
             cacheKeyBuilder: cacheKeyBuilder,

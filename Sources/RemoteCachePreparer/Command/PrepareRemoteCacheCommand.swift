@@ -127,7 +127,6 @@ public final class PrepareRemoteCacheCommand: Command {
             cacheKeyBuilde: cacheKeyBuilde,
             targetInfoFilter: targetInfoFilter,
             shellCommandExecutor: shellExecutor,
-            targetInfoProviderFactory: targetInfoProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory,
             xcodeProjCache: xcodeProjCache,

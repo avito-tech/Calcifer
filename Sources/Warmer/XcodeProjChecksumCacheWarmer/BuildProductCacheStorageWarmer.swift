@@ -9,7 +9,6 @@ import Toolkit
 public final class BuildProductCacheStorageWarmer: Warmer {
     
     private let configProvider: CalciferConfigProvider
-    private let targetInfoProviderFactory: TargetInfoProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let calciferPathProvider: CalciferPathProvider
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
@@ -18,7 +17,6 @@ public final class BuildProductCacheStorageWarmer: Warmer {
     
     public init(
         configProvider: CalciferConfigProvider,
-        targetInfoProviderFactory: TargetInfoProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         calciferPathProvider: CalciferPathProvider,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
@@ -26,7 +24,6 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         cacheStorageFactory: CacheStorageFactory)
     {
         self.configProvider = configProvider
-        self.targetInfoProviderFactory = targetInfoProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.calciferPathProvider = calciferPathProvider
         self.cacheKeyBuilder = cacheKeyBuilder

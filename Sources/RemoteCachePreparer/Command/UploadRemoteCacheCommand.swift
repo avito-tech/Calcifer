@@ -118,7 +118,6 @@ public final class UploadRemoteCacheCommand: Command {
             checksumProducer: checksumProducer,
             cacheKeyBuilder: cacheKeyBuilder,
             targetInfoFilter: targetInfoFilter,
-            targetInfoProviderFactory: targetInfoProviderFactory,
             requiredTargetsProvider: requiredTargetsProvider,
             cacheStorageFactory: cacheStorageFactory
         )

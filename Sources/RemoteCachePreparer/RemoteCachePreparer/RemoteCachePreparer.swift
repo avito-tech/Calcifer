@@ -20,7 +20,6 @@ final class RemoteCachePreparer {
     private let cacheKeyBuilde: BuildProductCacheKeyBuilder
     private let targetInfoFilter: TargetInfoFilter
     private let shellCommandExecutor: ShellCommandExecutor
-    private let targetInfoProviderFactory: TargetInfoProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
     private let xcodeProjCache: XcodeProjCache
@@ -33,7 +32,6 @@ final class RemoteCachePreparer {
         cacheKeyBuilde: BuildProductCacheKeyBuilder,
         targetInfoFilter: TargetInfoFilter,
         shellCommandExecutor: ShellCommandExecutor,
-        targetInfoProviderFactory: TargetInfoProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory,
         xcodeProjCache: XcodeProjCache,
@@ -45,7 +43,6 @@ final class RemoteCachePreparer {
         self.cacheKeyBuilde = cacheKeyBuilde
         self.targetInfoFilter = targetInfoFilter
         self.shellCommandExecutor = shellCommandExecutor
-        self.targetInfoProviderFactory = targetInfoProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
         self.xcodeProjCache = xcodeProjCache

@@ -18,7 +18,6 @@ final class RemoteCacheUploader {
     private let checksumProducer: BaseURLChecksumProducer
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
     private let targetInfoFilter: TargetInfoFilter
-    private let targetInfoProviderFactory: TargetInfoProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
     
@@ -28,7 +27,6 @@ final class RemoteCacheUploader {
         checksumProducer: BaseURLChecksumProducer,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         targetInfoFilter: TargetInfoFilter,
-        targetInfoProviderFactory: TargetInfoProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory)
     {
@@ -37,7 +35,6 @@ final class RemoteCacheUploader {
         self.checksumProducer = checksumProducer
         self.cacheKeyBuilder = cacheKeyBuilder
         self.targetInfoFilter = targetInfoFilter
-        self.targetInfoProviderFactory = targetInfoProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
     }
