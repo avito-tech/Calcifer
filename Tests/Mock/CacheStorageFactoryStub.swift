@@ -41,5 +41,4 @@ public final class CacheStorageFactoryStub: CacheStorageFactory {
         return remoteBuildProductCacheStorage
     }
     
-    
 }

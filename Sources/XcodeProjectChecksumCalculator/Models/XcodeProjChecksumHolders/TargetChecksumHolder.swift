@@ -98,7 +98,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
             }.toDictionary { $0.name }
         return try updateModels.update(
             childrenDictionary: &dependencies,
-            update: { (dependencyChecksumHolder: TargetChecksumHolder<ChecksumType>, dependencyUpdateModel: TargetUpdateModel<ChecksumType>) in
+            update: { (_: TargetChecksumHolder<ChecksumType>, _: TargetUpdateModel<ChecksumType>) in
                 // DO NOT UPDATE DEPENDENCY! THEY ALREADY UPDATED BY PROJECT
             }, buildValue: { updateModel in
                 updateModel.cache.createIfNotExist(updateModel.name) { _ in

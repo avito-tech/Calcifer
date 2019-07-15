@@ -17,5 +17,4 @@ final class TargetBuildArtifactMetaInfoManagerStub: TargetBuildArtifactMetaInfoM
         return "metainfo.json"
     }
     
-    
 }

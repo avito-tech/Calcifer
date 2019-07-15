@@ -36,5 +36,4 @@ public final class BuildProductCacheStorageStub: BuildProductCacheStorage {
         completion()
     }
     
-    
 }

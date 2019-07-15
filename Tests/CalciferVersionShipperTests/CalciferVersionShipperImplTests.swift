@@ -8,7 +8,7 @@ import CalciferConfig
 public final class CalciferVersionShipperImplTests: BaseTestCase {
     
     private lazy var binaryData: Data = {
-        return UUID().uuidString.data(using: .utf8).unwrapOrFail()
+        UUID().uuidString.data(using: .utf8).unwrapOrFail()
     }()
     private lazy var binaryPath = createTmpFile(data: binaryData)
     

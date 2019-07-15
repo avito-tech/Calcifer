@@ -10,7 +10,7 @@ public final class RequiredTargetsProviderStub: RequiredTargetsProvider {
     
     public var onObtainRequiredTargets:
         (XcodeBuildEnvironmentParameters, String) -> ([TargetInfo<BaseChecksum>]) =
-        { _,_ in return [] }
+        { _, _ in [] }
     
     public func obtainRequiredTargets(
         params: XcodeBuildEnvironmentParameters,
@@ -19,6 +19,5 @@ public final class RequiredTargetsProviderStub: RequiredTargetsProvider {
     {
         return onObtainRequiredTargets(params, calciferChecksumFilePath)
     }
-    
     
 }

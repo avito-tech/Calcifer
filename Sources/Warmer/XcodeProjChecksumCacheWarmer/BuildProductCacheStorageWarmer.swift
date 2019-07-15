@@ -109,9 +109,10 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         try enumerator.enumerate(
             targetInfos: frameworkTargets,
             cacheKeyBuilder: cacheKeyBuilder,
-            cacheStorage: storage) { _, completion in
+            cacheStorage: storage)
+        { _, completion in
                 completion()
-            }
+        }
     }
     
     private func obtainEnvironmentParameters() -> XcodeBuildEnvironmentParameters? {
