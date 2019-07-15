@@ -2,9 +2,9 @@ import Foundation
 import Checksum
 
 public struct BuildProductCacheKey<ChecksumType: Checksum>: CustomStringConvertible {
-    let productName: String
-    let productType: TargetProductType
-    let checksum: ChecksumType
+    public let productName: String
+    public let productType: TargetProductType
+    public let checksum: ChecksumType
     
     public init(
         productName: String,

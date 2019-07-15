@@ -4,17 +4,19 @@ import XcodeBuildEnvironmentParametersParser
 extension XcodeBuildEnvironmentParameters {
     
     public static func forTests(
-        podsRoot: String = "/b/Some/Pods")
+        podsRoot: String = "/b/Some/Pods",
+        projectDirectory: String = "/b/Some")
         throws -> XcodeBuildEnvironmentParameters
     {
         return try XcodeBuildEnvironmentParameters(
             environment: environment(
-                podsRoot: podsRoot
+                podsRoot: podsRoot,
+                projectDirectory: projectDirectory
             )
         )
     }
     
-    private static func environment(podsRoot: String) -> [String: String] {
+    private static func environment(podsRoot: String, projectDirectory: String) -> [String: String] {
         return [
             "TARGETNAME": "Some",
             "PROJECT": "Some",
@@ -30,7 +32,7 @@ extension XcodeBuildEnvironmentParameters {
             "BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products",
             "CONFIGURATION_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator",
             "PROJECT_FILE_PATH": "/b/Some/Some.xcodeproj",
-            "PROJECT_DIR": "/b/Some",
+            "PROJECT_DIR": projectDirectory,
             "SRCROOT": "/b/Some",
             "PODS_CONFIGURATION_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator",
             "PODS_ROOT": podsRoot,

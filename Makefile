@@ -19,3 +19,8 @@ generate_project:
 ship:
 	swift build -c release -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.13" --static-swift-stdlib
 	./.build/x86_64-apple-macosx/release/Calcifer shipCurrentCalciferVersion
+
+lint:
+	tmpdir=$(mktemp -d)
+	report_file="${tmpdir}/lint.html"
+	swiftlint --reporter html > ${report_file} || open ${report_file}
