@@ -35,7 +35,7 @@ public final class CacheProviderImpl: CacheProvider {
         XcodeProjChecksumCacheImpl()
     }()
     
-    lazy public var artifactBuildSourcePathCache: ArtifactBuildSourcePathCache = {
+    public lazy var artifactBuildSourcePathCache: ArtifactBuildSourcePathCache = {
         ArtifactBuildSourcePathCacheImpl()
     }()
     

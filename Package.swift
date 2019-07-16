@@ -263,6 +263,7 @@ let package = Package(
         .target(
             name: "Warmer",
             dependencies: [
+                "RemoteCachePreparer",
                 "XcodeProjCache",
                 "CalciferConfig",
                 "ArgumentsParser",
@@ -328,7 +329,8 @@ let package = Package(
         .testTarget(
             name: "CalciferConfigTests",
             dependencies: [
-                "CalciferConfig"
+                "CalciferConfig",
+                "Mock"
             ]
         ),
         // MARK: CalciferVersionShipper
@@ -424,6 +426,8 @@ let package = Package(
             name: "Mock",
             dependencies: [
                 "XcodeBuildEnvironmentParametersParser",
+                "BuildProductCacheStorage",
+                "RemoteCachePreparer",
                 "ShellCommand"
             ],
             path: "Tests/Mock/"

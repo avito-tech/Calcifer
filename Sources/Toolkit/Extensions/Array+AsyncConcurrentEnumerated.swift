@@ -13,8 +13,11 @@ public extension Array {
         }
     }
     
-    func asyncConcurrentEnumerated(
-        each: (_ object: Element, _ completion: @escaping () -> (), _ stop: () -> ()) throws -> ()) throws
+    func asyncConcurrentEnumerate(
+        each: (
+        _ object: Element,
+        _ completion: @escaping () -> (),
+        _ stop: @escaping () -> ()) throws -> ()) throws
     {
         let dispatchGroup = DispatchGroup()
         let array = NSArray(array: self)

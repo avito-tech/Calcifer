@@ -4,12 +4,12 @@ import BuildProductCacheStorage
 import Checksum
 import Toolkit
 
-final class CachedTargetInfo {
-    let targetInfo: TargetInfo<BaseChecksum>
-    let frameworkCacheValue: BuildProductCacheValue<BaseChecksum>
-    let dSYMCacheValue: BuildProductCacheValue<BaseChecksum>
+public final class CachedTargetInfo {
+    public let targetInfo: TargetInfo<BaseChecksum>
+    public let frameworkCacheValue: BuildProductCacheValue<BaseChecksum>
+    public let dSYMCacheValue: BuildProductCacheValue<BaseChecksum>
     
-    init(
+    public init(
         targetInfo: TargetInfo<BaseChecksum>,
         frameworkCacheValue: BuildProductCacheValue<BaseChecksum>,
         dSYMCacheValue: BuildProductCacheValue<BaseChecksum>)

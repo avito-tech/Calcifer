@@ -20,8 +20,8 @@ public extension Dictionary {
             try update(newValue, value)
             childrenDictionary[key] = newValue
         }
-        try childrenDictionary.enumerateKeysAndObjects(options: .concurrent) { key, value, _ in
-            if let _ = self[key] {
+        try childrenDictionary.enumerateKeysAndObjects(options: .concurrent) { key, _, _ in
+            if self[key] != nil {
                 return
             }
             childrenDictionary.removeValue(forKey: key)

@@ -73,7 +73,9 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
                 )
             }
         case let .failure(error):
-            Logger.verbose("Download cache for \(cacheKey) failure \(error?.localizedDescription ?? "-")")
+            if let error = error {
+                Logger.verbose("Download cache for \(cacheKey) failure \(error.localizedDescription)")
+            }
             completion(.notExist)
         }
     }

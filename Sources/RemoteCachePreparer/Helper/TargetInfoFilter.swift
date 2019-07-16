@@ -4,16 +4,12 @@ import XcodeProjectChecksumCalculator
 import Checksum
 
 public final class TargetInfoFilter {
-    
-    private let targetInfoProvider: TargetInfoProvider<BaseChecksum>
-    
-    public init(targetInfoProvider: TargetInfoProvider<BaseChecksum>) {
-        self.targetInfoProvider = targetInfoProvider
-    }
+
+    public init() {}
     
     public func obtainRequiredTargets(
         targetName: String,
-        checksumProducer: BaseURLChecksumProducer,
+        targetInfoProvider: TargetInfoProvider<BaseChecksum>,
         buildParametersChecksum: BaseChecksum)
         throws -> [TargetInfo<BaseChecksum>]
     {

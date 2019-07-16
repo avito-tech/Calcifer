@@ -4,7 +4,7 @@ import XCTest
 open class BaseTestCase: XCTestCase {
     
     public lazy var fileManager: FileManager = {
-        return FileManager.default
+        FileManager.default
     }()
     
     private lazy var temporaryDirectory: URL = {

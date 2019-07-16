@@ -17,9 +17,9 @@ final class RemoteCachePreparer {
     
     private let fileManager: FileManager
     private let calciferPathProvider: CalciferPathProvider
-    private let cacheKeyBuilder = BuildProductCacheKeyBuilder()
+    private let cacheKeyBuilde: BuildProductCacheKeyBuilder
+    private let targetInfoFilter: TargetInfoFilter
     private let shellCommandExecutor: ShellCommandExecutor
-    private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
     private let xcodeProjCache: XcodeProjCache
@@ -29,8 +29,9 @@ final class RemoteCachePreparer {
     init(
         fileManager: FileManager,
         calciferPathProvider: CalciferPathProvider,
+        cacheKeyBuilde: BuildProductCacheKeyBuilder,
+        targetInfoFilter: TargetInfoFilter,
         shellCommandExecutor: ShellCommandExecutor,
-        buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory,
         xcodeProjCache: XcodeProjCache,
@@ -39,8 +40,9 @@ final class RemoteCachePreparer {
     {
         self.fileManager = fileManager
         self.calciferPathProvider = calciferPathProvider
+        self.cacheKeyBuilde = cacheKeyBuilde
+        self.targetInfoFilter = targetInfoFilter
         self.shellCommandExecutor = shellCommandExecutor
-        self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
         self.xcodeProjCache = xcodeProjCache
@@ -55,20 +57,7 @@ final class RemoteCachePreparer {
         sourcePath: String)
         throws
     {
-        let podsProjectPath = params.podsProjectPath
-        
-        let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
-        
         try params.save(to: calciferPathProvider.calciferEnvironmentFilePath())
-        
-        let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
-            try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
-                podsProjectPath: podsProjectPath
-            )
-        }
-        targetChecksumProvider.saveChecksum(
-            to: calciferPathProvider.calciferChecksumFilePath(for: Date())
-        )
         
         let storageConfig = config.storageConfig
         guard let gradleHost = storageConfig.gradleHost else {
@@ -82,14 +71,11 @@ final class RemoteCachePreparer {
             gradleHost: gradleHost,
             shouldUpload: shouldUploadCache
         )
-        let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
-        
+        let calciferChecksumFilePath = calciferPathProvider.calciferChecksumFilePath(for: Date())
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try requiredTargetsProvider.obtainRequiredTargets(
                 params: params,
-                targetInfoFilter: targetInfoFilter,
-                checksumProducer: checksumProducer,
-                buildParametersChecksum: paramsChecksum
+                calciferChecksumFilePath: calciferChecksumFilePath
             )
         }
         
@@ -100,7 +86,7 @@ final class RemoteCachePreparer {
         )
         let artifactIntegrator = ArtifactIntegrator(
             integrator: buildArtifactIntegrator,
-            cacheKeyBuilder: cacheKeyBuilder
+            cacheKeyBuilder: cacheKeyBuilde
         )
         
         let buildDirectoryPath = obtainBuildDirectoryPath()
@@ -225,7 +211,7 @@ final class RemoteCachePreparer {
         return PatchedProjectBuilder(
             cacheStorage: cacheStorage,
             checksumProducer: checksumProducer,
-            cacheKeyBuilder: cacheKeyBuilder,
+            cacheKeyBuilder: cacheKeyBuilde,
             patcher: patcher,
             builder: builder,
             artifactIntegrator: artifactIntegrator,

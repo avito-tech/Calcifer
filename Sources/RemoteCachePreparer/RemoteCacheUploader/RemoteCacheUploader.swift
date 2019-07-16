@@ -17,7 +17,7 @@ final class RemoteCacheUploader {
     private let calciferPathProvider: CalciferPathProvider
     private let checksumProducer: BaseURLChecksumProducer
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
-    private let buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory
+    private let targetInfoFilter: TargetInfoFilter
     private let requiredTargetsProvider: RequiredTargetsProvider
     private let cacheStorageFactory: CacheStorageFactory
     
@@ -26,7 +26,7 @@ final class RemoteCacheUploader {
         calciferPathProvider: CalciferPathProvider,
         checksumProducer: BaseURLChecksumProducer,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
-        buildTargetChecksumProviderFactory: BuildTargetChecksumProviderFactory,
+        targetInfoFilter: TargetInfoFilter,
         requiredTargetsProvider: RequiredTargetsProvider,
         cacheStorageFactory: CacheStorageFactory)
     {
@@ -34,7 +34,7 @@ final class RemoteCacheUploader {
         self.calciferPathProvider = calciferPathProvider
         self.checksumProducer = checksumProducer
         self.cacheKeyBuilder = cacheKeyBuilder
-        self.buildTargetChecksumProviderFactory = buildTargetChecksumProviderFactory
+        self.targetInfoFilter = targetInfoFilter
         self.requiredTargetsProvider = requiredTargetsProvider
         self.cacheStorageFactory = cacheStorageFactory
     }
@@ -44,19 +44,6 @@ final class RemoteCacheUploader {
         params: XcodeBuildEnvironmentParameters)
         throws
     {
-        
-        let podsProjectPath = params.podsProjectPath
-        
-        let paramsChecksum = try BuildParametersChecksumProducer().checksum(input: params)
-        
-        let targetChecksumProvider = try TimeProfiler.measure("Calculate checksum") {
-            try buildTargetChecksumProviderFactory.createBuildTargetChecksumProvider(
-                podsProjectPath: podsProjectPath
-            )
-        }
-        targetChecksumProvider.saveChecksum(
-            to: calciferPathProvider.calciferChecksumFilePath(for: Date())
-        )
         
         let storageConfig = config.storageConfig
         guard let gradleHost = storageConfig.gradleHost else {
@@ -70,13 +57,11 @@ final class RemoteCacheUploader {
         let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost
         )
-        let targetInfoFilter = TargetInfoFilter(targetInfoProvider: targetChecksumProvider)
+        let calciferChecksumFilePath = calciferPathProvider.calciferChecksumFilePath(for: Date())
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try requiredTargetsProvider.obtainRequiredTargets(
                 params: params,
-                targetInfoFilter: targetInfoFilter,
-                checksumProducer: checksumProducer,
-                buildParametersChecksum: paramsChecksum
+                calciferChecksumFilePath: calciferChecksumFilePath
             )
         }
         

@@ -43,7 +43,7 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         var visited = [String: BaseChecksumHolder<ChecksumType>]()
         var notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
         while !notCalculatedLeafs.isEmpty {
-            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, stop in
+            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, _ in
                 _ = try node.obtainChecksum()
             }
             visited = notCalculatedLeafs

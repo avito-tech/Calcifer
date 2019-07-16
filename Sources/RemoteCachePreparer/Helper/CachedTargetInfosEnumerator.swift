@@ -4,9 +4,11 @@ import BuildProductCacheStorage
 import Checksum
 import Toolkit
 
-final class CachedTargetInfosEnumerator {
+public final class CachedTargetInfosEnumerator {
     
-    func enumerate(
+    public init() {}
+    
+    public func enumerate(
         targetInfos: [TargetInfo<BaseChecksum>],
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         cacheStorage: BuildProductCacheStorage,
@@ -14,23 +16,37 @@ final class CachedTargetInfosEnumerator {
         (CachedTargetInfo, @escaping () -> ()) -> ())
         throws
     {
-        try targetInfos.asyncConcurrentEnumerated { (targetInfo, completion, _) in
+        try targetInfos.asyncConcurrentEnumerate { (targetInfo, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
-            
+            var processError: Error?
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
-                let frameworkCacheValue = self.processCacheResult(frameworkResult, targetInfo: targetInfo)
-                cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
-                    let dSYMCacheValue = self.processCacheResult(dSYMResult, targetInfo: targetInfo)
-                    let cachedTargetInfo = CachedTargetInfo(
-                        targetInfo: targetInfo,
-                        frameworkCacheValue: frameworkCacheValue,
-                        dSYMCacheValue: dSYMCacheValue
-                    )
-                    each(cachedTargetInfo) {
-                        completion()
+                do {
+                    let frameworkCacheValue = try self.processCacheResult(frameworkResult, targetInfo: targetInfo)
+                    cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
+                        do {
+                            let dSYMCacheValue = try self.processCacheResult(dSYMResult, targetInfo: targetInfo)
+                            let cachedTargetInfo = CachedTargetInfo(
+                                targetInfo: targetInfo,
+                                frameworkCacheValue: frameworkCacheValue,
+                                dSYMCacheValue: dSYMCacheValue
+                            )
+                            each(cachedTargetInfo) {
+                                completion()
+                            }
+                        } catch {
+                            processError = error
+                            stop()
+                        }
                     }
+                } catch {
+                    processError = error
+                    stop()
                 }
+            }
+            
+            if let error = processError {
+                throw error
             }
         }
     }
@@ -38,20 +54,17 @@ final class CachedTargetInfosEnumerator {
     private func processCacheResult(
         _ result: BuildProductCacheResult<BaseChecksum>,
         targetInfo: TargetInfo<BaseChecksum>)
-        -> BuildProductCacheValue<BaseChecksum>
+        throws -> BuildProductCacheValue<BaseChecksum>
     {
         switch result {
         case let .result(value):
             return value
         case .notExist:
-            catchError {
-                throw RemoteCachePreparerError.unableToObtainCache(
-                    target: targetInfo.targetName,
-                    type: targetInfo.productType.rawValue,
-                    checksumValue: targetInfo.checksum.stringValue
-                )
-            }
-            fatalError("Unable to obtain local cache")
+            throw RemoteCachePreparerError.unableToObtainCache(
+                target: targetInfo.targetName,
+                type: targetInfo.productType.rawValue,
+                checksumValue: targetInfo.checksum.stringValue
+            )
         }
     }
     
