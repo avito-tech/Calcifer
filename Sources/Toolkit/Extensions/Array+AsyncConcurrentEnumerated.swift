@@ -13,7 +13,7 @@ public extension Array {
         }
     }
     
-    func asyncConcurrentEnumerated(
+    func asyncConcurrentEnumerate(
         each: (
         _ object: Element,
         _ completion: @escaping () -> (),

@@ -45,7 +45,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
             return
         }
         let localCacheDirectoryPath = storageConfig.localCacheDirectory
-        let performClosure = { [weak self] in
+        let performWarmup = { [weak self] in
             guard let strongSelf = self else { return }
             perform(
                 strongSelf.createOperation(
@@ -57,12 +57,12 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         }
         switch event {
         case .initial:
-            performClosure()
+            performWarmup()
         case .manual:
-            performClosure()
+            performWarmup()
         case let .file(fileEvent):
             guard fileEvent.path == pbxprojPath else { return }
-            performClosure()
+            performWarmup()
         }
         
     }

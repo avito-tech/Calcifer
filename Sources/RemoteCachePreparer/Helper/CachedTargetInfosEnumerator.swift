@@ -16,7 +16,7 @@ public final class CachedTargetInfosEnumerator {
         (CachedTargetInfo, @escaping () -> ()) -> ())
         throws
     {
-        try targetInfos.asyncConcurrentEnumerated { (targetInfo, completion, stop) in
+        try targetInfos.asyncConcurrentEnumerate { (targetInfo, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             var processError: Error?
