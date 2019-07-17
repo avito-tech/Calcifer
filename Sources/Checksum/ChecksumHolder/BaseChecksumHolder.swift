@@ -10,7 +10,7 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
 {
 
     public let name: String
-    private let uniqIdentifier = UUID().uuidString
+    public let uniqIdentifier = UUID().uuidString
     
     public var parents: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>
     
@@ -63,85 +63,6 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         }
         let checksum = try obtainChecksum()
         return checksum
-    }
-    
-    public func validate() throws {
-        try validateAllChecksumCalculated()
-        try validateChecksuMatch()
-        try validateUniqueness()
-    }
-    
-    private func validateAllChecksumCalculated() throws {
-        let validated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
-        try validateAllChecksumCalculated(validated: validated)
-    }
-    
-    private func validateAllChecksumCalculated(
-        validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
-        throws
-    {
-        guard validated.read(uniqIdentifier) == nil else { return }
-        validated.write(self, for: uniqIdentifier)
-        guard calculated else {
-            throw ChecksumError.notCalculatedChecksum(name: name)
-        }
-        for child in children.values {
-            try child.validateAllChecksumCalculated(validated: validated)
-        }
-    }
-    
-    private func validateChecksuMatch() throws {
-        let validated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
-        try validate(validated: validated)
-    }
-    
-    private func validate(
-        validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
-        throws
-    {
-        if validated.read(self.name) != nil {
-            return
-        }
-        if children.isEmpty {
-            return
-        }
-        let currentChecksum = try obtainChecksum().stringValue
-        let childrenChecksum = try children.values.sorted().map {
-            try $0.obtainChecksum()
-        }.aggregate().stringValue
-        if currentChecksum != childrenChecksum {
-            throw ChecksumError.checksumMismatch(
-                name: name,
-                currentChecksum: currentChecksum,
-                childrenChecksum: childrenChecksum
-            )
-        }
-        validated.write(self, for: name)
-        try children.enumerateKeysAndObjects(options: .concurrent) { _, child, _ in
-            try child.validate(validated: validated)
-        }
-    }
-    
-    private func validateUniqueness() throws {
-        let visited = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
-        try validateUniqueness(visited: visited)
-    }
-    
-    public func validateUniqueness(
-        visited: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
-        throws
-    {
-        let holder = visited.read(name)
-        if let holder = holder {
-            if holder.uniqIdentifier != uniqIdentifier {
-                throw ChecksumError.dublicateChecksumHolder(name: holder.name)
-            }
-            return
-        }
-        visited.write(self, for: name)
-        try children.enumerateKeysAndObjects(options: .concurrent) { _, child, _ in
-            try child.validateUniqueness(visited: visited)
-        }
     }
     
     open func calculateChecksum() throws -> ChecksumType {

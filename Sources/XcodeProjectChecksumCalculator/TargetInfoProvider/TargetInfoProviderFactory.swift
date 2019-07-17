@@ -9,17 +9,20 @@ public final class TargetInfoProviderFactory {
     private let xcodeProjChecksumCache: BaseXcodeProjChecksumCache
     private let xcodeProjCache: XcodeProjCache
     private let xcodeProjChecksumHolderBuilderFactory: XcodeProjChecksumHolderBuilderFactory
+    private let checksumHolderValidator: ChecksumHolderValidator
     
     public init(
         checksumProducer: BaseURLChecksumProducer,
         xcodeProjChecksumCache: BaseXcodeProjChecksumCache,
         xcodeProjCache: XcodeProjCache,
-        xcodeProjChecksumHolderBuilderFactory: XcodeProjChecksumHolderBuilderFactory)
+        xcodeProjChecksumHolderBuilderFactory: XcodeProjChecksumHolderBuilderFactory,
+        checksumHolderValidator: ChecksumHolderValidator)
     {
         self.checksumProducer = checksumProducer
         self.xcodeProjChecksumCache = xcodeProjChecksumCache
         self.xcodeProjCache = xcodeProjCache
         self.xcodeProjChecksumHolderBuilderFactory = xcodeProjChecksumHolderBuilderFactory
+        self.checksumHolderValidator = checksumHolderValidator
     }
     
     public func targetChecksumProvider(
@@ -47,7 +50,7 @@ public final class TargetInfoProviderFactory {
         }
         if validateChecksumHolder {
             try TimeProfiler.measure("Validate checksum holder") {
-                try checksumHolder.validate()
+                try checksumHolderValidator.validate(checksumHolder)
             }
         }
         Logger.info("XcodeProj checksum: \(checksum.stringValue) for \(checksumHolder.description)")

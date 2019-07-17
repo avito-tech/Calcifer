@@ -55,11 +55,13 @@ public final class StartDaemonCommand: Command {
             fullPathProvider: fullPathProvider,
             xcodeProjCache: xcodeProjCache
         )
+        let checksumHolderValidator = ChecksumHolderValidatorImpl()
         let targetInfoProviderFactory = TargetInfoProviderFactory(
             checksumProducer: cacheProvider.baseURLChecksumProducer,
             xcodeProjChecksumCache: cacheProvider.baseXcodeProjChecksumCache,
             xcodeProjCache: xcodeProjCache,
-            xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory
+            xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory,
+            checksumHolderValidator: checksumHolderValidator
         )
         let targetInfoFilter = TargetInfoFilter()
         let requiredTargetsProvider = RequiredTargetsProviderImpl(
