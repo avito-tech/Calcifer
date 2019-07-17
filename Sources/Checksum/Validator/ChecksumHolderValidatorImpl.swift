@@ -11,7 +11,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         throws
     {
         try validateAllChecksumCalculated(holder)
-        try validateChecksuMatch(holder)
+        try validateChecksumMatch(holder)
         try validateUniqueness(holder)
     }
     
@@ -38,15 +38,15 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         }
     }
     
-    private func validateChecksuMatch<ChecksumType: Checksum>(
+    private func validateChecksumMatch<ChecksumType: Checksum>(
         _ holder: BaseChecksumHolder<ChecksumType>)
         throws
     {
         let validated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
-        try validateChecksuMatch(holder, validated: validated)
+        try validateChecksumMatch(holder, validated: validated)
     }
     
-    private func validateChecksuMatch<ChecksumType: Checksum>(
+    private func validateChecksumMatch<ChecksumType: Checksum>(
         _ holder: BaseChecksumHolder<ChecksumType>,
         validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
         throws
@@ -70,7 +70,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         }
         validated.write(holder, for: holder.name)
         try holder.children.enumerateKeysAndObjects(options: .concurrent) { _, child, _ in
-            try validateChecksuMatch(child, validated: validated)
+            try validateChecksumMatch(child, validated: validated)
         }
     }
     
