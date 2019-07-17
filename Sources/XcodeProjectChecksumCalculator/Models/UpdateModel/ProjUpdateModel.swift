@@ -16,18 +16,21 @@ final class ProjUpdateModel<ChecksumType: Checksum> {
     let proj: PBXProj
     let projectPath: String
     let sourceRoot: Path
-    let cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>
     
     init(
         proj: PBXProj,
         projectPath: String,
         sourceRoot: Path,
-        cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>)
+        targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>,
+        fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>)
     {
         self.proj = proj
         self.projectPath = projectPath
         self.sourceRoot = sourceRoot
-        self.cache = cache
+        self.targetCache = targetCache
+        self.fileCache = fileCache
     }
     
     var name: String {

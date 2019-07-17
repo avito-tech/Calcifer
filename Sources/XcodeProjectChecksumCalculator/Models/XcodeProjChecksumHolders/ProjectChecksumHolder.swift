@@ -15,10 +15,10 @@ import Toolkit
 class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
     override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        return targets
+        return targets.obtainDictionary()
     }
     
-    var targets = [String: TargetChecksumHolder<ChecksumType>]()
+    var targets = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
     private let fullPathProvider: FileElementFullPathProvider
     private let checksumProducer: URLChecksumProducer<ChecksumType>
     
@@ -40,21 +40,27 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
     }
     
     func reflectUpdate(updateModel: ProjectUpdateModel<ChecksumType>) throws {
-        let cache = updateModel.cache
+        let targetCache = updateModel.targetCache
         let targetUpdateModelsDictionary = updateModel.project.targets
             .map { target in
                 TargetUpdateModel<ChecksumType>(
                     target: target,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: cache
+                    targetCache: targetCache,
+                    fileCache: updateModel.fileCache
                 )
             }.toDictionary { $0.name }
         let shouldInvalidate = try targetUpdateModelsDictionary.update(
-            childrenDictionary: &targets,
+            childrenDictionary: targets,
             update: { targetChecksumHolder, targetUpdateModel in
+                targetChecksumHolder.parents.write(self, for: name)
                 try targetChecksumHolder.reflectUpdate(updateModel: targetUpdateModel)
-            }, buildValue: { targetUpdateModel in
-                cache.createIfNotExist(targetUpdateModel.name) { _ in
+            },
+            onRemove: { key in
+                targetCache.removeValue(forKey: key)
+            },
+            buildValue: { targetUpdateModel in
+                targetCache.createIfNotExist(targetUpdateModel.name) { _ in
                     TargetChecksumHolder(
                         updateModel: targetUpdateModel,
                         parent: self,

@@ -13,15 +13,15 @@ import Toolkit
 public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
     override public var children: [String : BaseChecksumHolder<ChecksumType>] {
-        return projs
+        return projs.obtainDictionary()
     }
     
-    var projs = [String: ProjChecksumHolder<ChecksumType>]()
+    var projs = ThreadSafeDictionary<String, ProjChecksumHolder<ChecksumType>>()
     
     private let fullPathProvider: FileElementFullPathProvider
     private let checksumProducer: URLChecksumProducer<ChecksumType>
-    private let cache = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
-    private let lock = NSLock()
+    private let targetCache = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
+    private let fileCache = ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>()
     
     init(
         name: String,
@@ -49,14 +49,20 @@ public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksum
                     proj: proj,
                     projectPath: updateModel.projectPath,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: cache
+                    targetCache: targetCache,
+                    fileCache: fileCache
                 )
             }.toDictionary { $0.name }
         let shouldInvalidate = try projectUpdateModelsDictionary.update(
-            childrenDictionary: &projs,
+            childrenDictionary: projs,
             update: { projChecksumHolder, projUpdateModel in
+                projChecksumHolder.parents.write(self, for: name)
                 try projChecksumHolder.reflectUpdate(updateModel: projUpdateModel)
-            }, buildValue: { projUpdateModel in
+            },
+            onRemove: { _ in
+                
+            },
+            buildValue: { projUpdateModel in
                 ProjChecksumHolder(
                     name: projUpdateModel.name,
                     parent: self,

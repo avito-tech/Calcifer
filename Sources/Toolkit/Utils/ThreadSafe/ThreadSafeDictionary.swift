@@ -5,12 +5,17 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     private let lock = NSLock()
     private var dictionary = [Key: Value]()
     
+    public init(dictionary: [Key: Value] = [:]) {
+        self.dictionary = dictionary
+    }
+    
     public func read(_ key: Key) -> Value? {
         return lock.whileLocked {
             dictionary[key]
         }
     }
     
+    @discardableResult
     public func createIfNotExist(_ key: Key, create: (Key) throws -> (Value)) rethrows -> Value {
         return try lock.whileLocked {
             guard let value = dictionary[key] else {
@@ -29,12 +34,34 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
         }
     }
     
+    public func removeValue(forKey key: Key) {
+        lock.whileLocked {
+            dictionary.removeValue(forKey: key)
+        }
+    }
+    
     public var values: [Value] {
         return lock.whileLocked {
             Array(dictionary.values)
         }
     }
     
-    public init() {}
+    public var keys: [Key] {
+        return lock.whileLocked {
+            Array(dictionary.keys)
+        }
+    }
+    
+    public var isEmpty: Bool {
+        return lock.whileLocked {
+            dictionary.isEmpty
+        }
+    }
+    
+    public func obtainDictionary() -> [Key: Value] {
+        return lock.whileLocked {
+            dictionary
+        }
+    }
     
 }

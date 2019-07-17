@@ -1,4 +1,5 @@
 import Foundation
+import Toolkit
 
 open class BaseChecksumHolder<ChecksumType: Checksum>:
     ChecksumHolder,
@@ -9,8 +10,9 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
 {
 
     public let name: String
+    private let uniqIdentifier = UUID().uuidString
     
-    public let parent: BaseChecksumHolder<ChecksumType>?
+    public var parents: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>
     
     open var children: [String: BaseChecksumHolder<ChecksumType>] {
         fatalError("Must be overriden")
@@ -20,7 +22,10 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     
     public init(name: String, parent: BaseChecksumHolder<ChecksumType>?) {
         self.name = name
-        self.parent = parent
+        self.parents = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        if let parent = parent {
+            parents.write(parent, for: parent.name)
+        }
     }
     
     public func obtainChecksum() throws -> ChecksumType {
@@ -35,52 +40,152 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     }
     
     public func updateState(checksum: ChecksumType) {
-        parent?.invalidate()
+        for parent in parents.values {
+            parent.invalidate()
+        }
         state = .calculated(checksum)
     }
     
     public func smartChecksumCalculate() throws -> ChecksumType {
-        var visited = [String: BaseChecksumHolder<ChecksumType>]()
-        var notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
+        var notCalculatedLeafs = obtainNotCalculatedLeafs()
         while !notCalculatedLeafs.isEmpty {
             try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, _ in
                 _ = try node.obtainChecksum()
             }
-            visited = notCalculatedLeafs
-            notCalculatedLeafs = obtainNotCalculatedLeafs(visited: &visited)
+            var newNotCalculatedLeafs = [String: BaseChecksumHolder<ChecksumType>]()
+            for (_, leaf) in notCalculatedLeafs {
+                let notCalculatedParents = leaf.parents.values.filter { !$0.haveNotCalculatedChildren() }
+                for notCalculatedParent in notCalculatedParents {
+                    newNotCalculatedLeafs[notCalculatedParent.name] = notCalculatedParent
+                }
+            }
+            notCalculatedLeafs = newNotCalculatedLeafs
         }
-        return try obtainChecksum()
+        let checksum = try obtainChecksum()
+        return checksum
+    }
+    
+    public func validate() throws {
+        try validateAllChecksumCalculated()
+        try validateChecksuMatch()
+        try validateUniqueness()
+    }
+    
+    private func validateAllChecksumCalculated() throws {
+        let validated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        try validateAllChecksumCalculated(validated: validated)
+    }
+    
+    private func validateAllChecksumCalculated(
+        validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
+        throws
+    {
+        guard validated.read(uniqIdentifier) == nil else { return }
+        validated.write(self, for: uniqIdentifier)
+        guard calculated else {
+            throw ChecksumError.notCalculatedChecksum(name: name)
+        }
+        for child in children.values {
+            try child.validateAllChecksumCalculated(validated: validated)
+        }
+    }
+    
+    private func validateChecksuMatch() throws {
+        let validated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        try validate(validated: validated)
+    }
+    
+    private func validate(
+        validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
+        throws
+    {
+        if validated.read(self.name) != nil {
+            return
+        }
+        if children.isEmpty {
+            return
+        }
+        let currentChecksum = try obtainChecksum().stringValue
+        let childrenChecksum = try children.values.sorted().map {
+            try $0.obtainChecksum()
+        }.aggregate().stringValue
+        if currentChecksum != childrenChecksum {
+            throw ChecksumError.checksumMismatch(
+                name: name,
+                currentChecksum: currentChecksum,
+                childrenChecksum: childrenChecksum
+            )
+        }
+        validated.write(self, for: name)
+        try children.enumerateKeysAndObjects(options: .concurrent) { _, child, _ in
+            try child.validate(validated: validated)
+        }
+    }
+    
+    private func validateUniqueness() throws {
+        let visited = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        try validateUniqueness(visited: visited)
+    }
+    
+    public func validateUniqueness(
+        visited: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
+        throws
+    {
+        let holder = visited.read(name)
+        if let holder = holder {
+            if holder.uniqIdentifier != uniqIdentifier {
+                throw ChecksumError.dublicateChecksumHolder(name: holder.name)
+            }
+            return
+        }
+        visited.write(self, for: name)
+        try children.enumerateKeysAndObjects(options: .concurrent) { _, child, _ in
+            try child.validateUniqueness(visited: visited)
+        }
     }
     
     open func calculateChecksum() throws -> ChecksumType {
         fatalError("Must be overriden")
     }
     
-    private func obtainNotCalculatedLeafs( visited: inout [String: BaseChecksumHolder<ChecksumType>]) -> [String: BaseChecksumHolder<ChecksumType>] {
-        guard visited[name] == nil else {
-            return [:]
+    private func obtainNotCalculatedLeafs() -> [String: BaseChecksumHolder<ChecksumType>] {
+        let visited = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        let notCalculatedLeafs = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        obtainNotCalculatedLeafs(visited: visited, leafs: notCalculatedLeafs)
+        return notCalculatedLeafs.obtainDictionary()
+    }
+    
+    private func obtainNotCalculatedLeafs(
+        visited: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>,
+        leafs: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
+    {
+        guard visited.read(name) == nil else {
+            return
         }
-        visited[name] = self
-        var result = [String: BaseChecksumHolder<ChecksumType>]()
+        visited.write(self, for: name)
         if case .notCalculated = state {
-            for (_, child) in children {
-                let values = child.obtainNotCalculatedLeafs(visited: &visited)
-                if !values.isEmpty {
-                    result.merge(values, uniquingKeysWith: { first, _ in first })
-                }
+            if !haveNotCalculatedChildren() {
+                leafs.write(self, for: name)
+                return
             }
-            if result.isEmpty {
-                return [name: self]
+            for (_, child) in children {
+                child.obtainNotCalculatedLeafs(visited: visited, leafs: leafs)
             }
         }
-        return result
+    }
+    
+    private func haveNotCalculatedChildren() -> Bool {
+        let notCalculated = children.values.filter { !$0.calculated }
+        return !notCalculated.isEmpty
     }
     
     public func invalidate() {
         switch state {
         case .calculated:
             state = .notCalculated
-            parent?.invalidate()
+            for parent in parents.values {
+                parent.invalidate()
+            }
         case .notCalculated:
             return
         }

@@ -10,27 +10,21 @@ public final class TargetChecksumHolderTests: XCTestCase {
     
     let checksumProducer = TestURLChecksumProducer()
     let fullPathProvider = TestFileElementFullPathProvider()
-    
-    // MARK: - Lifecycle
-    override public func setUp() {
-        super.setUp()
-        let objects = PBXObjects()
-        PBXObjectFactory.objects = objects
-    }
-    
-    override public func tearDown() {
-        super.tearDown()
-        PBXObjectFactory.objects = nil
-    }
+    let objectFactory = PBXObjectFactory(objects: PBXObjects())
     
     func test_build_correctly() {
         // Given
-        let target = PBXObjectFactory.target()
-        let cache = ThreadSafeDictionary<String, TargetChecksumHolder<TestChecksum>>()
+        let target = objectFactory.target()
+        let targetCache = ThreadSafeDictionary<String, TargetChecksumHolder<TestChecksum>>()
+        let fileCache = ThreadSafeDictionary<String, FileChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
         let expectedChecksum = target.filesPaths(sourceRoot: sourceRoot)
         let parent = BaseChecksumHolder<TestChecksum>(name: "", parent: nil)
-        let updateModel = TargetUpdateModel(target: target, sourceRoot: sourceRoot, cache: cache)
+        let updateModel = TargetUpdateModel(
+            target: target,
+            sourceRoot: sourceRoot,
+            targetCache: targetCache,
+            fileCache: fileCache)
         let checksumHolder = TargetChecksumHolder(
             updateModel: updateModel,
             parent: parent,
@@ -46,11 +40,12 @@ public final class TargetChecksumHolderTests: XCTestCase {
     }
     
     func test_build_correctly_withDependency() {
-        let target = PBXObjectFactory.target(name: "a")
-        let targetWithDependencies = PBXObjectFactory.target(
+        let target = objectFactory.target(name: "a")
+        let targetWithDependencies = objectFactory.target(
             dependencies: [target]
         )
-        let cache = ThreadSafeDictionary<String, TargetChecksumHolder<TestChecksum>>()
+        let targetCache = ThreadSafeDictionary<String, TargetChecksumHolder<TestChecksum>>()
+        let fileCache = ThreadSafeDictionary<String, FileChecksumHolder<TestChecksum>>()
         let sourceRoot = Path("/")
         let targetFiles = target.filesPaths(sourceRoot: sourceRoot)
         let targetWithDependenciesFiles = targetWithDependencies.filesPaths(sourceRoot: sourceRoot)
@@ -63,7 +58,8 @@ public final class TargetChecksumHolderTests: XCTestCase {
         let targetWithDependenciesUpdateModel = TargetUpdateModel(
             target: targetWithDependencies,
             sourceRoot: sourceRoot,
-            cache: cache
+            targetCache: targetCache,
+            fileCache: fileCache
         )
         let targetWithDependenciesChecksumHolder = TargetChecksumHolder(
             updateModel: targetWithDependenciesUpdateModel,
@@ -74,7 +70,8 @@ public final class TargetChecksumHolderTests: XCTestCase {
         let targetUpdateModel = TargetUpdateModel(
             target: target,
             sourceRoot: sourceRoot,
-            cache: cache
+            targetCache: targetCache,
+            fileCache: fileCache
         )
         let targetChecksumHolder = TargetChecksumHolder(
             updateModel: targetUpdateModel,
@@ -82,7 +79,7 @@ public final class TargetChecksumHolderTests: XCTestCase {
             fullPathProvider: fullPathProvider,
             checksumProducer: checksumProducer
         )
-        cache.write(targetChecksumHolder, for: targetUpdateModel.name)
+        targetCache.write(targetChecksumHolder, for: targetUpdateModel.name)
         try? targetChecksumHolder.reflectUpdate(
             updateModel: targetUpdateModel
         )

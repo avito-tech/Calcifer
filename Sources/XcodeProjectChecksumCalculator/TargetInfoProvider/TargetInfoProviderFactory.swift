@@ -24,7 +24,8 @@ public final class TargetInfoProviderFactory {
     
     public func targetChecksumProvider(
         projectPath: String,
-        smartCalculate: Bool = true)
+        smartChecksumCalculate: Bool,
+        validateChecksumHolder: Bool)
         throws -> TargetInfoProvider<BaseChecksum>
     {
         let builder = xcodeProjChecksumHolderBuilderFactory.projChecksumHolderBuilder(
@@ -38,10 +39,15 @@ public final class TargetInfoProviderFactory {
             try builder.build(xcodeProj: xcodeProj, projectPath: projectPath)
         }
         let checksum: BaseChecksum = try TimeProfiler.measure("Obtain checksum") {
-            if smartCalculate {
+            if smartChecksumCalculate {
                 return try checksumHolder.smartChecksumCalculate()
             } else {
                 return try checksumHolder.obtainChecksum()
+            }
+        }
+        if validateChecksumHolder {
+            try TimeProfiler.measure("Validate checksum holder") {
+                try checksumHolder.validate()
             }
         }
         Logger.info("XcodeProj checksum: \(checksum.stringValue) for \(checksumHolder.description)")

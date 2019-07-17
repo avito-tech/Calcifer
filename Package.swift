@@ -189,7 +189,8 @@ let package = Package(
         .testTarget(
             name: "XcodeProjectChecksumCalculatorTests",
             dependencies: [
-                "XcodeProjectChecksumCalculator"
+                "XcodeProjectChecksumCalculator",
+                "Mock"
             ]
         ),
         // MARK: XcodeProjectPatcher

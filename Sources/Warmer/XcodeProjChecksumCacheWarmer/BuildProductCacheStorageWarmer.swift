@@ -97,7 +97,8 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         let calciferChecksumFilePath = calciferPathProvider.calciferChecksumFilePath(for: Date())
         let requiredTargets = try requiredTargetsProvider.obtainRequiredTargets(
             params: params,
-            calciferChecksumFilePath: calciferChecksumFilePath
+            calciferChecksumFilePath: calciferChecksumFilePath,
+            validateChecksumHolder: true
         )
         let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredTargets)
         let storage = try cacheStorageFactory.createMixedCacheStorage(

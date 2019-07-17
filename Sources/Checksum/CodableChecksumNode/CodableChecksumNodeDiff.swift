@@ -45,6 +45,32 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         }
     }
     
+    public var was: CodableChecksumNode<Value>? {
+        switch self {
+        case .noChanged:
+            return nil
+        case let .changed(was, _, _):
+            return was
+        case .appear:
+            return nil
+        case let .disappear(was, _):
+            return was
+        }
+    }
+    
+    public var became: CodableChecksumNode<Value>? {
+        switch self {
+        case .noChanged:
+            return nil
+        case let .changed(_, became, _):
+            return became
+        case let .appear(became ,_):
+            return became
+        case .disappear:
+            return nil
+        }
+    }
+    
     public func printLeafs() {
         var alreadyPrinted = Set<String>()
         printLeafs(alreadyPrinted: &alreadyPrinted)
@@ -54,13 +80,15 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         guard alreadyPrinted.contains(description) == false else {
             return
         }
+        if children.isEmpty {
+            return
+        }
         let changedChildren = children.filter { !$0.noChanged }
         if changedChildren.isEmpty {
-            if case .noChanged = self {
-                return
+            if !noChanged {                
+                alreadyPrinted.insert(description)
+                print(description)
             }
-            alreadyPrinted.insert(description)
-            print(description)
         } else {
             for child in children {
                 child.printLeafs(alreadyPrinted: &alreadyPrinted)
