@@ -16,12 +16,13 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
     
     private lazy var fullPathProvider = BaseFileElementFullPathProvider()
     private lazy var checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
-    private lazy var checksumHolderValidator: ChecksumHolderValidator = ChecksumHolderValidatorImpl()
+    private let checksumHolderValidator: ChecksumHolderValidator = ChecksumHolderValidatorImpl()
+    private lazy var xcodeProjGenerator = XcodeProjGenerator(fileManager: fileManager)
     
     func test_checksumHolder_valid() {
         assertNoThrow {
             // Given
-            let xcodeProj = try generateXcodeProj(
+            let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
                 projectPath: projectPath,
                 sourceRoot: sourceRoot
             )
@@ -43,10 +44,42 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
         }
     }
     
+    func test_sourceRoot_doesnt_affect_checksum() {
+        assertNoThrow {
+            // Given
+            let firstSourceRoot = sourceRoot.appendingPathComponent(UUID().uuidString)
+            let firstProjectPath = firstSourceRoot
+                .appendingPathComponent("Pods")
+                .appendingPathComponent("Pods.xcodeproj")
+            try fileManager.createDirectory(
+                atPath: firstSourceRoot,
+                withIntermediateDirectories: true
+            )
+            let firstChecksum = try obtainChecksum(
+                projectPath: firstProjectPath,
+                sourceRoot: firstSourceRoot
+            )
+            let secondSourceRoot = sourceRoot.appendingPathComponent(UUID().uuidString)
+            let secondProjectPath = secondSourceRoot
+                .appendingPathComponent("Pods")
+                .appendingPathComponent("Pods.xcodeproj")
+            try fileManager.createDirectory(
+                atPath: secondSourceRoot,
+                withIntermediateDirectories: true
+            )
+            let secondChecksum = try obtainChecksum(
+                projectPath: secondProjectPath,
+                sourceRoot: secondSourceRoot
+            )
+            // Then
+            XCTAssertEqual(firstChecksum, secondChecksum)
+        }
+    }
+    
     func test_checksumHolder_smart_and_simple_checksum_calculation_have_the_same_result() {
         assertNoThrow {
             // Given
-            let xcodeProj = try generateXcodeProj(
+            let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
                 projectPath: projectPath,
                 sourceRoot: sourceRoot
             )
@@ -75,7 +108,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
     func test_checksumHolder_valid_after_update() {
         assertNoThrow {
             // Given
-            let xcodeProj = try generateXcodeProj(
+            let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
                 projectPath: projectPath,
                 sourceRoot: sourceRoot
             )
@@ -100,7 +133,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             let rootTarget = project.targets.first.unwrapOrFail()
             rootTarget.leafDependency(leafs: &leafs)
             let leafTarget = leafs.first.unwrapOrFail()
-            try generateFile(
+            try xcodeProjGenerator.generateFile(
                 name: "newLeaf",
                 target: leafTarget,
                 sourceRoot: Path(sourceRoot),
@@ -130,7 +163,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
     func test_checksumHolder_checksum_same_after_equal_update() {
         assertNoThrow {
             // Given
-            let xcodeProj = try generateXcodeProj(
+            let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
                 projectPath: projectPath,
                 sourceRoot: sourceRoot
             )
@@ -153,7 +186,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             let rootTarget = project.targets.first.unwrapOrFail()
             rootTarget.leafDependency(leafs: &leafs)
             let leafTarget = leafs.first.unwrapOrFail()
-            let newFile = try generateFile(
+            let newFile = try xcodeProjGenerator.generateFile(
                 name: "newLeaf",
                 target: leafTarget,
                 sourceRoot: Path(sourceRoot),
@@ -197,7 +230,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             var checksums = Set<String>()
             // When
             for _ in (0...10) {
-                let xcodeProj = try generateXcodeProj(
+                let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
                     projectPath: projectPath,
                     sourceRoot: sourceRoot
                 )
@@ -230,110 +263,29 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
         }
     }
     
-    private func generateXcodeProj(
+    private func obtainChecksum(
         projectPath: String,
-        sourceRoot: String,
-        fileCount: Int = 10,
-        targetCount: Int = 10)
-        throws -> XcodeProj
+        sourceRoot: String)
+        throws -> String
     {
-        let sourceRootPath = Path(sourceRoot)
-        let workspace = XCWorkspace()
-        let mainGroup = PBXGroup.fixture()
-        let project = PBXProject.fixture(mainGroup: mainGroup)
-        let pbxproj = PBXProj.fixture(rootObject: project)
-        pbxproj.add(object: project)
-        pbxproj.add(object: mainGroup)
-        let xcodeProj = XcodeProj(workspace: workspace, pbxproj: pbxproj)
-        
-        let mainTarget = try generateTarget(
-            name: "root",
-            pbxproj: pbxproj,
-            project: project,
-            sourceRoot: sourceRootPath,
-            fileCount: fileCount
-        )
-        
-        var dependencyTargets = [mainTarget]
-        for i in (0...targetCount) {
-            let target = try generateTarget(
-                name: "\(i)",
-                pbxproj: pbxproj,
-                project: project,
-                sourceRoot: sourceRootPath,
-                fileCount: fileCount,
-                dependencyTargets: dependencyTargets
-            )
-            dependencyTargets.append(target)
-        }
-
-        try fileManager.createDirectory(
-            atPath: projectPath,
-            withIntermediateDirectories: true
-        )
-        try xcodeProj.write(path: Path(projectPath))
-        return xcodeProj
-    }
-    
-    private func generateTarget(
-        name: String,
-        pbxproj: PBXProj,
-        project: PBXProject,
-        sourceRoot: Path,
-        fileCount: Int,
-        dependencyTargets: [PBXTarget] = [])
-        throws -> PBXTarget
-    {
-        let buildPhase = PBXSourcesBuildPhase.fixture(files: [])
-        pbxproj.add(object: buildPhase)
-        let target = PBXNativeTarget(name: name)
-        target.buildPhases.append(buildPhase)
-        project.targets.append(target)
-        pbxproj.add(object: target)
-        
-        for i in (0...fileCount) {
-            try generateFile(
-                name: "\(name)-\(i)",
-                target: target,
-                sourceRoot: sourceRoot,
-                project: project
-            )
-        }
-
-        
-        for dependencyTarget in dependencyTargets {
-            let dependency = PBXTargetDependency(
-                name: dependencyTarget.name,
-                target: dependencyTarget
-            )
-            pbxproj.add(object: dependency)
-            target.dependencies.append(dependency)
-        }
-        
-        return target
-    }
-    
-    @discardableResult
-    private func generateFile(
-        name: String,
-        target: PBXTarget,
-        sourceRoot: Path,
-        project: PBXProject)
-        throws -> PBXBuildFile
-    {
-        let filePath = Path("\(name).swift")
-        let fullFilePath = (sourceRoot + filePath)
-        let content = "struct \(name) {}".data(using: .utf8).unwrapOrFail()
-        fileManager.createFile(
-            atPath: fullFilePath.url.path,
-            contents: content
-        )
-        let fileReference = try project.mainGroup.addFile(
-            at: fullFilePath,
+        let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
+            projectPath: projectPath,
             sourceRoot: sourceRoot
         )
-        let sourcesBuildPhase = try target.sourcesBuildPhase().unwrapOrFail()
-        return try sourcesBuildPhase.add(file: fileReference)
+        let updateModel = try generateXcodeProjUpdateModel(
+            xcodeProj: xcodeProj,
+            projectPath: projectPath,
+            sourceRoot: sourceRoot
+        )
+        let holder = XcodeProjChecksumHolder(
+            name: projectPath,
+            fullPathProvider: fullPathProvider,
+            checksumProducer: checksumProducer
+        )
+        try holder.reflectUpdate(updateModel: updateModel)
+        let checksum = try holder.smartChecksumCalculate()
+        try checksumHolderValidator.validate(holder)
+        return checksum.stringValue
     }
     
     private func generateXcodeProjUpdateModel(
