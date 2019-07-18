@@ -124,6 +124,12 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
         }
     }
     
+    public func withExclusiveAccess<R>(work: (inout [Key: Value]) throws -> (R)) rethrows -> R {
+        return try lock.whileLocked {
+            try work(&dictionary)
+        }
+    }
+    
     public func forEach(_ body: ((key: Key, value: Value)) throws -> Void) rethrows {
         return try lock.whileLocked {
             try dictionary.forEach(body)
@@ -139,6 +145,12 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     public func cast<NK, NV>(_ transform: ([Key: Value]) -> ([NK: NV])) -> ThreadSafeDictionary<NK, NV> {
         return lock.whileLocked {
             ThreadSafeDictionary<NK, NV>(dictionary: transform(dictionary))
+        }
+    }
+    
+    public func copy() -> ThreadSafeDictionary<Key, Value> {
+        return lock.whileLocked {
+            return ThreadSafeDictionary<Key, Value>(dictionary: dictionary)
         }
     }
     
