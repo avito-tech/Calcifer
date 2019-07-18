@@ -29,7 +29,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
     {
         guard validated.createIfNotExist(holder.uniqIdentifier, holder).created else { return }
         guard holder.calculated else {
-            throw ChecksumError.notCalculatedChecksum(name: holder.name)
+            throw ChecksumValidationError.notCalculatedChecksum(name: holder.name)
         }
         for child in holder.children.values {
             try validateAllChecksumCalculated(child, validated: validated)
@@ -58,7 +58,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
             try $0.obtainChecksum()
         }.aggregate().stringValue
         if currentChecksum != childrenChecksum {
-            throw ChecksumError.checksumMismatch(
+            throw ChecksumValidationError.checksumMismatch(
                 name: holder.name,
                 currentChecksum: currentChecksum,
                 childrenChecksum: childrenChecksum
@@ -85,7 +85,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         let result = visited.createIfNotExist(holder.name, holder)
         guard result.created else {
             if result.value.uniqIdentifier != holder.uniqIdentifier {
-                throw ChecksumError.dublicateChecksumHolder(name: holder.name)
+                throw ChecksumValidationError.dublicateChecksumHolder(name: holder.name)
             }
             return
         }
