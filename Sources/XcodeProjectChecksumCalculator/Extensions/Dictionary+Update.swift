@@ -22,7 +22,6 @@ public extension Dictionary {
             childrenDictionary.write(newValue, for: key)
         }
         try childrenDictionary
-            .obtainDictionary()
             .enumerateKeysAndObjects(options: .concurrent) { key, _, _ in
                 if self[key] != nil {
                     return

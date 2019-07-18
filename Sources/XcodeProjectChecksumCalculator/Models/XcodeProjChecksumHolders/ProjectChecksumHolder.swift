@@ -14,8 +14,8 @@ import Toolkit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        return targets.obtainDictionary()
+    override var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
+        return targets.cast { $0 }
     }
     
     var targets = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
@@ -67,7 +67,7 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
                         fullPathProvider: fullPathProvider,
                         checksumProducer: checksumProducer
                     )
-                }
+                }.value
             }
         )
         

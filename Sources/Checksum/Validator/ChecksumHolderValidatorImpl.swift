@@ -1,5 +1,4 @@
 import Foundation
-import Checksum
 import Toolkit
 
 public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
@@ -19,17 +18,16 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         _ holder: BaseChecksumHolder<ChecksumType>)
         throws
     {
-        let validated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        let validated = ThreadSafeDictionary<UUID, BaseChecksumHolder<ChecksumType>>()
         try validateAllChecksumCalculated(holder, validated: validated)
     }
     
     private func validateAllChecksumCalculated<ChecksumType: Checksum>(
         _ holder: BaseChecksumHolder<ChecksumType>,
-        validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
+        validated: ThreadSafeDictionary<UUID, BaseChecksumHolder<ChecksumType>>)
         throws
     {
-        guard validated.read(holder.uniqIdentifier) == nil else { return }
-        validated.write(holder, for: holder.uniqIdentifier)
+        guard validated.createIfNotExist(holder.uniqIdentifier, holder).created else { return }
         guard holder.calculated else {
             throw ChecksumError.notCalculatedChecksum(name: holder.name)
         }
@@ -51,9 +49,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         validated: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
         throws
     {
-        if validated.read(holder.name) != nil {
-            return
-        }
+        guard validated.createIfNotExist(holder.name, holder).created else { return }
         if holder.children.isEmpty {
             return
         }
@@ -68,7 +64,6 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
                 childrenChecksum: childrenChecksum
             )
         }
-        validated.write(holder, for: holder.name)
         try holder.children.enumerateKeysAndObjects(options: .concurrent) { _, child, _ in
             try validateChecksumMatch(child, validated: validated)
         }
@@ -82,14 +77,14 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         try validateUniqueness(holder, visited: visited)
     }
     
-    public func validateUniqueness<ChecksumType: Checksum>(
+    private func validateUniqueness<ChecksumType: Checksum>(
          _ holder: BaseChecksumHolder<ChecksumType>,
         visited: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
         throws
     {
-        let visitedHolder = visited.read(holder.name)
-        if let visitedHolder = visitedHolder {
-            if visitedHolder.uniqIdentifier != holder.uniqIdentifier {
+        let result = visited.createIfNotExist(holder.name, holder)
+        guard result.created else {
+            if result.value.uniqIdentifier != holder.uniqIdentifier {
                 throw ChecksumError.dublicateChecksumHolder(name: holder.name)
             }
             return

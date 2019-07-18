@@ -20,7 +20,6 @@ public class RequiredTargetsProviderImpl: RequiredTargetsProvider {
     public func obtainRequiredTargets(
         params: XcodeBuildEnvironmentParameters,
         calciferChecksumFilePath: String,
-        smartChecksumCalculate: Bool,
         validateChecksumHolder: Bool)
         throws -> [TargetInfo<BaseChecksum>]
     {
@@ -31,7 +30,6 @@ public class RequiredTargetsProviderImpl: RequiredTargetsProvider {
         let targetInfoProvider = try createTargetInfoProvider(
             projectPath: projectPath,
             calciferChecksumFilePath: calciferChecksumFilePath,
-            smartChecksumCalculate: smartChecksumCalculate,
             validateChecksumHolder: validateChecksumHolder
         )
         
@@ -62,13 +60,11 @@ public class RequiredTargetsProviderImpl: RequiredTargetsProvider {
     private func createTargetInfoProvider(
         projectPath: String,
         calciferChecksumFilePath: String,
-        smartChecksumCalculate: Bool,
         validateChecksumHolder: Bool)
         throws -> TargetInfoProvider<BaseChecksum>
     {
         let targetInfoProvider = try targetInfoProviderFactory.targetChecksumProvider(
             projectPath: projectPath,
-            smartChecksumCalculate: smartChecksumCalculate,
             validateChecksumHolder: validateChecksumHolder
         )
         targetInfoProvider.saveChecksum(

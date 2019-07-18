@@ -1,4 +1,5 @@
 import Foundation
+import AtomicModels
 import Toolkit
 
 open class BaseChecksumHolder<ChecksumType: Checksum>:
@@ -10,17 +11,22 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
 {
 
     public let name: String
-    public let uniqIdentifier = UUID().uuidString
+    public let uniqIdentifier: UUID
     
     public var parents: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>
     
-    open var children: [String: BaseChecksumHolder<ChecksumType>] {
+    open var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
         fatalError("Must be overriden")
     }
     
-    private var state: ChecksumState<ChecksumType> = .notCalculated
+    private var state: AtomicValue<ChecksumState<ChecksumType>> = AtomicValue(.notCalculated)
     
-    public init(name: String, parent: BaseChecksumHolder<ChecksumType>?) {
+    public init(
+        uniqIdentifier: UUID = UUID(),
+        name: String,
+        parent: BaseChecksumHolder<ChecksumType>?)
+    {
+        self.uniqIdentifier = uniqIdentifier
         self.name = name
         self.parents = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
         if let parent = parent {
@@ -29,13 +35,15 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     }
     
     public func obtainChecksum() throws -> ChecksumType {
-        switch state {
-        case let .calculated(checksum):
-            return checksum
-        case .notCalculated:
-            let checksum = try calculateChecksum()
-            state = .calculated(checksum)
-            return checksum
+        return try state.withExclusiveAccess { state in
+            switch state {
+            case let .calculated(checksum):
+                return checksum
+            case .notCalculated:
+                let checksum = try calculateChecksum()
+                state = .calculated(checksum)
+                return checksum
+            }
         }
     }
     
@@ -43,81 +51,67 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         for parent in parents.values {
             parent.invalidate()
         }
-        state = .calculated(checksum)
-    }
-    
-    public func smartChecksumCalculate() throws -> ChecksumType {
-        var notCalculatedLeafs = obtainNotCalculatedLeafs()
-        while !notCalculatedLeafs.isEmpty {
-            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, _ in
-                _ = try node.obtainChecksum()
-            }
-            var newNotCalculatedLeafs = [String: BaseChecksumHolder<ChecksumType>]()
-            for (_, leaf) in notCalculatedLeafs {
-                let notCalculatedParents = leaf.parents.values.filter { !$0.haveNotCalculatedChildren() }
-                for notCalculatedParent in notCalculatedParents {
-                    newNotCalculatedLeafs[notCalculatedParent.name] = notCalculatedParent
-                }
-            }
-            notCalculatedLeafs = newNotCalculatedLeafs
+        state.withExclusiveAccess { state in
+            state = .calculated(checksum)
         }
-        let checksum = try obtainChecksum()
-        return checksum
     }
     
     open func calculateChecksum() throws -> ChecksumType {
         fatalError("Must be overriden")
     }
     
-    private func obtainNotCalculatedLeafs() -> [String: BaseChecksumHolder<ChecksumType>] {
+    func haveNotCalculatedChildren() -> Bool {
+        let notCalculated = children.values.filter { !$0.calculated }
+        return !notCalculated.isEmpty
+    }
+    
+    func obtainNotCalculatedLeafs() -> ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
         let visited = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
         let notCalculatedLeafs = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
         obtainNotCalculatedLeafs(visited: visited, leafs: notCalculatedLeafs)
-        return notCalculatedLeafs.obtainDictionary()
+        return notCalculatedLeafs
     }
     
     private func obtainNotCalculatedLeafs(
         visited: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>,
         leafs: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
     {
-        guard visited.read(name) == nil else {
-            return
-        }
-        visited.write(self, for: name)
-        if case .notCalculated = state {
+        guard visited.createIfNotExist(name, self).created else { return }
+        if case .notCalculated = state.currentValue() {
             if !haveNotCalculatedChildren() {
                 leafs.write(self, for: name)
                 return
             }
-            for (_, child) in children {
+            children.forEach { _, child in
                 child.obtainNotCalculatedLeafs(visited: visited, leafs: leafs)
             }
         }
     }
     
-    private func haveNotCalculatedChildren() -> Bool {
-        let notCalculated = children.values.filter { !$0.calculated }
-        return !notCalculated.isEmpty
-    }
-    
     public func invalidate() {
-        switch state {
-        case .calculated:
-            state = .notCalculated
+        if state.withExclusiveAccess(work: { state in
+            switch state {
+            case .calculated:
+                state = .notCalculated
+                return true
+            case .notCalculated:
+                return false
+            }
+        }) {
             for parent in parents.values {
                 parent.invalidate()
             }
-        case .notCalculated:
-            return
         }
     }
     
     public var calculated: Bool {
-        switch state {
-        case .calculated:
-            return true
-        case .notCalculated:
-            return false
+        return state.withExclusiveAccess { state in
+            switch state {
+            case .calculated:
+                return true
+            case .notCalculated:
+                return false
+            }
         }
     }
     
@@ -151,11 +145,13 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
     }
     
     public var nodeValue: String {
-        switch state {
-        case let .calculated(chacksum):
-            return chacksum.stringValue
-        case .notCalculated:
-            return "-"
+        return state.withExclusiveAccess { state in
+            switch state {
+            case let .calculated(chacksum):
+                return chacksum.stringValue
+            case .notCalculated:
+                return "-"
+            }
         }
     }
     

@@ -411,6 +411,7 @@ let package = Package(
         .target(
             name: "Toolkit",
             dependencies: [
+                "AtomicModels",
                 "SwiftyBeaver",
                 "SPMUtility"
             ]

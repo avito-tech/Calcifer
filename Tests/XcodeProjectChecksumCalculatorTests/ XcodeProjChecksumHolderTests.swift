@@ -16,8 +16,31 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
     
     private lazy var fullPathProvider = BaseFileElementFullPathProvider()
     private lazy var checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
+    private let calculator = ConcurentUpToDownChecksumCalculator()
     private let checksumHolderValidator: ChecksumHolderValidator = ChecksumHolderValidatorImpl()
     private lazy var xcodeProjGenerator = XcodeProjGenerator(fileManager: fileManager)
+    
+    private func prepareChecksumHolder() throws -> XcodeProjChecksumHolder<BaseChecksum> {
+        let xcodeProj = try xcodeProjGenerator.generateXcodeProj(
+            projectPath: projectPath,
+            sourceRoot: sourceRoot,
+            fileCount: 30,
+            targetCount: 50,
+            targetLevelCount: 5
+        )
+        let updateModel = try generateXcodeProjUpdateModel(
+            xcodeProj: xcodeProj,
+            projectPath: projectPath,
+            sourceRoot: sourceRoot
+        )
+        let holder = XcodeProjChecksumHolder(
+            name: projectPath,
+            fullPathProvider: fullPathProvider,
+            checksumProducer: checksumProducer
+        )
+        try holder.reflectUpdate(updateModel: updateModel)
+        return holder
+    }
     
     func test_checksumHolder_valid() {
         assertNoThrow {
@@ -38,7 +61,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             )
             // When
             try holder.reflectUpdate(updateModel: updateModel)
-            let _ = try holder.smartChecksumCalculate()
+            let _ = try calculator.calculate(rootHolder: holder)
             // Then
             try checksumHolderValidator.validate(holder)
         }
@@ -95,7 +118,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             )
             try holder.reflectUpdate(updateModel: updateModel)
             // When
-            let smartChecksum = try holder.smartChecksumCalculate()
+            let smartChecksum = try calculator.calculate(rootHolder: holder)
             try checksumHolderValidator.validate(holder)
             invalide(holder)
             let checksum = try holder.obtainChecksum()
@@ -123,7 +146,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
                 checksumProducer: checksumProducer
             )
             try holder.reflectUpdate(updateModel: updateModel)
-            let smartChecksum = try holder.smartChecksumCalculate()
+            let smartChecksum = try calculator.calculate(rootHolder: holder)
             try checksumHolderValidator.validate(holder)
             invalide(holder)
             let checksum = try holder.obtainChecksum()
@@ -147,7 +170,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             )
             // When
             try holder.reflectUpdate(updateModel: newUpdateModel)
-            let newSmartChecksum = try holder.smartChecksumCalculate()
+            let newSmartChecksum = try calculator.calculate(rootHolder: holder)
             try checksumHolderValidator.validate(holder)
             invalide(holder)
             let newChecksum = try holder.obtainChecksum()
@@ -178,7 +201,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
                 checksumProducer: checksumProducer
             )
             try holder.reflectUpdate(updateModel: updateModel)
-            let checksum = try holder.smartChecksumCalculate()
+            let checksum = try calculator.calculate(rootHolder: holder)
             try checksumHolderValidator.validate(holder)
             
             var leafs = [PBXTarget]()
@@ -199,7 +222,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
                 sourceRoot: sourceRoot
             )
             try holder.reflectUpdate(updateModel: updateModelAfterAdd)
-            let checksumAfterAdd = try holder.smartChecksumCalculate()
+            let checksumAfterAdd = try calculator.calculate(rootHolder: holder)
             try checksumHolderValidator.validate(holder)
             // When
             xcodeProj.pbxproj.delete(object: newFile)
@@ -215,7 +238,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
                 sourceRoot: sourceRoot
             )
             try holder.reflectUpdate(updateModel: updateModelAfterRemove)
-            let checksumAfterRemove = try holder.smartChecksumCalculate()
+            let checksumAfterRemove = try calculator.calculate(rootHolder: holder)
             try checksumHolderValidator.validate(holder)
             // Then
             XCTAssertNotEqual(checksum, checksumAfterAdd)
@@ -249,7 +272,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
                 checksums.insert(checksum.stringValue)
                 try checksumHolderValidator.validate(holder)
                 invalide(holder)
-                let smartChecksum = try holder.smartChecksumCalculate()
+                let smartChecksum = try calculator.calculate(rootHolder: holder)
                 checksums.insert(smartChecksum.stringValue)
                 try checksumHolderValidator.validate(holder)
                 try fileManager.removeItem(atPath: sourceRoot)
@@ -283,7 +306,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             checksumProducer: checksumProducer
         )
         try holder.reflectUpdate(updateModel: updateModel)
-        let checksum = try holder.smartChecksumCalculate()
+        let checksum = try calculator.calculate(rootHolder: holder)
         try checksumHolderValidator.validate(holder)
         return checksum.stringValue
     }

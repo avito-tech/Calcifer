@@ -14,7 +14,8 @@ public final class XcodeProjGenerator {
         projectPath: String,
         sourceRoot: String,
         fileCount: Int = 10,
-        targetCount: Int = 10)
+        targetCount: Int = 10,
+        targetLevelCount: Int = 1)
         throws -> XcodeProj
     {
         let sourceRootPath = Path(sourceRoot)
@@ -34,18 +35,38 @@ public final class XcodeProjGenerator {
             fileCount: fileCount
         )
         
-        var dependencyTargets = [mainTarget]
+        var dependencyTargets = [PBXTarget]()
         for i in (0...targetCount) {
-            let target = try generateTarget(
+            let levelRootTarget = try generateTarget(
                 name: "\(i)",
                 pbxproj: pbxproj,
                 project: project,
                 sourceRoot: sourceRootPath,
-                fileCount: fileCount,
-                dependencyTargets: dependencyTargets
+                fileCount: fileCount
             )
-            dependencyTargets.append(target)
+            var previousLevelTarget = levelRootTarget
+            for level in (0...targetLevelCount) {
+                let target = try generateTarget(
+                    name: "\(i)-\(level)",
+                    pbxproj: pbxproj,
+                    project: project,
+                    sourceRoot: sourceRootPath,
+                    fileCount: fileCount
+                )
+                addDependencies(
+                    to: previousLevelTarget,
+                    pbxproj: pbxproj,
+                    dependencyTargets: [target]
+                )
+                previousLevelTarget = target
+            }
+            dependencyTargets.append(levelRootTarget)
         }
+        addDependencies(
+            to: mainTarget,
+            pbxproj: pbxproj,
+            dependencyTargets: dependencyTargets
+        )
         
         try fileManager.createDirectory(
             atPath: projectPath,
@@ -80,7 +101,16 @@ public final class XcodeProjGenerator {
             )
         }
         
+        addDependencies(
+            to: target,
+            pbxproj: pbxproj,
+            dependencyTargets: dependencyTargets
+        )
         
+        return target
+    }
+    
+    func addDependencies(to target: PBXTarget, pbxproj: PBXProj, dependencyTargets: [PBXTarget]) {
         for dependencyTarget in dependencyTargets {
             let dependency = PBXTargetDependency(
                 name: dependencyTarget.name,
@@ -89,8 +119,6 @@ public final class XcodeProjGenerator {
             pbxproj.add(object: dependency)
             target.dependencies.append(dependency)
         }
-        
-        return target
     }
     
     @discardableResult

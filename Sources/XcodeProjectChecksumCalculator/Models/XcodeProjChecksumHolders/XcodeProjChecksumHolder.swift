@@ -12,8 +12,8 @@ import Toolkit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    override public var children: [String : BaseChecksumHolder<ChecksumType>] {
-        return projs.obtainDictionary()
+    override public var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
+        return projs.cast { $0 }
     }
     
     var projs = ThreadSafeDictionary<String, ProjChecksumHolder<ChecksumType>>()

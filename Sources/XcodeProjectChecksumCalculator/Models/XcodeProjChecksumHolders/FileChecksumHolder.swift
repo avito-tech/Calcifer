@@ -2,6 +2,7 @@ import Foundation
 import Checksum
 import XcodeProj
 import PathKit
+import Toolkit
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Xcode models structure:                                                                                                //
@@ -16,8 +17,8 @@ final class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
     private let fileURL: URL
     private let checksumProducer: URLChecksumProducer<ChecksumType>
     
-    override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        return [:]
+    override var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
+        return ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
     }
     
     init(

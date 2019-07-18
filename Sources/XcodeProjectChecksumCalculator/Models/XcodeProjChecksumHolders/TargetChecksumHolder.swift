@@ -14,12 +14,14 @@ import Toolkit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        var childrenChecksums = [String: BaseChecksumHolder<ChecksumType>]()
-        let filesChecksums = files.obtainDictionary() as [String: BaseChecksumHolder<ChecksumType>]
-        let dependenciesChecksums = dependencies.obtainDictionary() as [String: BaseChecksumHolder<ChecksumType>]
-        childrenChecksums = childrenChecksums.merging(filesChecksums, uniquingKeysWith: { (first, _) in first })
-        childrenChecksums = childrenChecksums.merging(dependenciesChecksums, uniquingKeysWith: { (first, _) in first })
+    override var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
+        let childrenChecksums = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        files.forEach { key, value in
+            childrenChecksums.write(value, for: key)
+        }
+        dependencies.forEach { key, value in
+            childrenChecksums.write(value, for: key)
+        }
         return childrenChecksums
     }
     
@@ -56,7 +58,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         if let cachedAllDependencies = cachedAllFlatDependencies {
             return cachedAllDependencies
         }
-        let all = dependencies.values + dependencies.obtainDictionary().flatMap { $0.value.allFlatDependencies }
+        let all = dependencies.values + dependencies.values.flatMap { $0.allFlatDependencies }
         var uniq = [String: TargetChecksumHolder<ChecksumType>]()
         for dependency in all {
             uniq[dependency.targetName] = dependency
@@ -114,7 +116,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                         fullPathProvider: fullPathProvider,
                         checksumProducer: checksumProducer
                     )
-                }
+                }.value
             }
         )
     }
@@ -141,7 +143,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                         parent: self,
                         checksumProducer: checksumProducer
                     )
-                }
+                }.value
             }
         )
     }
