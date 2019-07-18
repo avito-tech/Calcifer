@@ -10,7 +10,7 @@ import Checksum
 public final class ChecksumCalculatorMeasurementTests: BaseTestCase {
     
     private func projectRoot() -> Path? {
-        return Path("/b/Avito")
+        return nil
     }
     
     private func xcodeProjPath() -> Path? {
