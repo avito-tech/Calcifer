@@ -36,9 +36,6 @@ final class FileChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
     }
     
     func reflectUpdate(updateModel: URL) throws {
-        guard calculated == true else {
-            return
-        }
         let newChecksum = try checksumProducer.checksum(input: updateModel)
         let currentChecksum = try obtainChecksum()
         if newChecksum != currentChecksum {
