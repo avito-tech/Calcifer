@@ -77,14 +77,13 @@ open class BaseChecksumHolder<ChecksumType: Checksum>:
         leafs: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
     {
         guard visited.createIfNotExist(name, self).created else { return }
-        if case .notCalculated = state.currentValue() {
-            if !haveNotCalculatedChildren() {
-                leafs.write(self, for: name)
-                return
-            }
+        guard case .notCalculated = state.currentValue() else { return }
+        if haveNotCalculatedChildren() {
             children.forEach { _, child in
                 child.obtainNotCalculatedLeafs(visited: visited, leafs: leafs)
             }
+        } else {
+            leafs.write(self, for: name)
         }
     }
     
