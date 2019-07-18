@@ -85,7 +85,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
         let result = visited.createIfNotExist(holder.name, holder)
         guard result.created else {
             if result.value.uniqIdentifier != holder.uniqIdentifier {
-                throw ChecksumValidationError.dublicateChecksumHolder(name: holder.name)
+                throw ChecksumValidationError.duplicateChecksumHolder(name: holder.name)
             }
             return
         }
