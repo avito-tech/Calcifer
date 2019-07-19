@@ -99,11 +99,15 @@ public final class PrepareRemoteCacheCommand: Command {
             fullPathProvider: fullPathProvider,
             xcodeProjCache: xcodeProjCache
         )
+        let checksumCalculator = ConcurentUpToDownChecksumCalculator()
+        let checksumHolderValidator = ChecksumHolderValidatorImpl()
         let targetInfoProviderFactory = TargetInfoProviderFactory(
             checksumProducer: checksumProducer,
             xcodeProjChecksumCache: xcodeProjChecksumCache,
             xcodeProjCache: xcodeProjCache,
-            xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory
+            xcodeProjChecksumHolderBuilderFactory: xcodeProjChecksumHolderBuilderFactory,
+            checksumCalculator: checksumCalculator,
+            checksumHolderValidator: checksumHolderValidator
         )
         let targetInfoFilter = TargetInfoFilter()
         let requiredTargetsProvider = RequiredTargetsProviderImpl(

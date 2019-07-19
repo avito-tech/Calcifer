@@ -14,12 +14,14 @@ import Toolkit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        var childrenChecksums = [String: BaseChecksumHolder<ChecksumType>]()
-        let filesChecksums = files as [String: BaseChecksumHolder<ChecksumType>]
-        let dependenciesChecksums = dependencies as [String: BaseChecksumHolder<ChecksumType>]
-        childrenChecksums = childrenChecksums.merging(filesChecksums, uniquingKeysWith: { (first, _) in first })
-        childrenChecksums = childrenChecksums.merging(dependenciesChecksums, uniquingKeysWith: { (first, _) in first })
+    override var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
+        let childrenChecksums = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
+        files.forEach { key, value in
+            childrenChecksums.write(value, for: key)
+        }
+        dependencies.forEach { key, value in
+            childrenChecksums.write(value, for: key)
+        }
         return childrenChecksums
     }
     
@@ -30,8 +32,8 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     private let fullPathProvider: FileElementFullPathProvider
     private let checksumProducer: URLChecksumProducer<ChecksumType>
     
-    var files = [String: FileChecksumHolder<ChecksumType>]()
-    var dependencies = [String: TargetChecksumHolder<ChecksumType>]()
+    var files = ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>()
+    var dependencies = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
     
     init(
         updateModel: TargetUpdateModel<ChecksumType>,
@@ -56,7 +58,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
         if let cachedAllDependencies = cachedAllFlatDependencies {
             return cachedAllDependencies
         }
-        let all = dependencies.values + dependencies.flatMap { $0.value.allFlatDependencies }
+        let all = dependencies.values + dependencies.values.flatMap { $0.allFlatDependencies }
         var uniq = [String: TargetChecksumHolder<ChecksumType>]()
         for dependency in all {
             uniq[dependency.targetName] = dependency
@@ -93,22 +95,28 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 TargetUpdateModel<ChecksumType>(
                     target: target,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: updateModel.cache
+                    targetCache: updateModel.targetCache,
+                    fileCache: updateModel.fileCache
                 )
             }.toDictionary { $0.name }
         return try updateModels.update(
-            childrenDictionary: &dependencies,
-            update: { (_: TargetChecksumHolder<ChecksumType>, _: TargetUpdateModel<ChecksumType>) in
+            childrenDictionary: dependencies,
+            update: { (targetChecksumHolder: TargetChecksumHolder<ChecksumType>, _: TargetUpdateModel<ChecksumType>) in
+                targetChecksumHolder.parents.write(self, for: name)
                 // DO NOT UPDATE DEPENDENCY! THEY ALREADY UPDATED BY PROJECT
-            }, buildValue: { updateModel in
-                updateModel.cache.createIfNotExist(updateModel.name) { _ in
+            },
+            onRemove: { key in
+                updateModel.targetCache.removeValue(forKey: key)
+            },
+            buildValue: { updateModel in
+                updateModel.targetCache.createIfNotExist(updateModel.name) { _ in
                     TargetChecksumHolder(
                         updateModel: updateModel,
                         parent: self,
                         fullPathProvider: fullPathProvider,
                         checksumProducer: checksumProducer
                     )
-                }
+                }.value
             }
         )
     }
@@ -120,16 +128,22 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 try fullPathProvider.fullPath(for: url, sourceRoot: updateModel.sourceRoot).url
             }.toDictionary { $0.path }
         return try fileUrlDictionary.update(
-            childrenDictionary: &files,
+            childrenDictionary: files,
             update: { (fileChecksumHolder: FileChecksumHolder<ChecksumType>, updateModel: URL) in
+                fileChecksumHolder.parents.write(self, for: name)
                 try fileChecksumHolder.reflectUpdate(updateModel: updateModel)
             },
+            onRemove: { key in
+                updateModel.fileCache.removeValue(forKey: key)
+            },
             buildValue: { url in
-                FileChecksumHolder<ChecksumType>(
-                    fileURL: url,
-                    parent: self,
-                    checksumProducer: checksumProducer
-                )
+                updateModel.fileCache.createIfNotExist(url.path) { _ in
+                    FileChecksumHolder<ChecksumType>(
+                        fileURL: url,
+                        parent: self,
+                        checksumProducer: checksumProducer
+                    )
+                }.value
             }
         )
     }

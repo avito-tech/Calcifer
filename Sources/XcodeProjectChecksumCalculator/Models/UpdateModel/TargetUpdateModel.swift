@@ -16,16 +16,19 @@ final class TargetUpdateModel<ChecksumType: Checksum> {
     
     let target: PBXTarget
     let sourceRoot: Path
-    let cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>
     
     init(
         target: PBXTarget,
         sourceRoot: Path,
-        cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>)
+        targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>,
+        fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>)
     {
         self.target = target
         self.sourceRoot = sourceRoot
-        self.cache = cache
+        self.targetCache = targetCache
+        self.fileCache = fileCache
     }
     
     var targetName: String {

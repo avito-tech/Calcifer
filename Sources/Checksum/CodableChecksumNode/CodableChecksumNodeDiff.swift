@@ -2,9 +2,9 @@ import Foundation
 
 public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConvertible {
     case noChanged
-    case changed(was: CodableChecksumNode<Value>, became: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
-    case appear(became: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
-    case disappear(was: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
+    case changed(previousValue: CodableChecksumNode<Value>, newValue: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
+    case appear(newValue: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
+    case disappear(previousValue: CodableChecksumNode<Value>, children: [CodableChecksumNodeDiff])
     
     public var children: [CodableChecksumNodeDiff] {
         switch self {
@@ -23,12 +23,12 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         switch self {
         case .noChanged:
             return "noChanged"
-        case let .changed(was, became, _):
-            return "changed was: \(was) became: \(became)"
-        case let .appear(became, _):
-            return "appear: \(became)"
-        case let .disappear(was, _):
-            return "disappear: \(was)"
+        case let .changed(previousValue, newValue, _):
+            return "changed was: \(previousValue) became: \(newValue)"
+        case let .appear(newValue, _):
+            return "appear: \(newValue)"
+        case let .disappear(previousValue, _):
+            return "disappear: \(previousValue)"
         }
     }
     
@@ -45,6 +45,32 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         }
     }
     
+    public var previousValue: CodableChecksumNode<Value>? {
+        switch self {
+        case .noChanged:
+            return nil
+        case let .changed(previousValue, _, _):
+            return previousValue
+        case .appear:
+            return nil
+        case let .disappear(previousValue, _):
+            return previousValue
+        }
+    }
+    
+    public var newValue: CodableChecksumNode<Value>? {
+        switch self {
+        case .noChanged:
+            return nil
+        case let .changed(_, newValue, _):
+            return newValue
+        case let .appear(newValue ,_):
+            return newValue
+        case .disappear:
+            return nil
+        }
+    }
+    
     public func printLeafs() {
         var alreadyPrinted = Set<String>()
         printLeafs(alreadyPrinted: &alreadyPrinted)
@@ -54,13 +80,15 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         guard alreadyPrinted.contains(description) == false else {
             return
         }
+        if children.isEmpty {
+            return
+        }
         let changedChildren = children.filter { !$0.noChanged }
         if changedChildren.isEmpty {
-            if case .noChanged = self {
-                return
+            if !noChanged {                
+                alreadyPrinted.insert(description)
+                print(description)
             }
-            alreadyPrinted.insert(description)
-            print(description)
         } else {
             for child in children {
                 child.printLeafs(alreadyPrinted: &alreadyPrinted)
@@ -68,45 +96,45 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
         }
     }
     
-    public static func diff(was: CodableChecksumNode<Value>?, became: CodableChecksumNode<Value>?) -> CodableChecksumNodeDiff {
+    public static func diff(previousValue: CodableChecksumNode<Value>?, newValue: CodableChecksumNode<Value>?) -> CodableChecksumNodeDiff {
         
-        if was == became {
+        if previousValue == newValue {
             return .noChanged
         }
         
         var allChildren = [String]()
-        var wasChildren = [String: CodableChecksumNode<Value>]()
-        if let was = was {
-            wasChildren = Dictionary(uniqueKeysWithValues:
-                was.children.compactMap({ ($0.name, $0) })
+        var previousValueChildren = [String: CodableChecksumNode<Value>]()
+        if let previousValue = previousValue {
+            previousValueChildren = Dictionary(uniqueKeysWithValues:
+                previousValue.children.compactMap({ ($0.name, $0) })
             )
         }
-        wasChildren.keys.forEach {
+        previousValueChildren.keys.forEach {
             if !allChildren.contains($0) {
                 allChildren.append($0)
             }
         }
-        var becameChildren = [String: CodableChecksumNode<Value>]()
-        if let became = became {
-            becameChildren = Dictionary(uniqueKeysWithValues:
-                became.children.compactMap({ ($0.name, $0) })
+        var newValueChildren = [String: CodableChecksumNode<Value>]()
+        if let newValue = newValue {
+            newValueChildren = Dictionary(uniqueKeysWithValues:
+                newValue.children.compactMap({ ($0.name, $0) })
             )
         }
-        becameChildren.keys.forEach {
+        newValueChildren.keys.forEach {
             if !allChildren.contains($0) {
                 allChildren.append($0)
             }
         }
         let childrenDiff = allChildren.compactMap({
-            diff(was: wasChildren[$0], became: becameChildren[$0])
+            diff(previousValue: previousValueChildren[$0], newValue: newValueChildren[$0])
         })
         
-        if let was = was, let became = became {
-            return .changed(was: was, became: became, children: childrenDiff)
-        } else if let became = became {
-            return appear(became: became, children: childrenDiff)
-        } else if let was = was {
-            return disappear(was: was, children: childrenDiff)
+        if let previousValue = previousValue, let newValue = newValue {
+            return .changed(previousValue: previousValue, newValue: newValue, children: childrenDiff)
+        } else if let newValue = newValue {
+            return appear(newValue: newValue, children: childrenDiff)
+        } else if let previousValue = previousValue {
+            return disappear(previousValue: previousValue, children: childrenDiff)
         } else {
             return .noChanged
         }

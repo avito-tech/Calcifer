@@ -15,16 +15,19 @@ import Toolkit
 final class ProjectUpdateModel<ChecksumType: Checksum> {
     let project: PBXProject
     let sourceRoot: Path
-    let cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
+    let fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>
     
     init(
         project: PBXProject,
         sourceRoot: Path,
-        cache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>)
+        targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>,
+        fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>)
     {
         self.project = project
         self.sourceRoot = sourceRoot
-        self.cache = cache
+        self.targetCache = targetCache
+        self.fileCache = fileCache
     }
     
     var name: String {

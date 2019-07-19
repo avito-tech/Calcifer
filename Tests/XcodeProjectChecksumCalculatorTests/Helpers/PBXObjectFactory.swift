@@ -5,9 +5,13 @@ import PathKit
 
 final class PBXObjectFactory {
     
-    static var objects: PBXObjects?
+    let objects: PBXObjects
     
-    static func fileElement(path: String = "\(UUID().uuidString).swift")
+    init(objects: PBXObjects) {
+        self.objects = objects
+    }
+    
+    func fileElement(path: String = "\(UUID().uuidString).swift")
         -> PBXFileElement
     {
         let filePath = Path(path)
@@ -16,37 +20,41 @@ final class PBXObjectFactory {
             name: filePath.lastComponent,
             path: path
         )
-        objects?.add(object: fileReference)
+        objects.add(object: fileReference)
         return fileReference
     }
     
-    static func buildFile(file: PBXFileElement = PBXObjectFactory.fileElement()) -> PBXBuildFile {
+    func buildFile(file: PBXFileElement? = nil) -> PBXBuildFile {
+        let file = file ?? fileElement()
         let buildFile = PBXBuildFile(file: file)
         buildFile.reference.objects = objects
-        objects?.add(object: buildFile)
+        objects.add(object: buildFile)
         return buildFile
     }
     
-    static func target(
+    func target(
         name: String = UUID().uuidString,
-        buildFiles: [PBXBuildFile] = [PBXObjectFactory.buildFile()],
-        dependencies: [PBXTarget] = [PBXTarget]())
+        buildFiles: [PBXBuildFile]? = nil,
+        dependencies: [PBXTarget]? = nil)
         -> PBXTarget
     {
+        let buildFiles = buildFiles ?? [buildFile()]
+        let dependencies = dependencies ?? [PBXTarget]()
+    
         let buildPhase = PBXSourcesBuildPhase(files: buildFiles)
-        objects?.add(object: buildPhase)
+        objects.add(object: buildPhase)
         buildPhase.reference.objects = objects
         let targetDependencies = dependencies.map({
             PBXTargetDependency(name: $0.name, target: $0)
         })
         targetDependencies.forEach({
-            objects?.add(object: $0)
+            objects.add(object: $0)
         })
         let product = PBXFileReference(
             path: UUID().uuidString.replacingOccurrences(of: "-", with: "")
         )
         product.name = "\(name).framework"
-        objects?.add(object: product)
+        objects.add(object: product)
         let target = PBXTarget(
             name: name,
             dependencies: targetDependencies,

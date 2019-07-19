@@ -14,7 +14,8 @@ public final class RequiredTargetsProviderStub: RequiredTargetsProvider {
     
     public func obtainRequiredTargets(
         params: XcodeBuildEnvironmentParameters,
-        calciferChecksumFilePath: String)
+        calciferChecksumFilePath: String,
+        validateChecksumHolder: Bool)
         throws -> [TargetInfo<BaseChecksum>]
     {
         return onObtainRequiredTargets(params, calciferChecksumFilePath)

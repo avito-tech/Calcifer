@@ -43,8 +43,8 @@ public final class CalculateXcodeProjectChecksumDiffCommand: Command {
         let firstCodableChecksumNode = try obtainCodableChecksumNode(path: firstChecksumPath)
         let secondCodableChecksumNode = try obtainCodableChecksumNode(path: secondChecksumPath)
         let diff = CodableChecksumNodeDiff.diff(
-            was: firstCodableChecksumNode,
-            became: secondCodableChecksumNode
+            previousValue: firstCodableChecksumNode,
+            newValue: secondCodableChecksumNode
         )
         diff.printLeafs()
     }

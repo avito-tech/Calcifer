@@ -79,7 +79,7 @@ public final class TargetInfoProvider<ChecksumType: Checksum> {
     
     private func targetChecksumHolders() -> [TargetChecksumHolder<ChecksumType>] {
         let targets = checksumHolder.projs
-            .compactMap { $0.value }
+            .values
             .flatMap { $0.projects.values }
             .flatMap { $0.targets.values }
         return targets

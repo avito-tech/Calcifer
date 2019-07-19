@@ -14,11 +14,11 @@ import Toolkit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumType> {
     
-    override var children: [String: BaseChecksumHolder<ChecksumType>] {
-        return projects
+    override var children: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>> {
+        return projects.cast { $0 }
     }
     
-    var projects = [String: ProjectChecksumHolder<ChecksumType>]()
+    var projects = ThreadSafeDictionary<String, ProjectChecksumHolder<ChecksumType>>()
     
     private let fullPathProvider: FileElementFullPathProvider
     private let checksumProducer: URLChecksumProducer<ChecksumType>
@@ -41,7 +41,10 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
     }
     
     func update(projectsChecksums: [ProjectChecksumHolder<ChecksumType>]) {
-        self.projects = Dictionary(uniqueKeysWithValues: projectsChecksums.map { ($0.name, $0) })
+        let dictionary = Dictionary(uniqueKeysWithValues: projectsChecksums.map { ($0.name, $0) })
+        self.projects = ThreadSafeDictionary<String, ProjectChecksumHolder<ChecksumType>>(
+            dictionary: dictionary
+        )
     }
     
     func reflectUpdate(updateModel: ProjUpdateModel<ChecksumType>) throws {
@@ -50,13 +53,17 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
                 ProjectUpdateModel(
                     project: project,
                     sourceRoot: updateModel.sourceRoot,
-                    cache: updateModel.cache
+                    targetCache: updateModel.targetCache,
+                    fileCache: updateModel.fileCache
                 )
             }.toDictionary { $0.name }
         let shouldInvalidate = try projectUpdateModelsDictionary.update(
-            childrenDictionary: &projects,
+            childrenDictionary: projects,
             update: { projectChecksumHolder, projectUpdateModel in
+                projectChecksumHolder.parents.write(self, for: name)
                 try projectChecksumHolder.reflectUpdate(updateModel: projectUpdateModel)
+            }, onRemove: { _ in
+                
             }, buildValue: { projectUpdateModel in
                 ProjectChecksumHolder(
                     name: projectUpdateModel.name,
