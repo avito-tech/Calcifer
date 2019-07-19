@@ -37,7 +37,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/avito-tech/GraphiteClient.git",
-            .exact("0.1.0")
+            .exact("0.1.1")
         )
     ],
     targets: [
