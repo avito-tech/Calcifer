@@ -13,7 +13,7 @@ public final class ConcurentParentsChecksumCalculator: ChecksumCalculator {
             .obtainNotCalculatedLeafs()
             .enumerateKeysAndObjects(options: .concurrent) { _, leaf, _ in
                 try calculateSelfAndParents(holder: leaf, calculated: calculated)
-        }
+            }
         return try rootHolder.obtainChecksum()
     }
     

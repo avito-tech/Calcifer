@@ -70,7 +70,7 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
         rethrows -> KeyResult
     {
         return try createIfNotExist(key) { _ in
-            return try value()
+            try value()
         }
     }
     
@@ -150,7 +150,7 @@ public final class ThreadSafeDictionary<Key: Hashable, Value> {
     
     public func copy() -> ThreadSafeDictionary<Key, Value> {
         return lock.whileLocked {
-            return ThreadSafeDictionary<Key, Value>(dictionary: dictionary)
+            ThreadSafeDictionary<Key, Value>(dictionary: dictionary)
         }
     }
     

@@ -61,7 +61,7 @@ public final class XcodeProjChecksumHolderTests: BaseTestCase {
             )
             // When
             try holder.reflectUpdate(updateModel: updateModel)
-            let _ = try calculator.calculate(rootHolder: holder)
+            _ = try calculator.calculate(rootHolder: holder)
             // Then
             try checksumHolderValidator.validate(holder)
         }

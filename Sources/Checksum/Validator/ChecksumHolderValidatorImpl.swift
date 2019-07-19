@@ -78,7 +78,7 @@ public final class ChecksumHolderValidatorImpl: ChecksumHolderValidator {
     }
     
     private func validateUniqueness<ChecksumType: Checksum>(
-         _ holder: BaseChecksumHolder<ChecksumType>,
+        _ holder: BaseChecksumHolder<ChecksumType>,
         visited: ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>)
         throws
     {
