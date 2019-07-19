@@ -45,6 +45,9 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
         let zipFileURL = URL(
             fileURLWithPath: path.deletingLastPathComponent()
         ).appendingPathComponent(key + ".zip")
+        if fileManager.fileExists(atPath: zipFileURL.path) {
+            try? fileManager.removeItem(at: zipFileURL)
+        }
         catchError { try fileManager.zipItem(at: artifactURL, to: zipFileURL) }
         gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { _ in
             catchError { [weak self] in
