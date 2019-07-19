@@ -64,7 +64,7 @@ public enum CodableChecksumNodeDiff<Value: Codable & Hashable>: CustomStringConv
             return nil
         case let .changed(_, newValue, _):
             return newValue
-        case let .appear(newValue ,_):
+        case let .appear(newValue, _):
             return newValue
         case .disappear:
             return nil

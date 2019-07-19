@@ -9,7 +9,7 @@ public final class ConcurentLeafsChecksumCalculator: ChecksumCalculator {
         rootHolder: BaseChecksumHolder<ChecksumType>)
         throws -> ChecksumType
     {
-        var notCalculatedLeafs = try rootHolder.obtainNotCalculatedLeafs()
+        var notCalculatedLeafs = rootHolder.obtainNotCalculatedLeafs()
         let calculated = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
         while !notCalculatedLeafs.isEmpty {
             try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, node, _ in
@@ -17,7 +17,7 @@ public final class ConcurentLeafsChecksumCalculator: ChecksumCalculator {
                 calculated.write(node, for: node.name)
             }
             let newNotCalculatedLeafs = ThreadSafeDictionary<String, BaseChecksumHolder<ChecksumType>>()
-            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { key, leaf, _ in
+            try notCalculatedLeafs.enumerateKeysAndObjects(options: .concurrent) { _, leaf, _ in
                 for parent in leaf.parents.values {
                     if parent.calculated {
                         calculated.write(parent, for: parent.name)
