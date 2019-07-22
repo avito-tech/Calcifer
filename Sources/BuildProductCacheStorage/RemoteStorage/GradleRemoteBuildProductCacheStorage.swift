@@ -49,10 +49,8 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
             try? fileManager.removeItem(at: zipFileURL)
         }
         catchError { try fileManager.zipItem(at: artifactURL, to: zipFileURL) }
-        gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { _ in
-            catchError { [weak self] in
-                try self?.fileManager.removeItem(at: zipFileURL)
-            }
+        gradleBuildCacheClient.upload(fileURL: zipFileURL, key: key) { [weak self] _ in
+            try? self?.fileManager.removeItem(at: zipFileURL)
             completion()
         }
     }

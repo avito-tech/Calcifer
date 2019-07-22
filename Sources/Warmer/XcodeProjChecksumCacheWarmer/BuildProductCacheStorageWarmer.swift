@@ -14,6 +14,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
     private let cacheKeyBuilder: BuildProductCacheKeyBuilder
     private let targetInfoFilter: TargetInfoFilter
     private let cacheStorageFactory: CacheStorageFactory
+    private let fileManager: FileManager
     
     public init(
         configProvider: CalciferConfigProvider,
@@ -21,7 +22,8 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         calciferPathProvider: CalciferPathProvider,
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         targetInfoFilter: TargetInfoFilter,
-        cacheStorageFactory: CacheStorageFactory)
+        cacheStorageFactory: CacheStorageFactory,
+        fileManager: FileManager)
     {
         self.configProvider = configProvider
         self.requiredTargetsProvider = requiredTargetsProvider
@@ -29,6 +31,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         self.cacheKeyBuilder = cacheKeyBuilder
         self.targetInfoFilter = targetInfoFilter
         self.cacheStorageFactory = cacheStorageFactory
+        self.fileManager = fileManager
     }
     
     public func warmup(for event: WarmerEvent, perform: @escaping (Operation) -> ()) {
@@ -39,6 +42,10 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         ) else { return }
         let pbxprojPath = params.podsProjectPath
             .appendingPathComponent("project.pbxproj")
+        guard fileManager.fileExists(atPath: pbxprojPath) else {
+            Logger.warning("pbxproj file doesn't exist at path \(pbxprojPath)")
+            return
+        }
         let storageConfig = config.storageConfig
         guard let gradleHost = storageConfig.gradleHost else {
             Logger.error("Gradle host is not set")

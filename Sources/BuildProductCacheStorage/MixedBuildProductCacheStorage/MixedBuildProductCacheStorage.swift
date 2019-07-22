@@ -74,9 +74,7 @@ public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
             switch result {
             case let .result(value):
                 self?.localCacheStorage.add(cacheKey: cacheKey, at: value.path) {
-                    catchError {
-                        try self?.fileManager.removeItem(atPath: value.path)
-                    }
+                    try? self?.fileManager.removeItem(atPath: value.path)
                     self?.localCacheStorage.cached(for: cacheKey) { localResult in
                         completion(localResult)
                     }

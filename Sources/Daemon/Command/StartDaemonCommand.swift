@@ -83,7 +83,8 @@ public final class StartDaemonCommand: Command {
             calciferPathProvider: calciferPathProvider,
             cacheKeyBuilder: cacheKeyBuilder,
             targetInfoFilter: targetInfoFilter,
-            cacheStorageFactory: cacheStorageFactory)
+            cacheStorageFactory: cacheStorageFactory,
+            fileManager: fileManager)
     }
     
 }

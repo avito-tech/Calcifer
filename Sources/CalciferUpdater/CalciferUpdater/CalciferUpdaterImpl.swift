@@ -80,8 +80,8 @@ public final class CalciferUpdaterImpl: CalciferUpdater {
         if fileManager.fileExists(atPath: resultBinaryURL.path)
             && equalFiles(unzipBinaryURL, resultBinaryURL)
         {
-            catchError { try fileManager.removeItem(at: downloadedZipURL) }
-            catchError { try fileManager.removeItem(at: unzipBinaryURL) }
+            try? fileManager.removeItem(at: downloadedZipURL)
+            try? fileManager.removeItem(at: unzipBinaryURL)
             completion(.success(()))
         } else {
             completion(.failure(CalciferUpdaterError.failedToInstallBinary(url: unzipBinaryURL)))
