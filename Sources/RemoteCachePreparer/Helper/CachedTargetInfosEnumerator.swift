@@ -19,7 +19,6 @@ public final class CachedTargetInfosEnumerator {
         try targetInfos.asyncConcurrentEnumerate { (targetInfo, completion, stop) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
-            var processError: Error?
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
                 do {
                     let frameworkCacheValue = try self.processCacheResult(frameworkResult, targetInfo: targetInfo)
@@ -35,18 +34,12 @@ public final class CachedTargetInfosEnumerator {
                                 completion()
                             }
                         } catch {
-                            processError = error
-                            stop()
+                            stop(error)
                         }
                     }
                 } catch {
-                    processError = error
-                    stop()
+                    stop(error)
                 }
-            }
-            
-            if let error = processError {
-                throw error
             }
         }
     }

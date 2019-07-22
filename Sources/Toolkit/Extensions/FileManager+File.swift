@@ -64,7 +64,7 @@ public extension FileManager {
     }
     
     func fileSize(at path: String) throws -> UInt64 {
-        let attributes = catchError { try attributesOfItem(atPath: path) }
+        let attributes = try attributesOfItem(atPath: path)
         guard let fileSize = attributes[FileAttributeKey.size] as? UInt64
             else { throw FileManagerError.unableToObtainFileSize(path: path) }
         return fileSize

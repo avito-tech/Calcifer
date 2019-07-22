@@ -25,7 +25,8 @@ public final class WarmerManagerFactory {
         let xcodeProjCacheWarmer = DebouncingWarmer(
             warmer: XcodeProjCacheWarmer(
                 xcodeProjCache: xcodeProjCache,
-                calciferPathProvider: calciferPathProvider
+                calciferPathProvider: calciferPathProvider,
+                fileManager: fileManager
             ),
             delay: 10
         )

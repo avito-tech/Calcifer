@@ -8,19 +8,26 @@ public final class XcodeProjCacheWarmer: Warmer {
         
     private let xcodeProjCache: XcodeProjCache
     private let calciferPathProvider: CalciferPathProvider
+    private let fileManager: FileManager
     
     public init(
         xcodeProjCache: XcodeProjCache,
-        calciferPathProvider: CalciferPathProvider)
+        calciferPathProvider: CalciferPathProvider,
+        fileManager: FileManager)
     {
         self.xcodeProjCache = xcodeProjCache
         self.calciferPathProvider = calciferPathProvider
+        self.fileManager = fileManager
     }
     
     public func warmup(for event: WarmerEvent, perform: (Operation) -> ()) {
         guard let projectPath = obtainEnvironmentParameters()?.podsProjectPath
             else { return }
         let pbxprojPath = projectPath.appendingPathComponent("project.pbxproj")
+        guard fileManager.fileExists(atPath: pbxprojPath) else {
+            Logger.warning("pbxproj file doesn't exist at path \(pbxprojPath)")
+            return
+        }
         switch event {
         case .initial:
             perform(createOperation(projectPath: projectPath))

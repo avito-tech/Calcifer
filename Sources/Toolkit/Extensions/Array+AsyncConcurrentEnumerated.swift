@@ -1,4 +1,5 @@
 import Foundation
+import AtomicModels
 
 public extension Array {
     
@@ -17,7 +18,7 @@ public extension Array {
         each: (
         _ object: Element,
         _ completion: @escaping () -> (),
-        _ stop: @escaping () -> ()) throws -> ()) throws
+        _ stop: @escaping (Error?) -> ()) throws -> ()) throws
     {
         let dispatchGroup = DispatchGroup()
         let array = NSArray(array: self)
@@ -31,7 +32,8 @@ public extension Array {
                 try each(
                     object,
                     { dispatchGroup.leave() },
-                    {
+                    { error in
+                        eachError = error
                         stop.pointee = true
                         dispatchGroup.leave()
                     }
