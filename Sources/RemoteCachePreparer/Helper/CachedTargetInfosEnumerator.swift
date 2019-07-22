@@ -12,6 +12,7 @@ public final class CachedTargetInfosEnumerator {
         targetInfos: [TargetInfo<BaseChecksum>],
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         cacheStorage: BuildProductCacheStorage,
+        required: Bool = true,
         each: @escaping
         (CachedTargetInfo, @escaping () -> ()) -> ())
         throws
@@ -21,10 +22,24 @@ public final class CachedTargetInfosEnumerator {
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
                 do {
-                    let frameworkCacheValue = try self.processCacheResult(frameworkResult, targetInfo: targetInfo)
+                    guard let frameworkCacheValue = try self.processCacheResult(
+                        frameworkResult,
+                        targetInfo: targetInfo,
+                        required: required
+                    ) else {
+                        completion()
+                        return
+                    }
                     cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
                         do {
-                            let dSYMCacheValue = try self.processCacheResult(dSYMResult, targetInfo: targetInfo)
+                            guard let dSYMCacheValue = try self.processCacheResult(
+                                dSYMResult,
+                                targetInfo: targetInfo,
+                                required: required
+                            ) else {
+                                completion()
+                                return
+                            }
                             let cachedTargetInfo = CachedTargetInfo(
                                 targetInfo: targetInfo,
                                 frameworkCacheValue: frameworkCacheValue,
@@ -46,18 +61,23 @@ public final class CachedTargetInfosEnumerator {
     
     private func processCacheResult(
         _ result: BuildProductCacheResult<BaseChecksum>,
-        targetInfo: TargetInfo<BaseChecksum>)
-        throws -> BuildProductCacheValue<BaseChecksum>
+        targetInfo: TargetInfo<BaseChecksum>,
+        required: Bool)
+        throws -> BuildProductCacheValue<BaseChecksum>?
     {
         switch result {
         case let .result(value):
             return value
         case .notExist:
-            throw RemoteCachePreparerError.unableToObtainCache(
-                target: targetInfo.targetName,
-                type: targetInfo.productType.rawValue,
-                checksumValue: targetInfo.checksum.stringValue
-            )
+            if required {
+                throw RemoteCachePreparerError.unableToObtainCache(
+                    target: targetInfo.targetName,
+                    type: targetInfo.productType.rawValue,
+                    checksumValue: targetInfo.checksum.stringValue
+                )
+            } else {
+                return nil
+            }
         }
     }
     
