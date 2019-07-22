@@ -130,13 +130,13 @@ These parameters should be the same for all developers and on the CI.
 
 ## Checksum
 
-`~ /.calcifer.noindex/сhecksum.json` file contains all checksums of the latest build.
+`~ /.calcifer.noindex/checksum.json` file contains all checksums of the latest build.
 If you want to find the difference between two checksum files you can use the command:
 
 ```shell
 ~/.calcifer.noindex/Calcifer diff \
---firstChecksumPath ~/.calcifer.noindex/сhecksum.json \
---secondChecksumPath ~/.calcifer.noindex/сhecksum2.json
+--firstChecksumPath ~/.calcifer.noindex/checksum.json \
+--secondChecksumPath ~/.calcifer.noindex/checksum2.json
 ```
 This is helpful when you want to investigate why Calcifer haven't provided remote build artifacts when you expected it to provide them.
 

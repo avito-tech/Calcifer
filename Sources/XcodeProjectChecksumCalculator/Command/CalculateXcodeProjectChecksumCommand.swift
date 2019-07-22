@@ -55,7 +55,7 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
         )
         let codableChecksumNode = checksumHolder.node()
         let data = try codableChecksumNode.encode()
-        let outputFileURL = fileManager.pathToHomeDirectoryFile(name: "сhecksum.json")
+        let outputFileURL = fileManager.pathToHomeDirectoryFile(name: "checksum.json")
         try data.write(to: outputFileURL)
         print(codableChecksumNode.value)
         print(outputFileURL)
