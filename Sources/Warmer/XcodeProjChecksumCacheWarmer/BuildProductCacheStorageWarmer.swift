@@ -117,9 +117,10 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         try enumerator.enumerate(
             targetInfos: frameworkTargets,
             cacheKeyBuilder: cacheKeyBuilder,
-            cacheStorage: storage)
+            cacheStorage: storage,
+            required: false)
         { _, completion in
-                completion()
+            completion()
         }
     }
     
