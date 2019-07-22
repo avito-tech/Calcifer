@@ -18,6 +18,16 @@ public final class XcodeProjCacheWarmerTests: BaseTestCase {
         let params = try XcodeBuildEnvironmentParameters.forTests(
             podsRoot: podsRoot.path
         )
+        let podXcodeprojFolder = params.podsProjectPath
+        try fileManager.createDirectory(
+            atPath: podXcodeprojFolder,
+            withIntermediateDirectories: true
+        )
+        let pbxprojFile = podXcodeprojFolder.appendingPathComponent("project.pbxproj")
+        fileManager.createFile(
+            atPath: pbxprojFile,
+            contents: nil
+        )
         try params.save(to: calciferPathProviderStub.calciferEnvironmentFilePath())
         let xcodeProjCache = XcodeProjCacheStub()
         var fillXcodeProjCacheProjectPath: String?
@@ -26,7 +36,8 @@ public final class XcodeProjCacheWarmerTests: BaseTestCase {
         }
         let xcodeProjCacheWarmer = XcodeProjCacheWarmer(
             xcodeProjCache: xcodeProjCache,
-            calciferPathProvider: calciferPathProviderStub
+            calciferPathProvider: calciferPathProviderStub,
+            fileManager: fileManager
         )
         let events: WarmerEvent = .initial
         // When

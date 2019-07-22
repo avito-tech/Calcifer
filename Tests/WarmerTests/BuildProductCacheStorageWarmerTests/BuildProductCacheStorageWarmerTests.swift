@@ -88,7 +88,8 @@ public final class BuildProductCacheStorageWarmerTests: BaseTestCase {
             calciferPathProvider: calciferPathProviderStub,
             cacheKeyBuilder: cacheKeyBuilder,
             targetInfoFilter: targetInfoFilter,
-            cacheStorageFactory: cacheStorageFactory
+            cacheStorageFactory: cacheStorageFactory,
+            fileManager: fileManager
         )
         return factory.build()
     }
@@ -102,6 +103,16 @@ public final class BuildProductCacheStorageWarmerTests: BaseTestCase {
         let params = try XcodeBuildEnvironmentParameters.forTests(
             podsRoot: podsRoot,
             projectDirectory: projectDirectory
+        )
+        let podXcodeprojFolder = params.podsProjectPath
+        try fileManager.createDirectory(
+            atPath: podXcodeprojFolder,
+            withIntermediateDirectories: true
+        )
+        let pbxprojFile = podXcodeprojFolder.appendingPathComponent("project.pbxproj")
+        fileManager.createFile(
+            atPath: pbxprojFile,
+            contents: nil
         )
         try params.save(to: calciferPathProviderStub.calciferEnvironmentFilePath())
         return params
