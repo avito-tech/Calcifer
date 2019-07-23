@@ -32,7 +32,7 @@ public final class CacheHitStatisticLoggerFactory {
         let easyOutputStream = EasyOutputStream(
             outputStreamProvider: streamProvider,
             errorHandler: { _, error in
-                Logger.error("Graphite stream error: \(error)")
+                Logger.warning("Graphite stream failed")
             },
             streamEndHandler: { _ in
                 Logger.warning("Graphite stream has been closed")
