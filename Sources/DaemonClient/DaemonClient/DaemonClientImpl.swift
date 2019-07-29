@@ -107,11 +107,12 @@ public final class DaemonClientImpl: DaemonClient {
     }
     
     private func redirect(_ standardStreamMessage: StandardStreamMessage) {
+        let data = standardStreamMessage.data.addTrailingNewLine()
         switch standardStreamMessage.source {
         case .output:
-            FileHandle.standardOutput.write(standardStreamMessage.data)
+            FileHandle.standardOutput.write(data)
         case .error:
-            FileHandle.standardError.write(standardStreamMessage.data)
+            FileHandle.standardError.write(data)
         }
     }
     
