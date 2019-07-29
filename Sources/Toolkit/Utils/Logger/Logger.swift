@@ -42,7 +42,7 @@ public final class Logger {
     public static func addFileDestination(folderName: String) {
         let swiftyBeaver = SwiftyBeaver.self
         let fileDestination = FileDestination()
-        fileDestination.format = "$L: $M"
+        fileDestination.format = "$DHH:mm:ss.SSS$d $L: $M"
         setupLevelString(fileDestination)
         let logFile = logFileURL(folderName: folderName)
         fileDestination.logFileURL = logFile
@@ -145,7 +145,7 @@ public final class Logger {
         )
         let logFilePath = logDirectory
             .appendingPathComponent(Date().formattedString())
-            .appending(".txt")
+            .appending(".log")
         let logFile = URL(fileURLWithPath: logFilePath)
         return logFile
     }

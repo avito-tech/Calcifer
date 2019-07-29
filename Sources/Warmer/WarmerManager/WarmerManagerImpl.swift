@@ -39,6 +39,7 @@ final class WarmerManagerImpl: WarmerManager {
     }
     
     private func performOperations(for event: WarmerEvent) {
+        Logger.verbose("receive warmup event \(event)")
         warmers.forEach { [weak self] warmer in
             warmer.warmup(
                 for: event,
