@@ -29,7 +29,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git",
-            .exact("1.7.0")
+            .revision("ba15995ad66a1944a4dfb6105b2959a386e65e0b")
         ),
         .package(
             url: "https://github.com/daltoniam/Starscream.git",
