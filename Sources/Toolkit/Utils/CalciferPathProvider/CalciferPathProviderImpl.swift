@@ -50,13 +50,13 @@ open class CalciferPathProviderImpl: CalciferPathProvider {
     public func launchctlStandardOutPath() -> String {
         return calciferDirectory()
             .appendingPathComponent("launchctl")
-            .appendingPathComponent("out.txt")
+            .appendingPathComponent("out.log")
     }
     
     public func launchctlStandardErrorPath() -> String {
         return calciferDirectory()
             .appendingPathComponent("launchctl")
-            .appendingPathComponent("error.txt")
+            .appendingPathComponent("error.log")
     }
     
 }

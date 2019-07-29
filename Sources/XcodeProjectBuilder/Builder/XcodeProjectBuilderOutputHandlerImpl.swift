@@ -52,7 +52,7 @@ public final class XcodeProjectBuilderOutputHandlerImpl: XcodeProjectBuilderOutp
         )
         let logFilePath = buildLogDirectory
             .appendingPathComponent(Date().formattedString())
-            .appending(".txt")
+            .appending(".log")
         let logFile = URL(fileURLWithPath: logFilePath)
         return logFile
     }
