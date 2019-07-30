@@ -106,7 +106,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 // DO NOT UPDATE DEPENDENCY! THEY ALREADY UPDATED BY PROJECT
             },
             onRemove: { key in
-                updateModel.targetCache.removeValue(forKey: key)
+
             },
             buildValue: { updateModel in
                 updateModel.targetCache.createIfNotExist(updateModel.name) { _ in
@@ -134,7 +134,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 try fileChecksumHolder.reflectUpdate(updateModel: updateModel)
             },
             onRemove: { key in
-                updateModel.fileCache.removeValue(forKey: key)
+
             },
             buildValue: { url in
                 updateModel.fileCache.createIfNotExist(url.path) { _ in

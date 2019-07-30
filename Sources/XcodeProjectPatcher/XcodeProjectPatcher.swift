@@ -60,6 +60,12 @@ public final class XcodeProjectPatcher {
                 }
                 removeGroup(for: target, pbxproj: pbxproj, project: project)
                 if let product = target.product {
+                    if let productsGroup = project.productsGroup,
+                        let productName = product.name,
+                        let productGroup = productsGroup.group(named: productName)
+                    {
+                        pbxproj.delete(object: productGroup)
+                    }
                     pbxproj.delete(object: product)
                 }
 

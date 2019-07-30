@@ -56,7 +56,8 @@ public final class XcodeProjectBuilder {
         if statusCode != 0 {
             throw XcodeProjectBuilderError.failedExecuteXcodebuild(
                 status: statusCode,
-                command: command.description
+                command: command.description,
+                error: result.error
             )
         }
     }

@@ -21,17 +21,17 @@ public extension Dictionary {
             try update(newValue, value)
             childrenDictionary.write(newValue, for: key)
         }
-        try childrenDictionary
-            .copy()
-            .enumerateKeysAndObjects(options: .concurrent) { key, _, _ in
+        try childrenDictionary.withExclusiveAccess { dictionary in
+            try dictionary.enumerateKeysAndObjects(options: .concurrent) { key, _, _ in
                 if self[key] != nil {
                     return
                 }
                 onRemove(key)
-                childrenDictionary.removeValue(forKey: key)
+                dictionary.removeValue(forKey: key)
                 // For bool this is thread safe. Since it changes only in true.
                 changed = true
             }
+        }
         return changed
     }
 }

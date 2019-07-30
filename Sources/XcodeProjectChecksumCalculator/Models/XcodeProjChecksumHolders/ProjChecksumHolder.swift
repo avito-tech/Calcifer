@@ -40,13 +40,6 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
         }.aggregate()
     }
     
-    func update(projectsChecksums: [ProjectChecksumHolder<ChecksumType>]) {
-        let dictionary = Dictionary(uniqueKeysWithValues: projectsChecksums.map { ($0.name, $0) })
-        self.projects = ThreadSafeDictionary<String, ProjectChecksumHolder<ChecksumType>>(
-            dictionary: dictionary
-        )
-    }
-    
     func reflectUpdate(updateModel: ProjUpdateModel<ChecksumType>) throws {
         let projectUpdateModelsDictionary = updateModel.proj.projects
             .map { project in
@@ -65,12 +58,14 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
             }, onRemove: { _ in
                 
             }, buildValue: { projectUpdateModel in
-                ProjectChecksumHolder(
-                    name: projectUpdateModel.name,
-                    parent: self,
-                    fullPathProvider: fullPathProvider,
-                    checksumProducer: checksumProducer
-                )
+                updateModel.projectCache.createIfNotExist(projectUpdateModel.name) { _ in
+                    ProjectChecksumHolder(
+                        name: projectUpdateModel.name,
+                        parent: self,
+                        fullPathProvider: fullPathProvider,
+                        checksumProducer: checksumProducer
+                    )
+                }.value
             }
         )
         if shouldInvalidate {

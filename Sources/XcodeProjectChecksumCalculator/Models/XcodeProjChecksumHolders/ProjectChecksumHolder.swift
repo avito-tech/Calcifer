@@ -57,7 +57,7 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
                 try targetChecksumHolder.reflectUpdate(updateModel: targetUpdateModel)
             },
             onRemove: { key in
-                targetCache.removeValue(forKey: key)
+
             },
             buildValue: { targetUpdateModel in
                 targetCache.createIfNotExist(targetUpdateModel.name) { _ in

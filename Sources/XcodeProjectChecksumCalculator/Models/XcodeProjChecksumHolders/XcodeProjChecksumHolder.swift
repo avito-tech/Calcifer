@@ -20,6 +20,7 @@ public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksum
     
     private let fullPathProvider: FileElementFullPathProvider
     private let checksumProducer: URLChecksumProducer<ChecksumType>
+    private let projectCache = ThreadSafeDictionary<String, ProjectChecksumHolder<ChecksumType>>()
     private let targetCache = ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>()
     private let fileCache = ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>()
     
@@ -49,6 +50,7 @@ public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksum
                     proj: proj,
                     projectPath: updateModel.projectPath,
                     sourceRoot: updateModel.sourceRoot,
+                    projectCache: projectCache,
                     targetCache: targetCache,
                     fileCache: fileCache
                 )
@@ -71,8 +73,22 @@ public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksum
                 )
             }
         )
+        try clearCache(cache: projectCache)
+        try clearCache(cache: targetCache)
+        try clearCache(cache: fileCache)
         if shouldInvalidate {
             invalidate()
+        }
+
+    }
+    
+    private func clearCache<Holder: BaseChecksumHolder<ChecksumType>>(
+        cache: ThreadSafeDictionary<String, Holder>) throws
+    {
+        try cache.copy().enumerateKeysAndObjects(options: .concurrent) { key, holder, _ in
+            if holder.parents.isEmpty {
+                cache.removeValue(forKey: key)
+            }
         }
     }
     
