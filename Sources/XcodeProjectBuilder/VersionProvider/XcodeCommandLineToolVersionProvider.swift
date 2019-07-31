@@ -21,9 +21,10 @@ public final class XcodeCommandLineToolVersionProvider {
         let result = shellExecutor.execute(command: command)
         let statusCode = result.terminationStatus
         if statusCode != 0 {
-            throw XcodeProjectBuilderError.failedExecuteXcodebuild(
+            throw XcodeProjectBuilderError.failedCheckCommandLineToolVersion(
                 status: statusCode,
-                command: command.description
+                command: command.description,
+                error: result.error
             )
         }
         // Xcode 10.1

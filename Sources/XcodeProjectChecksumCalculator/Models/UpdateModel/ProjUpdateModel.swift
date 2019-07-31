@@ -16,6 +16,7 @@ final class ProjUpdateModel<ChecksumType: Checksum> {
     let proj: PBXProj
     let projectPath: String
     let sourceRoot: Path
+    let projectCache: ThreadSafeDictionary<String, ProjectChecksumHolder<ChecksumType>>
     let targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
     let fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>
     
@@ -23,12 +24,14 @@ final class ProjUpdateModel<ChecksumType: Checksum> {
         proj: PBXProj,
         projectPath: String,
         sourceRoot: Path,
+        projectCache: ThreadSafeDictionary<String, ProjectChecksumHolder<ChecksumType>>,
         targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>,
         fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>)
     {
         self.proj = proj
         self.projectPath = projectPath
         self.sourceRoot = sourceRoot
+        self.projectCache = projectCache
         self.targetCache = targetCache
         self.fileCache = fileCache
     }

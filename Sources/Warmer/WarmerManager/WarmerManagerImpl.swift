@@ -27,7 +27,9 @@ final class WarmerManagerImpl: WarmerManager {
         guard let params = obtainEnvironmentParameters()
             else { return }
         let projectPath = params.podsProjectPath
-        fileWatcher.start(path: projectPath)
+        let pbxprojPath = projectPath
+            .appendingPathComponent("project.pbxproj")
+        fileWatcher.start(path: pbxprojPath)
         fileWatcher.subscribe { [weak self] event in
             self?.performOperations(for: .file(event))
         }
