@@ -23,7 +23,8 @@ public final class ArtifactIntegrator {
         checksumProducer: BaseURLChecksumProducer,
         cacheStorage: BuildProductCacheStorage,
         targetInfos: [TargetInfo<BaseChecksum>],
-        to path: String) throws -> [TargetBuildArtifact<BaseChecksum>]
+        to path: String,
+        dSYMRequired: Bool) throws -> [TargetBuildArtifact<BaseChecksum>]
     {
         
         let artifacts = ThreadSafeDictionary
@@ -36,7 +37,8 @@ public final class ArtifactIntegrator {
         try enumerator.enumerate(
             targetInfos: targetInfos,
             cacheKeyBuilder: cacheKeyBuilder,
-            cacheStorage: cacheStorage) { cachedTargetInfo, completion  in
+            cacheStorage: cacheStorage,
+            dSYMRequired: dSYMRequired) { cachedTargetInfo, completion  in
                 let artifact = TargetBuildArtifact(
                     targetInfo: cachedTargetInfo.targetInfo,
                     productPath: cachedTargetInfo.frameworkCacheValue.path,

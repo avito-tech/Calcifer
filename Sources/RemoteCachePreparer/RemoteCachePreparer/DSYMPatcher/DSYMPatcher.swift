@@ -29,7 +29,7 @@ public final class DSYMPatcher {
         fullProductName: String) throws
     {
         try artifacts.enumerateObjects(options: .concurrent) { artifact, _ in
-            let dsymPath = artifact.dsymPath
+            guard let dsymPath = artifact.dsymPath else { return }
             
             let shouldPatch = try symbolizer.shouldPatchDSYM(
                 dsymBundlePath: dsymPath,

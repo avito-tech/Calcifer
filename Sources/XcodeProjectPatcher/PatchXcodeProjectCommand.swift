@@ -84,6 +84,7 @@ public final class PatchXcodeProjectCommand: Command {
             projectPath: projectPath,
             outputPath: outputPath,
             targets: targets,
+            shouldGenerateDSYMs: true,
             params: params
         )
     }

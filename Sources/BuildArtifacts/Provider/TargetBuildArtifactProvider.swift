@@ -13,7 +13,8 @@ public final class TargetBuildArtifactProvider {
     
     public func artifacts<ChecksumType: Checksum>(
         for targetInfos: [TargetInfo<ChecksumType>],
-        at path: String)
+        at path: String,
+        dSYMShouldExist: Bool)
         throws -> [TargetBuildArtifact<ChecksumType>]
     {
         return try targetInfos.map { targetInfo in
@@ -25,7 +26,9 @@ public final class TargetBuildArtifactProvider {
                 )
             }
             let productPath = try obtainProductPath(at: artifactPath, targetInfo: targetInfo)
-            let dsymPath = try obtainDSYMPath(at: artifactPath, targetInfo: targetInfo)
+            let dsymPath = dSYMShouldExist ?
+                try obtainDSYMPath(at: artifactPath, targetInfo: targetInfo) :
+                try? obtainDSYMPath(at: artifactPath, targetInfo: targetInfo)
             return TargetBuildArtifact(
                 targetInfo: targetInfo,
                 productPath: productPath,

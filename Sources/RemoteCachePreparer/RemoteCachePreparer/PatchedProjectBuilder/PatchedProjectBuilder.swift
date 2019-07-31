@@ -51,8 +51,10 @@ public final class PatchedProjectBuilder {
         params: XcodeBuildEnvironmentParameters,
         buildDirectoryPath: String,
         requiredTargets: [TargetInfo<BaseChecksum>],
-        buildLogDirectory: String?)
-        throws
+        buildLogDirectory: String?,
+        shouldGenerateDSYMs: Bool
+        )
+        throws -> [TargetInfo<BaseChecksum>]
     {
         try validateVersion(params: params)
         
@@ -67,7 +69,8 @@ public final class PatchedProjectBuilder {
             try obtainTargetsForBuild(
                 cacheStorage: cacheStorage,
                 allRequiredTargetInfos: requiredTargets,
-                requiredFramework: requiredFramework
+                requiredFramework: requiredFramework,
+                dSYMRequired: shouldGenerateDSYMs
             )
         }
         let targetNamesForBuild = targetsForBuild.map { $0.targetName }
@@ -97,11 +100,12 @@ public final class PatchedProjectBuilder {
         // Because their checksum has changed.
         if !targetNamesForBuild.isEmpty {
             Logger.verbose("Target for build: \(targetNamesForBuild)")
-            try TimeProfiler.measure("patch project") {
+            try TimeProfiler.measure("Patch project") {
                 try patchProject(
                     podsProjectPath: podsProjectPath,
                     patchedProjectPath: patchedProjectPath,
                     targets: targetNamesForBuild,
+                    shouldGenerateDSYMs: shouldGenerateDSYMs,
                     params: params
                 )
             }
@@ -111,7 +115,8 @@ public final class PatchedProjectBuilder {
                     checksumProducer: checksumProducer,
                     cacheStorage: cacheStorage,
                     targetInfos: targetInfosForPatchedProjectIntegration,
-                    to: cacheBuildPath
+                    to: cacheBuildPath,
+                    dSYMRequired: false
                 )
             }
             
@@ -125,13 +130,16 @@ public final class PatchedProjectBuilder {
                 )
             }
             
+            let buildedTargetInfos = targetInfoFilter.frameworkTargetInfos(targetsForBuild)
             try TimeProfiler.measure("Save artifacts from builded patched project") {
                 try saveArtifacts(
                     cacheStorage: cacheStorage,
-                    for: targetInfoFilter.frameworkTargetInfos(targetsForBuild),
-                    at: cacheBuildPath
+                    for: buildedTargetInfos,
+                    at: cacheBuildPath,
+                    dSYMShouldExist: shouldGenerateDSYMs
                 )
             }
+            return buildedTargetInfos
         } else {
             Logger.info("Nothing to build")
             // This is important for debugger work.
@@ -140,19 +148,25 @@ public final class PatchedProjectBuilder {
                     checksumProducer: checksumProducer,
                     cacheStorage: cacheStorage,
                     targetInfos: targetInfosForPatchedProjectIntegration,
-                    to: cacheBuildPath
+                    to: cacheBuildPath,
+                    dSYMRequired: false
                 )
             }
+            return []
         }
     }
     
     private func obtainTargetsForBuild(
         cacheStorage: BuildProductCacheStorage,
         allRequiredTargetInfos: [TargetInfo<BaseChecksum>],
-        requiredFramework: [TargetInfo<BaseChecksum>])
+        requiredFramework: [TargetInfo<BaseChecksum>],
+        dSYMRequired: Bool)
         throws -> [TargetInfo<BaseChecksum>]
     {
-        let cachedFrameworkTargets = try obtainCachedTargets(targetInfos: requiredFramework)
+        let cachedFrameworkTargets = try obtainCachedTargets(
+            targetInfos: requiredFramework,
+            dSYMRequired: dSYMRequired
+        )
         let frameworkTargetsForBuild = requiredFramework.filter { targetInfo in
             cachedFrameworkTargets.read(targetInfo) == nil
         }
@@ -189,6 +203,7 @@ public final class PatchedProjectBuilder {
         podsProjectPath: String,
         patchedProjectPath: String,
         targets: [String],
+        shouldGenerateDSYMs: Bool,
         params: XcodeBuildEnvironmentParameters)
         throws
     {
@@ -196,6 +211,7 @@ public final class PatchedProjectBuilder {
             projectPath: podsProjectPath,
             outputPath: patchedProjectPath,
             targets: targets,
+            shouldGenerateDSYMs: shouldGenerateDSYMs,
             params: params
         )
     }
@@ -262,14 +278,24 @@ public final class PatchedProjectBuilder {
     private func saveArtifacts(
         cacheStorage: BuildProductCacheStorage,
         for targetInfos: [TargetInfo<BaseChecksum>],
-        at path: String) throws
+        at path: String,
+        dSYMShouldExist: Bool) throws
     {
-        let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
+        let artifacts = try artifactProvider.artifacts(
+            for: targetInfos,
+            at: path,
+            dSYMShouldExist: dSYMShouldExist
+        )
         try artifacts.asyncConcurrentEnumerate { (artifact, completion, _) in
             let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: artifact.targetInfo)
             let dsymCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: artifact.targetInfo)
             cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath) {
-                cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath) {
+                guard let dsymPath = artifact.dsymPath
+                    else {
+                        completion()
+                        return
+                    }
+                cacheStorage.add(cacheKey: dsymCacheKey, at: dsymPath) {
                     completion()
                 }
             }
@@ -277,7 +303,8 @@ public final class PatchedProjectBuilder {
     }
     
     private func obtainCachedTargets(
-        targetInfos: [TargetInfo<BaseChecksum>])
+        targetInfos: [TargetInfo<BaseChecksum>],
+        dSYMRequired: Bool)
         throws -> ThreadSafeDictionary<TargetInfo<BaseChecksum>, TargetInfo<BaseChecksum>>
     {
         let cachedTargets = ThreadSafeDictionary<
@@ -290,13 +317,18 @@ public final class PatchedProjectBuilder {
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
                 switch frameworkResult {
                 case .result:
-                    self.cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
-                        switch dSYMResult {
-                        case .result:
-                            cachedTargets.write(targetInfo, for: targetInfo)
-                        case .notExist:
-                            break
+                    if dSYMRequired {
+                        self.cacheStorage.cached(for: dSYMCacheKey) { dSYMResult in
+                            switch dSYMResult {
+                            case .result:
+                                cachedTargets.write(targetInfo, for: targetInfo)
+                            case .notExist:
+                                break
+                            }
+                            completion()
                         }
+                    } else {
+                        cachedTargets.write(targetInfo, for: targetInfo)
                         completion()
                     }
                 case .notExist:

@@ -39,18 +39,28 @@ public final class BuildArtifactIntegrator {
                 checksum: checksum
             )
         
-            let dsymCurrentURL = URL(fileURLWithPath: artifact.dsymPath)
-            let dsymDestinationURL = obtainDSYMDestination(for: artifact, at: path)
-            try integrate(
-                at: dsymCurrentURL,
-                to: dsymDestinationURL,
-                checksum: checksum
-            )
+            let dsymPath: String?
+            if let artifactDsymPath = artifact.dsymPath {
+                let dsymCurrentURL = URL(fileURLWithPath: artifactDsymPath)
+                let dsymDestinationURL = obtainDSYMDestination(
+                    for: artifact,
+                    artifactDsymPath: artifactDsymPath,
+                    at: path
+                )
+                try integrate(
+                    at: dsymCurrentURL,
+                    to: dsymDestinationURL,
+                    checksum: checksum
+                )
+                dsymPath = dsymDestinationURL.path
+            } else {
+                dsymPath = nil
+            }
 
             let destination = TargetBuildArtifact(
                 targetInfo: artifact.targetInfo,
                 productPath: productDestinationURL.path,
-                dsymPath: dsymDestinationURL.path
+                dsymPath: dsymPath
             )
         
             destinations.write(destination, for: artifact)
@@ -166,12 +176,13 @@ public final class BuildArtifactIntegrator {
     
     private func obtainDSYMDestination(
         for artifact: TargetBuildArtifact<BaseChecksum>,
+        artifactDsymPath: String,
         at path: String)
         -> URL
     {
         let path = path
             .appendingPathComponent(artifact.targetInfo.targetName)
-            .appendingPathComponent(artifact.dsymPath.lastPathComponent())
+            .appendingPathComponent(artifactDsymPath.lastPathComponent())
         return URL(fileURLWithPath: path)
     }
     

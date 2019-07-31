@@ -3,6 +3,7 @@ import PathKit
 import XcodeProj
 import XcodeProjCache
 import XcodeBuildEnvironmentParametersParser
+import Toolkit
 
 public final class XcodeProjectPatcher {
     
@@ -21,23 +22,36 @@ public final class XcodeProjectPatcher {
         projectPath: String,
         outputPath: String,
         targets: [String],
+        shouldGenerateDSYMs: Bool,
         params: XcodeBuildEnvironmentParameters)
         throws
     {
         let xcodeproject = try xcodeProjCache.obtainWritableXcodeProj(projectPath: projectPath)
         let pbxproj = xcodeproject.pbxproj
         guard let project = try pbxproj.rootProject() else { return }
-        patchBuildSetting(in: project.buildConfigurationList, params: params)
+        patchBuildSetting(
+            in: project.buildConfigurationList,
+            shouldGenerateDSYMs: shouldGenerateDSYMs,
+            params: params
+        )
         let agregateTarget = PBXAggregateTarget(
             name: "Aggregate",
             buildConfigurationList: project.buildConfigurationList
         )
-        patchBuildSetting(in: agregateTarget.buildConfigurationList, params: params)
+        patchBuildSetting(
+            in: agregateTarget.buildConfigurationList,
+            shouldGenerateDSYMs: shouldGenerateDSYMs,
+            params: params
+        )
         var targetsForRemoving = [String]()
 
         project.targets.enumerated().forEach { _, target in
             if targets.contains(target.name) {
-                patchBuildSetting(in: target.buildConfigurationList, params: params)
+                patchBuildSetting(
+                    in: target.buildConfigurationList,
+                    shouldGenerateDSYMs: shouldGenerateDSYMs,
+                    params: params
+                )
                 let dependency = PBXTargetDependency(
                     name: target.name,
                     target: target,
@@ -74,7 +88,9 @@ public final class XcodeProjectPatcher {
         }
         pbxproj.add(object: agregateTarget)
         project.targets.append(agregateTarget)
-        try xcodeproject.write(path: Path(outputPath))
+        try TimeProfiler.measure("Write patched project") {
+            try xcodeproject.write(path: Path(outputPath))
+        }
         try generateWorkspaceSettingsFile(projectPath: outputPath)
     }
     
@@ -104,12 +120,13 @@ public final class XcodeProjectPatcher {
     
     private func patchBuildSetting(
         in buildConfigurationList: XCConfigurationList?,
+        shouldGenerateDSYMs: Bool,
         params: XcodeBuildEnvironmentParameters)
     {
         guard let buildConfigurations = buildConfigurationList?.buildConfigurations
             else { return }
         for buildConfiguration in buildConfigurations {
-            for (key, value) in requiredBuildSettings() {
+            for (key, value) in requiredBuildSettings(shouldGenerateDSYMs: shouldGenerateDSYMs) {
                 buildConfiguration.buildSettings[key] = value
             }
             for (key, value) in optionBuildSettings(params: params) {
@@ -120,11 +137,16 @@ public final class XcodeProjectPatcher {
         }
     }
     
-    private func requiredBuildSettings() -> BuildSettings {
-        return [
-            "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym",
+    private func requiredBuildSettings(shouldGenerateDSYMs: Bool) -> BuildSettings {
+        var settings = [
             "GCC_GENERATE_DEBUGGING_SYMBOLS": "YES"
         ]
+        if shouldGenerateDSYMs {
+            settings["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym"
+        } else {
+            settings["DEBUG_INFORMATION_FORMAT"] = "dwarf"
+        }
+        return settings
     }
     
     private func optionBuildSettings(params: XcodeBuildEnvironmentParameters) -> BuildSettings {

@@ -99,7 +99,10 @@ final class RemoteCachePreparer {
             }
         }
 
-        try TimeProfiler.measure("Prepare and build patched project if needed") {
+        let shouldGenerateDSYMs = config.buildConfig.shouldGenerateDSYMs
+        let buildedTargets: [TargetInfo<BaseChecksum>] = try TimeProfiler.measure(
+            "Prepare and build patched project if needed"
+        ) {
             let patchedProjectBuilder = try createPatchedProjectBuilder(
                 config: config,
                 targetInfoFilter: targetInfoFilter,
@@ -108,11 +111,12 @@ final class RemoteCachePreparer {
                 artifactIntegrator: artifactIntegrator
             )
             let buildLogDirectory = calciferPathProvider.calciferBuildLogDirectory()
-            try patchedProjectBuilder.prepareAndBuildPatchedProjectIfNeeded(
+            return try patchedProjectBuilder.prepareAndBuildPatchedProjectIfNeeded(
                 params: params,
                 buildDirectoryPath: buildDirectoryPath,
                 requiredTargets: requiredTargets,
-                buildLogDirectory: buildLogDirectory
+                buildLogDirectory: buildLogDirectory,
+                shouldGenerateDSYMs: shouldGenerateDSYMs
             )
         }
         
@@ -122,14 +126,18 @@ final class RemoteCachePreparer {
                 checksumProducer: checksumProducer,
                 cacheStorage: cacheStorage,
                 targetInfos: targetInfosForIntegration,
-                to: params.configurationBuildDirectory
+                to: params.configurationBuildDirectory,
+                dSYMRequired: shouldGenerateDSYMs
             )
         }
         
         try TimeProfiler.measure("Patch dSYM") {
             let dsymPatcher = createDSYMPatcher()
+            let artifactsForDSYMPath = integrated.filter {
+                buildedTargets.contains($0.targetInfo) == false
+            }
             try dsymPatcher.patchDSYM(
-                for: integrated,
+                for: artifactsForDSYMPath,
                 sourcePath: sourcePath,
                 fullProductName: params.fullProductName
             )
@@ -187,7 +195,7 @@ final class RemoteCachePreparer {
         let artifactProvider = TargetBuildArtifactProvider(
             fileManager: fileManager
         )
-        let buildLogLevel: BuildLogLevel = config.buildConfig?.buildLogLevel ?? .info
+        let buildLogLevel: BuildLogLevel = config.buildConfig.buildLogLevel
         let outputFilter = XcodeProjectBuilderOutputFilterImpl(
             buildLogLevel: buildLogLevel
         )

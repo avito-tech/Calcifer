@@ -118,7 +118,8 @@ public final class BuildProductCacheStorageWarmer: Warmer {
             targetInfos: frameworkTargets,
             cacheKeyBuilder: cacheKeyBuilder,
             cacheStorage: storage,
-            required: false)
+            frameworkRequired: false,
+            dSYMRequired: false)
         { _, completion in
             completion()
         }

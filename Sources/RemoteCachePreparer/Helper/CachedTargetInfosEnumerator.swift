@@ -12,7 +12,8 @@ public final class CachedTargetInfosEnumerator {
         targetInfos: [TargetInfo<BaseChecksum>],
         cacheKeyBuilder: BuildProductCacheKeyBuilder,
         cacheStorage: BuildProductCacheStorage,
-        required: Bool = true,
+        frameworkRequired: Bool = true,
+        dSYMRequired: Bool = true,
         each: @escaping
         (CachedTargetInfo, @escaping () -> ()) -> ())
         throws
@@ -25,7 +26,7 @@ public final class CachedTargetInfosEnumerator {
                     guard let frameworkCacheValue = try self.processCacheResult(
                         frameworkResult,
                         targetInfo: targetInfo,
-                        required: required
+                        required: frameworkRequired
                     ) else {
                         completion()
                         return
@@ -35,7 +36,7 @@ public final class CachedTargetInfosEnumerator {
                             guard let dSYMCacheValue = try self.processCacheResult(
                                 dSYMResult,
                                 targetInfo: targetInfo,
-                                required: required
+                                required: dSYMRequired
                             ) else {
                                 completion()
                                 return

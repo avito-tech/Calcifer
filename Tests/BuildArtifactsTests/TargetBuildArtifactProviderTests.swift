@@ -28,7 +28,11 @@ public final class TargetBuildArtifactProviderTests: BaseTestCase {
             )
             
             // When
-            let artifacts = try provider.artifacts(for: [targetInfo], at: artifactsDirectoryPath)
+            let artifacts = try provider.artifacts(
+                for: [targetInfo],
+                at: artifactsDirectoryPath,
+                dSYMShouldExist: true
+            )
             
             // Then
             XCTAssertEqual(artifacts.first?.productPath, expectedPath)
