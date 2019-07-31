@@ -33,10 +33,11 @@ public final class XcodeProjectPatcher {
             buildConfigurationList: project.buildConfigurationList
         )
         patchBuildSetting(in: agregateTarget.buildConfigurationList, params: params)
-        var targetsForRemoving = [String]()
+        let requiredTargets = Set(targets)
+        var targetsForRemoving = Set<String>()
 
         project.targets.enumerated().forEach { _, target in
-            if targets.contains(target.name) {
+            if requiredTargets.contains(target.name) {
                 patchBuildSetting(in: target.buildConfigurationList, params: params)
                 let dependency = PBXTargetDependency(
                     name: target.name,
@@ -46,7 +47,16 @@ public final class XcodeProjectPatcher {
                 pbxproj.add(object: dependency)
                 agregateTarget.dependencies.append(dependency)
             } else {
-                targetsForRemoving.append(target.name)
+                targetsForRemoving.insert(target.name)
+            }
+            let dependencies = target.dependencies
+            for dependency in dependencies {
+                if let dependencyName = dependency.target?.name,
+                    !requiredTargets.contains(dependencyName)
+                {
+                    target.dependencies.removeAll(where: { $0 == dependency})
+                    pbxproj.delete(object: dependency)
+                }
             }
         }
         targetsForRemoving.forEach { targetName in
