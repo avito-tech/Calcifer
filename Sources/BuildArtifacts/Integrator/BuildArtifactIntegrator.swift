@@ -114,7 +114,7 @@ public final class BuildArtifactIntegrator {
             .filter { !$0.contains(metaInfoFileName) }
         
         // Filter patched dSYM plist
-        if artifactDestination.lastPathComponent.contains(".framework.dSYM") {
+        if artifactDestination.lastPathComponent.contains(".dSYM") {
             destinationFiles = destinationFiles.filter({ path -> Bool in
                 if path.contains("/Contents/Resources") {
                     return path.pathExtension() != "plist"
@@ -153,15 +153,26 @@ public final class BuildArtifactIntegrator {
         return true
     }
     
+    private func obtainProductsDirectoryDestination(
+        for artifact: TargetBuildArtifact<BaseChecksum>,
+        at path: String)
+        -> String
+    {
+        if case .framework = artifact.targetInfo.productType {
+            return path.appendingPathComponent(artifact.targetInfo.targetName)
+        } else {
+            return path
+        }
+    }
+    
     private func obtainProductDestination(
         for artifact: TargetBuildArtifact<BaseChecksum>,
         at path: String)
         -> URL
     {
-        let path = path
-            .appendingPathComponent(artifact.targetInfo.targetName)
+        let artifactPath = obtainProductsDirectoryDestination(for: artifact, at: path)
             .appendingPathComponent(artifact.productPath.lastPathComponent())
-        return URL(fileURLWithPath: path)
+        return URL(fileURLWithPath: artifactPath)
     }
     
     private func obtainDSYMDestination(
@@ -169,10 +180,9 @@ public final class BuildArtifactIntegrator {
         at path: String)
         -> URL
     {
-        let path = path
-            .appendingPathComponent(artifact.targetInfo.targetName)
+        let artifactPath = obtainProductsDirectoryDestination(for: artifact, at: path)
             .appendingPathComponent(artifact.dsymPath.lastPathComponent())
-        return URL(fileURLWithPath: path)
+        return URL(fileURLWithPath: artifactPath)
     }
     
 }

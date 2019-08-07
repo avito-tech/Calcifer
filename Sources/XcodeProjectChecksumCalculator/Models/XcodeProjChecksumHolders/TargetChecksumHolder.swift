@@ -1,4 +1,5 @@
 import Foundation
+import BaseModels
 import Checksum
 import XcodeProj
 import PathKit

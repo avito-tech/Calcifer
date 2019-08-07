@@ -17,13 +17,10 @@ public final class TargetBuildArtifactProvider {
         throws -> [TargetBuildArtifact<ChecksumType>]
     {
         return try targetInfos.map { targetInfo in
-            let artifactPath = path.appendingPathComponent(targetInfo.targetName)
-            if fileManager.directoryExist(at: artifactPath) == false {
-                throw BuildArtifactsError.productDirectoryDoesntExist(
-                    targetName: targetInfo.targetName,
-                    path: path
-                )
-            }
+            let artifactPath = try obtainArtifactPath(
+                at: path,
+                targetInfo: targetInfo
+            )
             let productPath = try obtainProductPath(at: artifactPath, targetInfo: targetInfo)
             let dsymPath = try obtainDSYMPath(at: artifactPath, targetInfo: targetInfo)
             return TargetBuildArtifact(
@@ -32,6 +29,24 @@ public final class TargetBuildArtifactProvider {
                 dsymPath: dsymPath
             )
         }
+    }
+    
+    private func obtainArtifactPath<ChecksumType: Checksum>(
+        at path: String,
+        targetInfo: TargetInfo<ChecksumType>)
+        throws -> String
+    {
+        guard case .framework = targetInfo.productType else {
+            return path
+        }
+        let artifactPath = path.appendingPathComponent(targetInfo.targetName)
+        if fileManager.directoryExist(at: artifactPath) == false {
+            throw BuildArtifactsError.productDirectoryDoesntExist(
+                targetName: targetInfo.targetName,
+                path: path
+            )
+        }
+        return artifactPath
     }
     
     private func obtainProductPath<ChecksumType: Checksum>(

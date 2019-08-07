@@ -25,6 +25,13 @@ public extension String {
         return (self as NSString).lastPathComponent
     }
     
+    func appendingPathExtension(_ pathExtension: String) -> String {
+        guard let result = (self as NSString).appendingPathExtension(pathExtension) else {
+            return "\(self).\(pathExtension)"
+        }
+        return result
+    }
+    
     static func path(withComponents components: [String]) -> String {
         return NSString.path(withComponents: components)
     }

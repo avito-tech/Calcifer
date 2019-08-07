@@ -8,19 +8,18 @@ public final class BuildParametersChecksumProducer: ChecksumProducer {
     
     public func checksum(input: XcodeBuildEnvironmentParameters) throws -> BaseChecksum {
         let importantParams = [
-            input.otherSwiftFlags,
-            input.gccPreprocessorDefinitions,
-            String(input.enableBitcode),
-            String(input.enableTestability),
-            String(input.profilingCode),
-            input.architectures,
-            input.architectures,
-            input.platformName,
-            input.swiftVersion,
-            input.configuration,
-            input.sdkActualVersion
-        ]
-        let paramsChecksum = try importantParams.map({ BaseChecksum($0) }).aggregate()
+            input.otherSwiftFlagsParam,
+            input.gccPreprocessorDefinitionsParam,
+            input.enableBitcodeParam.toStringValue(),
+            input.enableTestabilityParam.toStringValue(),
+            input.profilingCodeParam.toStringValue(),
+            input.architecturesParam,
+            input.platformNameParam,
+            input.swiftVersionParam,
+            input.configurationParam,
+            input.sdkActualVersionParam
+        ].toKeyValueDictionary()
+        let paramsChecksum = try importantParams.values.sorted().map({ BaseChecksum($0) }).aggregate()
         Logger.info(
             "Build parameters checksum: \(paramsChecksum.stringValue) from \(importantParams)"
         )

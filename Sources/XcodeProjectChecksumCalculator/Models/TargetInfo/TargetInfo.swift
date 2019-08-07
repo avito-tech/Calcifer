@@ -1,5 +1,7 @@
 import Foundation
+import BaseModels
 import Checksum
+import Toolkit
 
 public struct TargetInfo<ChecksumType: Checksum>: Equatable, Hashable {
     

@@ -16,7 +16,7 @@ public final class LocalBuildProductCacheStorageTests: BaseTestCase {
         )
         let cacheKey = BuildProductCacheKey(
             productName: "Some.framework",
-            productType: .framework,
+            productType: .product(.framework),
             checksum: BaseChecksum(UUID().uuidString)
         )
         let frameworkContainingFolderPath = createArtifactFile(
@@ -69,7 +69,7 @@ public final class LocalBuildProductCacheStorageTests: BaseTestCase {
     
     private func obtainExpectedPath(for cacheKey: BuildProductCacheKey<BaseChecksum>) -> String {
          return cacheDirectoryPath
-            .appendingPathComponent(cacheKey.productType.rawValue)
+            .appendingPathComponent(cacheKey.productType.shortName)
             .appendingPathComponent(cacheKey.productName.deletingPathExtension())
             .appendingPathComponent(cacheKey.checksum.stringValue)
             .appendingPathComponent(cacheKey.productName)

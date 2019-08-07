@@ -125,6 +125,7 @@ let package = Package(
                 "XcodeProjectChecksumCalculator",
                 "ZIPFoundation",
                 "ArgumentsParser",
+                "BaseModels",
                 "Toolkit"
             ]
         ),
@@ -183,7 +184,8 @@ let package = Package(
                 "ArgumentsParser",
                 "XcodeProjCache",
                 "XcodeProj",
-                "Checksum"
+                "Checksum",
+                "BaseModels"
             ]
         ),
         .testTarget(
@@ -405,6 +407,12 @@ let package = Package(
             name: "ShellCommand",
             dependencies: [
                 "Toolkit"
+            ]
+        ),
+        // BaseModels
+        .target(
+            name: "BaseModels",
+            dependencies: [
             ]
         ),
         // MARK: Toolkit

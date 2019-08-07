@@ -27,7 +27,7 @@ public enum TargetProductType: String, Decodable {
     case intentsServiceExtension = "com.apple.product-type.app-extension.intents-service"
     
     /// Returns the file extension for the given product type.
-    public var fileExtension: String? {
+    public var fileExtension: String {
         switch self {
         case .application, .watchApp, .watch2App, .messagesApplication:
             return "app"
@@ -51,7 +51,7 @@ public enum TargetProductType: String, Decodable {
              .intentsServiceExtension:
             return "appex"
         case .commandLineTool:
-            return nil
+            return ""
         case .xpcService:
             return "xpc"
         case .ocUnitTestBundle:
@@ -59,7 +59,43 @@ public enum TargetProductType: String, Decodable {
         case .instrumentsPackage:
             return "instrpkg"
         case .none:
-            return nil
+            return ""
+        }
+    }
+    
+    public var shortName: String {
+        switch self {
+        case .application, .watchApp, .watch2App, .messagesApplication:
+            return "App"
+        case .framework:
+            return "Framework"
+        case .dynamicLibrary:
+            return "Dylib"
+        case .staticLibrary:
+            return "Library"
+        case .bundle:
+            return "Bundle"
+        case .unitTestBundle, .uiTestBundle:
+            return "Xctest"
+        case .appExtension,
+             .tvExtension,
+             .watchExtension,
+             .watch2Extension,
+             .messagesExtension,
+             .stickerPack,
+             .xcodeExtension,
+             .intentsServiceExtension:
+            return "Extension"
+        case .commandLineTool:
+            return "CommandLineTool"
+        case .xpcService:
+            return "Xpc"
+        case .ocUnitTestBundle:
+            return "OCUnitTestBundle"
+        case .instrumentsPackage:
+            return "Package"
+        case .none:
+            return "None"
         }
     }
 }

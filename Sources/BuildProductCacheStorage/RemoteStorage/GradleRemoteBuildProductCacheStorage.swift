@@ -87,8 +87,9 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
     {
         let unzipURL = url.deletingLastPathComponent()
-        var productName = cacheKey.productName.deletingPathExtension()
-        productName.append(cacheKey.productType.fileExtension)
+        var productName = cacheKey.productName
+            .deletingPathExtension()
+            .appendingPathExtension(cacheKey.productType.fileExtension)
         let unzipResult = unzipURL
             .appendingPathComponent(productName)
         catchError { [unzip, weak self] in
@@ -117,7 +118,7 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
     }
     
     private func gradleKey<ChecksumType: Checksum>(for cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
-        let string = cacheKey.productType.rawValue + "-" +
+        let string = cacheKey.productType.shortName + "-" +
             cacheKey.productName + "-" +
             cacheKey.checksum.stringValue
         let md5String = string.md5()
