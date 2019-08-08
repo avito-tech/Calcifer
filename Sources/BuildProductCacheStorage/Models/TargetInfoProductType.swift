@@ -5,7 +5,6 @@ public enum BuildProductType {
     case product(TargetProductType)
     case dSYM(TargetProductType)
     
-    
     public var fileExtension: String {
         switch self {
         case let .product(type):

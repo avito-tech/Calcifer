@@ -56,7 +56,7 @@ class ProjectChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Checksum
                 targetChecksumHolder.parents.write(self, for: name)
                 try targetChecksumHolder.reflectUpdate(updateModel: targetUpdateModel)
             },
-            onRemove: { key in
+            onRemove: { _ in
 
             },
             buildValue: { targetUpdateModel in

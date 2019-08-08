@@ -8,7 +8,7 @@ public struct KeyValueParameter<Value: Codable>: Codable {
 public extension Array where Element == KeyValueParameter<String> {
     func toKeyValueDictionary() -> [String: String] {
         let keyPairs = map { ($0.key, $0.value) }
-        return Dictionary<String, String>(uniqueKeysWithValues: keyPairs)
+        return Dictionary(uniqueKeysWithValues: keyPairs)
     }
 }
 

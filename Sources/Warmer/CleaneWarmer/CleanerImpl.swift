@@ -21,7 +21,7 @@ public final class CleanerImpl: Cleaner {
         launchctlLogDirectory: String,
         localCacheDirectory: String)
     {
-        let sevenDaysAgo = Date().addingTimeInterval(-7*24*60*60)
+        let sevenDaysAgo = Date().addingTimeInterval(-7 * 24 * 60 * 60)
         let hundredMegabytes: UInt64 = 100 * 1024 * 1024
         clearLogsDirectory(
             logsDirectory: logsDirectory,
@@ -106,9 +106,7 @@ public final class CleanerImpl: Cleaner {
         try? fileManager.contentsOfDirectory(atPath: path)
             .forEach { element in
                 let elementPath = path.appendingPathComponent(element)
-                if files && fileManager.isFile(elementPath) {
-                    each(elementPath)
-                } else if !files && !fileManager.isFile(elementPath) {
+                if files == fileManager.isFile(elementPath) {
                     each(elementPath)
                 }
             }

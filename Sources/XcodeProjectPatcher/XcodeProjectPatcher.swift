@@ -56,7 +56,7 @@ public final class XcodeProjectPatcher {
                 if let dependencyName = dependency.target?.name,
                     !requiredTargets.contains(dependencyName)
                 {
-                    target.dependencies.removeAll(where: { $0 == dependency})
+                    target.dependencies.removeAll(where: { $0 == dependency })
                     pbxproj.delete(object: dependency)
                 }
             }
