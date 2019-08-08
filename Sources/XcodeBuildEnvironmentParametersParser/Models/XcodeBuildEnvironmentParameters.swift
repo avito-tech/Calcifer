@@ -2,159 +2,159 @@ import Foundation
 
 public final class XcodeBuildEnvironmentParameters: Codable {
     // "TARGETNAME": "Some"
-    public let targetNameParam: KeyValueParam<String>
+    public let targetNameParam: KeyValueParameter<String>
     public var targetName: String { return targetNameParam.value }
     // "PROJECT": "Some"
-    public let projectParam: KeyValueParam<String>
+    public let projectParam: KeyValueParameter<String>
     public var project: String { return projectParam.value }
     // "PRODUCT_BUNDLE_IDENTIFIER": "io.some.bla"
-    public let productBundleIdentifierParam: KeyValueParam<String>
+    public let productBundleIdentifierParam: KeyValueParameter<String>
     public var productBundleIdentifier: String { return productBundleIdentifierParam.value }
     // "FULL_PRODUCT_NAME": "Some.app"
-    public let fullProductNameParam: KeyValueParam<String>?
+    public let fullProductNameParam: KeyValueParameter<String>?
     public var fullProductName: String? { return fullProductNameParam?.value }
     // "TARGET_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator"
-    public let targetBuildDirectoryParam: KeyValueParam<String>
+    public let targetBuildDirectoryParam: KeyValueParameter<String>
     public var targetBuildDirectory: String { return targetBuildDirectoryParam.value }
     // "MODULE_CACHE_DIR": "/Users/admin/DD/ModuleCache.noindex"
-    public let moduleCacheDirectoryParam: KeyValueParam<String>
+    public let moduleCacheDirectoryParam: KeyValueParameter<String>
     public var moduleCacheDirectory: String { return moduleCacheDirectoryParam.value }
     // "PROJECT_TEMP_ROOT": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Intermediates.noindex"
-    public let projectTemporaryDirectoryParam: KeyValueParam<String>
+    public let projectTemporaryDirectoryParam: KeyValueParameter<String>
     public var projectTemporaryDirectory: String { return projectTemporaryDirectoryParam.value }
     // "DWARF_DSYM_FOLDER_PATH": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator"
-    public let dwarfDSYMFolderPathParam: KeyValueParam<String>
+    public let dwarfDSYMFolderPathParam: KeyValueParameter<String>
     public var dwarfDSYMFolderPath: String { return dwarfDSYMFolderPathParam.value }
     // "DWARF_DSYM_FILE_NAME": "Some.app.dSYM"
-    public let dwarfDsymFileNameParam: KeyValueParam<String>
+    public let dwarfDsymFileNameParam: KeyValueParameter<String>
     public var dwarfDsymFileName: String { return dwarfDsymFileNameParam.value }
     // "DEVELOPER_FRAMEWORKS_DIR_QUOTED": "/Users/admin/Downloads/Xcode.app/Contents/Developer/Library/Frameworks"
-    public let developerFrameworksDirectoryQuotedParam: KeyValueParam<String>
+    public let developerFrameworksDirectoryQuotedParam: KeyValueParameter<String>
     public var developerFrameworksDirectoryQuoted: String { return developerFrameworksDirectoryQuotedParam.value }
     // "OBJROOT": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Intermediates.noindex"
-    public let objRootParam: KeyValueParam<String>
+    public let objRootParam: KeyValueParameter<String>
     public var objRoot: String { return objRootParam.value }
     // "BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products"
-    public let buildDirectoryParam: KeyValueParam<String>
+    public let buildDirectoryParam: KeyValueParameter<String>
     public var buildDirectory: String { return buildDirectoryParam.value }
     // "CONFIGURATION_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator"
-    public let configurationBuildDirectoryParam: KeyValueParam<String>
+    public let configurationBuildDirectoryParam: KeyValueParameter<String>
     public var configurationBuildDirectory: String { return configurationBuildDirectoryParam.value }
     // "PROJECT_FILE_PATH": "/b/Some/Some.xcodeproj"
-    public let projectFilePathParam: KeyValueParam<String>
+    public let projectFilePathParam: KeyValueParameter<String>
     public var projectFilePath: String { return projectFilePathParam.value }
     // "PROJECT_DIR": "/b/Some",
-    public let projectDirectoryParam: KeyValueParam<String>
+    public let projectDirectoryParam: KeyValueParameter<String>
     public var projectDirectory: String { return projectDirectoryParam.value }
     // "SRCROOT": "/b/Some"
-    public let sourceRootParam: KeyValueParam<String>
+    public let sourceRootParam: KeyValueParameter<String>
     public var sourceRoot: String { return sourceRootParam.value }
     
     // "PATH": "/usr/bin"
-    public let userBinaryPathParam: KeyValueParam<String>
+    public let userBinaryPathParam: KeyValueParameter<String>
     public var userBinaryPath: String { return userBinaryPathParam.value }
     
     // "OTHER_LDFLAGS": " -ObjC -ObjC -l\"c++\" -l\"resolv\" -l\"sqlite3\" -l\"stdc++\" -l\"xml2\" -l\"z\" -framework \"AVFoundation\" ..."
-    public let otherLDFlagsParam: KeyValueParam<String>
+    public let otherLDFlagsParam: KeyValueParameter<String>
     public var otherLDFlags: String { return otherLDFlagsParam.value }
     // "OTHER_SWIFT_FLAGS": "-DDEBUG -Onone \"-D\" \"COCOAPODS\""
-    public let otherSwiftFlagsParam: KeyValueParam<String>
+    public let otherSwiftFlagsParam: KeyValueParameter<String>
     public var otherSwiftFlags: String { return otherSwiftFlagsParam.value }
     // "GCC_PREPROCESSOR_DEFINITIONS": "Debug DEBUG=1 SWIFT_MODULE_Some COCOAPODS=1 Debug DEBUG=1 SWIFT_MO
-    public let gccPreprocessorDefinitionsParam: KeyValueParam<String>
+    public let gccPreprocessorDefinitionsParam: KeyValueParameter<String>
     public var gccPreprocessorDefinitions: String { return gccPreprocessorDefinitionsParam.value }
     
     // "ENABLE_BITCODE": "NO",
-    public let enableBitcodeParam: KeyValueParam<Bool>
+    public let enableBitcodeParam: KeyValueParameter<Bool>
     public var enableBitcode: Bool { return enableBitcodeParam.value }
     // "ENABLE_TESTABILITY": "YES",
-    public let enableTestabilityParam: KeyValueParam<Bool>
+    public let enableTestabilityParam: KeyValueParameter<Bool>
     public var enableTestability: Bool { return enableTestabilityParam.value }
     // "PROFILING_CODE": "NO",
-    public let profilingCodeParam: KeyValueParam<Bool>
+    public let profilingCodeParam: KeyValueParameter<Bool>
     public var profilingCode: Bool { return profilingCodeParam.value }
     
     // "CURRENT_ARCH": "x86_64"
-    public let currentArchitectureParam: KeyValueParam<String>
+    public let currentArchitectureParam: KeyValueParameter<String>
     public var currentArchitecture: String { return currentArchitectureParam.value }
     // "VALID_ARCHS": "i386 x86_64"
-    public let validArchitectureParam: KeyValueParam<String>
+    public let validArchitectureParam: KeyValueParameter<String>
     public var validArchitecture: String { return validArchitectureParam.value }
     // "arch": "x86_64",
-    public let architectureParam: KeyValueParam<String>
+    public let architectureParam: KeyValueParameter<String>
     public var architecture: String { return architectureParam.value }
     // "ARCHS": "x86_64",
-    public let architecturesParam: KeyValueParam<String>
+    public let architecturesParam: KeyValueParameter<String>
     public var architectures: String { return architecturesParam.value }
     // "ONLY_ACTIVE_ARCH": "YES",
-    public let onlyActiveArchitectureParam: KeyValueParam<Bool>
+    public let onlyActiveArchitectureParam: KeyValueParameter<Bool>
     public var onlyActiveArchitecture: Bool { return onlyActiveArchitectureParam.value }
     
     // "SDK_VERSION": "12.1"
-    public let sdkVersionParam: KeyValueParam<String>
+    public let sdkVersionParam: KeyValueParameter<String>
     public var sdkVersion: String { return sdkVersionParam.value }
     // "SDK_VERSION_ACTUAL": "120100"
-    public let sdkActualVersionParam: KeyValueParam<String>
+    public let sdkActualVersionParam: KeyValueParameter<String>
     public var sdkActualVersion: String { return sdkActualVersionParam.value }
     // "SDK_VERSION_MAJOR": "120000"
-    public let sdkMajorVersionParam: KeyValueParam<String>
+    public let sdkMajorVersionParam: KeyValueParameter<String>
     public var sdkMajorVersion: String { return sdkMajorVersionParam.value }
     // "SDK_VERSION_MINOR": "100"
-    public let sdkMinorVersionParam: KeyValueParam<String>
+    public let sdkMinorVersionParam: KeyValueParameter<String>
     public var sdkMinorVersion: String { return sdkMinorVersionParam.value }
     // "SDK_NAMES": "iphonesimulator12.1"
-    public let sdkNamesParam: KeyValueParam<String>
+    public let sdkNamesParam: KeyValueParameter<String>
     public var sdkNames: String { return sdkNamesParam.value }
     // "SWIFT_VERSION": "4.0"
-    public let swiftVersionParam: KeyValueParam<String>
+    public let swiftVersionParam: KeyValueParameter<String>
     public var swiftVersion: String { return swiftVersionParam.value }
     // "SWIFT_OPTIMIZATION_LEVEL": "-Owholemodule"
-    public let swiftOptimizationLevelParam: KeyValueParam<String>
+    public let swiftOptimizationLevelParam: KeyValueParameter<String>
     public var swiftOptimizationLevel: String { return swiftOptimizationLevelParam.value }
     // "SWIFT_COMPILATION_MODE": "wholemodule"
-    public let swiftCompilationModeParam: KeyValueParam<String>
+    public let swiftCompilationModeParam: KeyValueParameter<String>
     public var swiftCompilationMode: String { return swiftCompilationModeParam.value }
     // "PLATFORM_NAME": "iphonesimulator"
-    public let platformNameParam: KeyValueParam<String>
+    public let platformNameParam: KeyValueParameter<String>
     public var platformName: String { return platformNameParam.value }
     // "EFFECTIVE_PLATFORM_NAME": "iphonesimulator"
-    public let effectivePlatformNameParam: KeyValueParam<String>
+    public let effectivePlatformNameParam: KeyValueParameter<String>
     public var effectivePlatformName: String { return effectivePlatformNameParam.value }
     // "SUPPORTED_PLATFORMS": "iphonesimulator iphoneos"
-    public let supportedPlatformsParam: KeyValueParam<String>
+    public let supportedPlatformsParam: KeyValueParameter<String>
     public var supportedPlatforms: String { return supportedPlatformsParam.value }
     // "CONFIGURATION": "Debug"
-    public let configurationParam: KeyValueParam<String>
+    public let configurationParam: KeyValueParameter<String>
     public var configuration: String { return configurationParam.value }
     // "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym"
-    public let debugInformationFormatParam: KeyValueParam<String>
+    public let debugInformationFormatParam: KeyValueParameter<String>
     public var debugInformationFormat: String { return debugInformationFormatParam.value }
     
     // "XCODE_VERSION_ACTUAL": "1010"
-    public let xcodeActualVersionParam: KeyValueParam<String>
+    public let xcodeActualVersionParam: KeyValueParameter<String>
     public var xcodeActualVersion: String { return xcodeActualVersionParam.value }
     // "XCODE_VERSION_MAJOR": "1000"
-    public let xcodeMajorVersionParam: KeyValueParam<String>
+    public let xcodeMajorVersionParam: KeyValueParameter<String>
     public var xcodeMajorVersion: String { return xcodeMajorVersionParam.value }
     // "XCODE_VERSION_MINOR": "1010"
-    public let xcodeMinorVersionParam: KeyValueParam<String>
+    public let xcodeMinorVersionParam: KeyValueParameter<String>
     public var xcodeMinorVersion: String { return xcodeMinorVersionParam.value }
     // "XCODE_PRODUCT_BUILD_VERSION": "10B61"
-    public let xcodeProductBuildVersionParam: KeyValueParam<String>
+    public let xcodeProductBuildVersionParam: KeyValueParameter<String>
     public var xcodeProductBuildVersion: String { return xcodeProductBuildVersionParam.value }
     // "COMMAND_MODE": "legacy"
-    public let commandModeParam: KeyValueParam<String>
+    public let commandModeParam: KeyValueParameter<String>
     public var commandMode: String { return commandModeParam.value }
     
     // "USER": "username"
-    public let userParam: KeyValueParam<String>
+    public let userParam: KeyValueParameter<String>
     public var user: String { return userParam.value }
     
     // "PODS_CONFIGURATION_BUILD_DIR": "/Users/admin/DD/Some-hjxzoeotbbmukebnmtngisnnfoef/Build/Products/Debug-iphonesimulator"
-    public let podsConfigurationBuildDirectoryParam: KeyValueParam<String>
+    public let podsConfigurationBuildDirectoryParam: KeyValueParameter<String>
     public var podsConfigurationBuildDirectory: String { return podsConfigurationBuildDirectoryParam.value }
     // "PODS_ROOT": "/b/Some/Pods"
-    public let podsRootParam: KeyValueParam<String>
+    public let podsRootParam: KeyValueParameter<String>
     public var podsRoot: String { return podsRootParam.value }
     
     public var podsProjectPath: String {

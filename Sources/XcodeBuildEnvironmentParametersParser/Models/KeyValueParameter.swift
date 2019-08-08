@@ -1,20 +1,20 @@
 import Foundation
 
-public struct KeyValueParam<Value: Codable>: Codable {
+public struct KeyValueParameter<Value: Codable>: Codable {
     let key: String
     let value: Value
 }
 
-public extension Array where Element == KeyValueParam<String> {
+public extension Array where Element == KeyValueParameter<String> {
     func toKeyValueDictionary() -> [String: String] {
         let keyPairs = map { ($0.key, $0.value) }
         return Dictionary<String, String>(uniqueKeysWithValues: keyPairs)
     }
 }
 
-public extension KeyValueParam where Value == Bool {
-    func toStringValue() -> KeyValueParam<String> {
-        return KeyValueParam<String>(
+public extension KeyValueParameter where Value == Bool {
+    func toStringValue() -> KeyValueParameter<String> {
+        return KeyValueParameter<String>(
             key: key,
             value: String(value)
         )
@@ -22,14 +22,14 @@ public extension KeyValueParam where Value == Bool {
 }
 
 public extension Dictionary where Key == String, Value: Codable {
-    func getKeyValueParam(_ key: Key, defaultValue: Value? = nil) throws -> KeyValueParam<Value> {
+    func getKeyValueParam(_ key: Key, defaultValue: Value? = nil) throws -> KeyValueParameter<Value> {
         let value = (self[key] != nil) ? self[key] : defaultValue
         guard let unwrapedValue = value else {
             throw XcodeBuildEnvironmentParametersParserError.emptyBuildParameter(
                 key: key.description
             )
         }
-        return KeyValueParam(
+        return KeyValueParameter(
             key: key,
             value: unwrapedValue
         )
@@ -37,13 +37,13 @@ public extension Dictionary where Key == String, Value: Codable {
 }
 
 public extension Dictionary where Key == String, Value == String {
-    func getBoolKeyValueParam(_ key: Key) throws -> KeyValueParam<Bool> {
+    func getBoolKeyValueParam(_ key: Key) throws -> KeyValueParameter<Bool> {
         guard let value = self[key] else {
             throw XcodeBuildEnvironmentParametersParserError.emptyBuildParameter(
                 key: key.description
             )
         }
-        return KeyValueParam(
+        return KeyValueParameter(
             key: key,
             value: value == "YES"
         )
