@@ -35,7 +35,7 @@ public final class StartDaemonCommand: Command {
             calciferPathProvider: calciferPathProvider,
             calciferConfigProvider: calciferConfigProvider
         )
-        let cleaneWarmerFactory = CleaneWarmerFactory(
+        let cleanWarmerFactory = CleanWarmerFactory(
             fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
             calciferConfigProvider: calciferConfigProvider
@@ -44,7 +44,7 @@ public final class StartDaemonCommand: Command {
             fileManager: fileManager,
             xcodeProjCache: cacheProvider.xcodeProjCache,
             buildProductCacheStorageWarmerFactory: buildProductCacheStorageWarmerFactory,
-            cleaneWarmerFactory: cleaneWarmerFactory
+            cleanWarmerFactory: cleanWarmerFactory
         )
         let warmerManager = warmerFactory.createWarmerManager(
             warmupOperationQueue: operationQueue
