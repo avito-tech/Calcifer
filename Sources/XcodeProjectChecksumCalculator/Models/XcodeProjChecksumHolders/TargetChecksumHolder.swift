@@ -1,4 +1,5 @@
 import Foundation
+import BaseModels
 import Checksum
 import XcodeProj
 import PathKit
@@ -105,7 +106,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 targetChecksumHolder.parents.write(self, for: name)
                 // DO NOT UPDATE DEPENDENCY! THEY ALREADY UPDATED BY PROJECT
             },
-            onRemove: { key in
+            onRemove: { _ in
 
             },
             buildValue: { updateModel in
@@ -133,7 +134,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 fileChecksumHolder.parents.write(self, for: name)
                 try fileChecksumHolder.reflectUpdate(updateModel: updateModel)
             },
-            onRemove: { key in
+            onRemove: { _ in
 
             },
             buildValue: { url in

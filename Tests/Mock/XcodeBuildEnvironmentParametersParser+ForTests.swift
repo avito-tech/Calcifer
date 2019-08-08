@@ -57,6 +57,7 @@ extension XcodeBuildEnvironmentParameters {
             "SWIFT_OPTIMIZATION_LEVEL": "-Owholemodule",
             "SWIFT_COMPILATION_MODE": "wholemodule",
             "PLATFORM_NAME": "iphonesimulator",
+            "EFFECTIVE_PLATFORM_NAME": "iphonesimulator",
             "SUPPORTED_PLATFORMS": "iphonesimulator iphoneos",
             "CONFIGURATION": "Debug",
             "DEBUG_INFORMATION_FORMAT": "dwarf-with-dsym",

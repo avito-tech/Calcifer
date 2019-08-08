@@ -27,12 +27,14 @@ public final class XcodeProjectPatcher {
         let xcodeproject = try xcodeProjCache.obtainWritableXcodeProj(projectPath: projectPath)
         let pbxproj = xcodeproject.pbxproj
         guard let project = try pbxproj.rootProject() else { return }
-        patchBuildSetting(in: project.buildConfigurationList, params: params)
+        pathRootBuildSetting(
+            in: project.buildConfigurationList,
+            params: params
+        )
         let agregateTarget = PBXAggregateTarget(
             name: "Aggregate",
             buildConfigurationList: project.buildConfigurationList
         )
-        patchBuildSetting(in: agregateTarget.buildConfigurationList, params: params)
         let requiredTargets = Set(targets)
         var targetsForRemoving = Set<String>()
 
@@ -54,7 +56,7 @@ public final class XcodeProjectPatcher {
                 if let dependencyName = dependency.target?.name,
                     !requiredTargets.contains(dependencyName)
                 {
-                    target.dependencies.removeAll(where: { $0 == dependency})
+                    target.dependencies.removeAll(where: { $0 == dependency })
                     pbxproj.delete(object: dependency)
                 }
             }
@@ -112,18 +114,49 @@ public final class XcodeProjectPatcher {
         }
     }
     
+    private func pathRootBuildSetting(
+        in buildConfigurationList: XCConfigurationList?,
+        params: XcodeBuildEnvironmentParameters)
+    {
+        apply(
+            buildSetting: mainTargetBuildSettings(params: params),
+            to: buildConfigurationList,
+            override: true
+        )
+        patchBuildSetting(
+            in: buildConfigurationList,
+            params: params
+        )
+    }
+    
     private func patchBuildSetting(
         in buildConfigurationList: XCConfigurationList?,
         params: XcodeBuildEnvironmentParameters)
     {
+        apply(
+            buildSetting: requiredBuildSettings(),
+            to: buildConfigurationList,
+            override: true
+        )
+        apply(
+            buildSetting: optionBuildSettings(params: params),
+            to: buildConfigurationList,
+            override: false
+        )
+    }
+    
+    private func apply(
+        buildSetting: BuildSettings,
+        to buildConfigurationList: XCConfigurationList?,
+        override: Bool)
+    {
         guard let buildConfigurations = buildConfigurationList?.buildConfigurations
             else { return }
         for buildConfiguration in buildConfigurations {
-            for (key, value) in requiredBuildSettings() {
-                buildConfiguration.buildSettings[key] = value
-            }
-            for (key, value) in optionBuildSettings(params: params) {
-                if buildConfiguration.buildSettings[key] == nil {
+            for (key, value) in buildSetting {
+                if override {
+                    buildConfiguration.buildSettings[key] = value
+                } else if buildConfiguration.buildSettings[key] == nil {
                     buildConfiguration.buildSettings[key] = value
                 }
             }
@@ -139,8 +172,21 @@ public final class XcodeProjectPatcher {
     
     private func optionBuildSettings(params: XcodeBuildEnvironmentParameters) -> BuildSettings {
         return [
-            "SWIFT_VERSION": params.swiftVersion
-        ]
+            params.swiftVersionParam
+        ].toKeyValueDictionary()
+    }
+    
+    private func mainTargetBuildSettings(params: XcodeBuildEnvironmentParameters) -> BuildSettings {
+        return [
+            params.otherSwiftFlagsParam,
+            params.gccPreprocessorDefinitionsParam,
+            params.enableBitcodeParam.toStringValue(),
+            params.enableTestabilityParam.toStringValue(),
+            params.profilingCodeParam.toStringValue(),
+            params.swiftVersionParam,
+            params.swiftCompilationModeParam,
+            params.swiftOptimizationLevelParam
+        ].toKeyValueDictionary()
     }
     
     private func generateWorkspaceSettingsFile(projectPath: String) throws {

@@ -57,13 +57,22 @@ public final class LocalBuildProductCacheStorage: BuildProductCacheStorage {
     }
     
     private func path<ChecksumType: Checksum>(to cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
-        var path = cacheDirectoryPath
-            .appendingPathComponent(cacheKey.productType.rawValue)
+        debugPrint(cacheKey)
+        let path = obtainDirectory(for: cacheKey)
+            .appendingPathComponent(cacheKey.productName.deletingPathExtension())
+            .appendingPathExtension(cacheKey.productType.fileExtension)
+        debugPrint(path)
+        return path
+    }
+    
+    private func obtainDirectory<ChecksumType: Checksum>(
+        for cacheKey: BuildProductCacheKey<ChecksumType>)
+        -> String
+    {
+        return cacheDirectoryPath
+            .appendingPathComponent(cacheKey.productType.shortName)
             .appendingPathComponent(cacheKey.productName.deletingPathExtension())
             .appendingPathComponent(cacheKey.checksum.stringValue)
-            .appendingPathComponent(cacheKey.productName.deletingPathExtension())
-        path.append(cacheKey.productType.fileExtension)
-        return path
     }
     
 }

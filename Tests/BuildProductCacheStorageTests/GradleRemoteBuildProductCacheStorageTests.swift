@@ -19,10 +19,10 @@ public final class GradleRemoteBuildProductCacheStorageTests: BaseTestCase {
         )
         let checksum = BaseChecksum(UUID().uuidString)
         let frameworkName = UUID().uuidString
-            .appendingPathComponent(".framework")
+            .appendingPathExtension("framework")
         let key = BuildProductCacheKey(
             productName: frameworkName,
-            productType: .framework,
+            productType: .product(.framework),
             checksum: checksum
         )
         let fileURL = URL(
@@ -47,10 +47,10 @@ public final class GradleRemoteBuildProductCacheStorageTests: BaseTestCase {
             fileManager: fileManager
         )
         let checksum = BaseChecksum(UUID().uuidString)
-        let productName = UUID().uuidString + ".framework"
+        let productName = UUID().uuidString.appendingPathExtension("framework")
         let key = BuildProductCacheKey(
             productName: productName,
-            productType: .framework,
+            productType: .product(.framework),
             checksum: checksum
         )
         let zipFileURL = createZipFile(key: key)

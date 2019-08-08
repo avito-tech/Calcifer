@@ -18,7 +18,7 @@ public final class CachedTargetInfosEnumerator {
         throws
     {
         try targetInfos.asyncConcurrentEnumerate { (targetInfo, completion, stop) in
-            let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
+            let frameworkCacheKey = cacheKeyBuilder.createProductCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
                 do {
@@ -72,7 +72,7 @@ public final class CachedTargetInfosEnumerator {
             if required {
                 throw RemoteCachePreparerError.unableToObtainCache(
                     target: targetInfo.targetName,
-                    type: targetInfo.productType.rawValue,
+                    type: targetInfo.productType.shortName,
                     checksumValue: targetInfo.checksum.stringValue
                 )
             } else {

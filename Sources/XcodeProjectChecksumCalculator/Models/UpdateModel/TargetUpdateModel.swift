@@ -1,4 +1,5 @@
 import Foundation
+import BaseModels
 import XcodeProj
 import Checksum
 import PathKit
@@ -66,6 +67,7 @@ final class TargetUpdateModel<ChecksumType: Checksum> {
     }
     
     private func isValidProductName(_ productName: String, type: TargetProductType) -> Bool {
+        guard !productName.pathExtension().isEmpty else { return false }
         switch type {
         case .framework:
             return productName.contains("-") == false

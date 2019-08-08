@@ -7,13 +7,13 @@ public final class BuildProductCacheKeyBuilder {
     
     public init() {}
     
-    public func createFrameworkCacheKey(
+    public func createProductCacheKey(
         from targetInfo: TargetInfo<BaseChecksum>)
         -> BuildProductCacheKey<BaseChecksum>
     {
         return BuildProductCacheKey<BaseChecksum>(
             productName: targetInfo.productName,
-            productType: .framework,
+            productType: .product(targetInfo.productType),
             checksum: targetInfo.checksum
         )
     }
@@ -24,7 +24,7 @@ public final class BuildProductCacheKeyBuilder {
     {
         return BuildProductCacheKey<BaseChecksum>(
             productName: targetInfo.productName,
-            productType: .dSYM,
+            productType: .dSYM(targetInfo.productType),
             checksum: targetInfo.checksum
         )
     }

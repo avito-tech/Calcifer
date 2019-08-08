@@ -76,4 +76,13 @@ public extension FileManager {
             else { throw FileManagerError.unableToObtainModificationDate(path: path) }
         return date
     }
+    
+    func accessDate(at path: String) throws -> Date {
+        let attributes = try attributesOfItem(atPath: path)
+        let accessDateKey = kCFURLContentAccessDateKey as FileAttributeKey
+        guard let date = attributes[accessDateKey] as? Date
+            else { throw FileManagerError.unableToObtainModificationDate(path: path) }
+        return date
+    }
+    
 }

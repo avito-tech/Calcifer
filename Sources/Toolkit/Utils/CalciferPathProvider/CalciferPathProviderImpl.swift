@@ -24,9 +24,18 @@ open class CalciferPathProviderImpl: CalciferPathProvider {
             .appendingPathComponent(calciferBinaryName())
     }
     
-    public func calciferChecksumFilePath(for date: Date) -> String {
+    public func calciferLogsDirectory() -> String {
+        return calciferDirectory()
+            .appendingPathComponent("logs")
+    }
+    
+    public func calciferChecksumDirectory() -> String {
         return calciferDirectory()
             .appendingPathComponent("checksums")
+    }
+    
+    public func calciferChecksumFilePath(for date: Date) -> String {
+        return calciferChecksumDirectory()
             .appendingPathComponent("checksum-\(date.formattedString()).json")
     }
     
@@ -47,15 +56,18 @@ open class CalciferPathProviderImpl: CalciferPathProvider {
             .appendingPathComponent("\(label).plist")
     }
     
-    public func launchctlStandardOutPath() -> String {
+    public func launchctlLogDirectory() -> String {
         return calciferDirectory()
             .appendingPathComponent("launchctl")
+    }
+    
+    public func launchctlStandardOutPath() -> String {
+        return launchctlLogDirectory()
             .appendingPathComponent("out.log")
     }
     
     public func launchctlStandardErrorPath() -> String {
-        return calciferDirectory()
-            .appendingPathComponent("launchctl")
+        return launchctlLogDirectory()
             .appendingPathComponent("error.log")
     }
     

@@ -266,7 +266,7 @@ public final class PatchedProjectBuilder {
     {
         let artifacts = try artifactProvider.artifacts(for: targetInfos, at: path)
         try artifacts.asyncConcurrentEnumerate { (artifact, completion, _) in
-            let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: artifact.targetInfo)
+            let frameworkCacheKey = cacheKeyBuilder.createProductCacheKey(from: artifact.targetInfo)
             let dsymCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: artifact.targetInfo)
             cacheStorage.add(cacheKey: frameworkCacheKey, at: artifact.productPath) {
                 cacheStorage.add(cacheKey: dsymCacheKey, at: artifact.dsymPath) {
@@ -285,7 +285,7 @@ public final class PatchedProjectBuilder {
             >()
         
         try targetInfos.asyncConcurrentEnumerate { (targetInfo, completion, _) in
-            let frameworkCacheKey = cacheKeyBuilder.createFrameworkCacheKey(from: targetInfo)
+            let frameworkCacheKey = cacheKeyBuilder.createProductCacheKey(from: targetInfo)
             let dSYMCacheKey = cacheKeyBuilder.createDSYMCacheKey(from: targetInfo)
             cacheStorage.cached(for: frameworkCacheKey) { frameworkResult in
                 switch frameworkResult {

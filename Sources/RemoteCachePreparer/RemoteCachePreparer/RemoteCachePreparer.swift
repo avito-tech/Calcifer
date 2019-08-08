@@ -126,13 +126,15 @@ final class RemoteCachePreparer {
             )
         }
         
-        try TimeProfiler.measure("Patch dSYM") {
-            let dsymPatcher = createDSYMPatcher()
-            try dsymPatcher.patchDSYM(
-                for: integrated,
-                sourcePath: sourcePath,
-                fullProductName: params.fullProductName
-            )
+        if let fullProductName = params.fullProductName {
+            try TimeProfiler.measure("Patch dSYM") {
+                let dsymPatcher = createDSYMPatcher()
+                try dsymPatcher.patchDSYM(
+                    for: integrated,
+                    sourcePath: sourcePath,
+                    fullProductName: fullProductName
+                )
+            }
         }
         
         let intermediateFilesGenerator = IntermediateFilesGeneratorImpl(

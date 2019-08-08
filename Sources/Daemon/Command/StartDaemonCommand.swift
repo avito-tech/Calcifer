@@ -27,11 +27,24 @@ public final class StartDaemonCommand: Command {
             qualityOfService: .userInitiated
         )
         let fileManager = cacheProvider.fileManager
-        let buildProductCacheStorageWarmerFactory = createBuildProductCacheStorageWarmerFactory()
+        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
+        let calciferDirectory = calciferPathProvider.calciferDirectory()
+        let calciferConfigProvider = CalciferConfigProvider(calciferDirectory: calciferDirectory)
+        let buildProductCacheStorageWarmerFactory = createBuildProductCacheStorageWarmerFactory(
+            fileManager: fileManager,
+            calciferPathProvider: calciferPathProvider,
+            calciferConfigProvider: calciferConfigProvider
+        )
+        let cleanWarmerFactory = CleanWarmerFactory(
+            fileManager: fileManager,
+            calciferPathProvider: calciferPathProvider,
+            calciferConfigProvider: calciferConfigProvider
+        )
         let warmerFactory = WarmerManagerFactory(
             fileManager: fileManager,
             xcodeProjCache: cacheProvider.xcodeProjCache,
-            buildProductCacheStorageWarmerFactory: buildProductCacheStorageWarmerFactory
+            buildProductCacheStorageWarmerFactory: buildProductCacheStorageWarmerFactory,
+            cleanWarmerFactory: cleanWarmerFactory
         )
         let warmerManager = warmerFactory.createWarmerManager(
             warmupOperationQueue: operationQueue
@@ -44,11 +57,12 @@ public final class StartDaemonCommand: Command {
         try daemon.run()
     }
     
-    private func createBuildProductCacheStorageWarmerFactory() -> BuildProductCacheStorageWarmerFactory {
-        let fileManager = cacheProvider.fileManager
-        let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
-        let calciferDirectory = calciferPathProvider.calciferDirectory()
-        let configProvider = CalciferConfigProvider(calciferDirectory: calciferDirectory)
+    private func createBuildProductCacheStorageWarmerFactory(
+        fileManager: FileManager,
+        calciferPathProvider: CalciferPathProvider,
+        calciferConfigProvider: CalciferConfigProvider)
+        -> BuildProductCacheStorageWarmerFactory
+    {
         let fullPathProvider = BaseFileElementFullPathProvider()
         let xcodeProjCache = cacheProvider.xcodeProjCache
         let xcodeProjChecksumHolderBuilderFactory = XcodeProjChecksumHolderBuilderFactory(
@@ -78,7 +92,7 @@ public final class StartDaemonCommand: Command {
             unzip: unzip
         )
         return BuildProductCacheStorageWarmerFactory(
-            configProvider: configProvider,
+            configProvider: calciferConfigProvider,
             requiredTargetsProvider: requiredTargetsProvider,
             calciferPathProvider: calciferPathProvider,
             cacheKeyBuilder: cacheKeyBuilder,
