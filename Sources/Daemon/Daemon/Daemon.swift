@@ -130,6 +130,7 @@ public final class Daemon {
     }
     
     private func redirectLogs(to writer: WebSocketSessionWriter) {
+        clearLogsRedirect()
         let destination = CustomLoggerDestination(onNewMessage: { message in
             writer.write(DaemonMessage.logger(message))
         })
