@@ -144,10 +144,12 @@ public final class Daemon {
     
     private func redirectStandardStream(to writer: WebSocketSessionWriter) {
         ObservableStandardStream.shared.onOutputWrite = { data in
+            guard !data.isEmpty else { return }
             let message = StandardStreamMessage(source: .output, data: data)
             writer.write(DaemonMessage.standardStream(message))
         }
         ObservableStandardStream.shared.onErrorWrite = { data in
+            guard !data.isEmpty else { return }
             let message = StandardStreamMessage(source: .error, data: data)
             writer.write(DaemonMessage.standardStream(message))
         }

@@ -52,7 +52,8 @@ final class RemoteCacheUploader {
         }
         
         let localStorage = cacheStorageFactory.createLocalBuildProductCacheStorage(
-            localCacheDirectoryPath: storageConfig.localCacheDirectory
+            localCacheDirectoryPath: storageConfig.localCacheDirectory,
+            maxAgeInDaysForLocalArtifact: storageConfig.maxAgeInDaysForLocalArtifact
         )
         let remoteStorage = try cacheStorageFactory.createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost

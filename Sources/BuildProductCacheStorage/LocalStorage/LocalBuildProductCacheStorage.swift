@@ -6,10 +6,16 @@ public final class LocalBuildProductCacheStorage: BuildProductCacheStorage {
 
     private let fileManager: FileManager
     private let cacheDirectoryPath: String
+    private let maxAgeInDaysForLocalArtifact: UInt
     
-    public init(fileManager: FileManager, cacheDirectoryPath: String) {
+    public init(
+        fileManager: FileManager,
+        cacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt)
+    {
         self.fileManager = fileManager
         self.cacheDirectoryPath = cacheDirectoryPath
+        self.maxAgeInDaysForLocalArtifact = maxAgeInDaysForLocalArtifact
     }
     
     // MARK: - FrameworkCacheStorage
@@ -57,11 +63,9 @@ public final class LocalBuildProductCacheStorage: BuildProductCacheStorage {
     }
     
     private func path<ChecksumType: Checksum>(to cacheKey: BuildProductCacheKey<ChecksumType>) -> String {
-        debugPrint(cacheKey)
         let path = obtainDirectory(for: cacheKey)
             .appendingPathComponent(cacheKey.productName.deletingPathExtension())
             .appendingPathExtension(cacheKey.productType.fileExtension)
-        debugPrint(path)
         return path
     }
     
@@ -73,6 +77,25 @@ public final class LocalBuildProductCacheStorage: BuildProductCacheStorage {
             .appendingPathComponent(cacheKey.productType.shortName)
             .appendingPathComponent(cacheKey.productName.deletingPathExtension())
             .appendingPathComponent(cacheKey.checksum.stringValue)
+    }
+    
+    public func clean(completion: @escaping () -> ()) {
+        let outdateTimeInterval = TimeInterval(-Int(maxAgeInDaysForLocalArtifact) * 24 * 60 * 60)
+        let outdate = Date().addingTimeInterval(outdateTimeInterval)
+        fileManager.enumerate(at: cacheDirectoryPath, files: false) { productTypeDirectory in
+            fileManager.enumerate(at: productTypeDirectory, files: false) { productDirectory in
+                fileManager.enumerate(at: productDirectory, files: false) { checksumDirectory in
+                    guard let accessDate = try? fileManager.accessDate(at: checksumDirectory)
+                        else {
+                            return
+                        }
+                    if accessDate < outdate {
+                        try? fileManager.removeItem(atPath: checksumDirectory)
+                    }
+                }
+            }
+        }
+        completion()
     }
     
 }

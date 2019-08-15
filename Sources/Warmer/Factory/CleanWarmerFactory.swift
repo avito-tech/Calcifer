@@ -20,9 +20,12 @@ public final class CleanWarmerFactory {
     }
     
     public func build() -> CleanWarmer {
-        let cleaner = CleanerImpl(fileManager: fileManager)
+        let cleaner = CleanerImpl(
+            fileManager: fileManager
+        )
         return CleanWarmer(
             cleaner: cleaner,
+            fileManager: fileManager,
             calciferPathProvider: calciferPathProvider,
             calciferConfigProvider: calciferConfigProvider
         )

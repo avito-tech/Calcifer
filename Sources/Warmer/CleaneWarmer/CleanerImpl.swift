@@ -1,5 +1,5 @@
 import Foundation
-
+import BuildProductCacheStorage
 public final class CleanerImpl: Cleaner {
     
     enum OutdateStrategy {
@@ -18,8 +18,7 @@ public final class CleanerImpl: Cleaner {
         logsDirectory: String,
         buildLogDirectory: String,
         checksumDirectory: String,
-        launchctlLogDirectory: String,
-        localCacheDirectory: String)
+        launchctlLogDirectory: String)
     {
         let sevenDaysAgo = Date().addingTimeInterval(-7 * 24 * 60 * 60)
         let hundredMegabytes: UInt64 = 100 * 1024 * 1024
@@ -37,14 +36,10 @@ public final class CleanerImpl: Cleaner {
             files: true,
             outdateStrategy: .size(hundredMegabytes)
         )
-        clearLocalCacheDirectory(
-            localCacheDirectory: localCacheDirectory,
-            outdateStrategy: .accessDate(sevenDaysAgo)
-        )
     }
     
     private func clearLogsDirectory(logsDirectory: String, outdateStrategy: OutdateStrategy) {
-        enumerate(at: logsDirectory, files: false) { directory in
+        fileManager.enumerate(at: logsDirectory, files: false) { directory in
             clearDirectory(
                 at: directory,
                 files: true,
@@ -53,23 +48,9 @@ public final class CleanerImpl: Cleaner {
         }
     }
     
-    private func clearLocalCacheDirectory(localCacheDirectory: String, outdateStrategy: OutdateStrategy) {
-        let condition = obtainCondition(for: outdateStrategy)
-        enumerate(at: localCacheDirectory, files: false) { productTypeDirectory in
-            enumerate(at: productTypeDirectory, files: false) { productDirectory in
-                enumerate(at: productDirectory, files: false) { directory in
-                    removeIfCondition(
-                        path: directory,
-                        condition: condition(directory)
-                    )
-                }
-            }
-        }
-    }
-    
     private func clearDirectory(at path: String, files: Bool, outdateStrategy: OutdateStrategy) {
         let condition = obtainCondition(for: outdateStrategy)
-        enumerate(at: path, files: files) { elementPath in
+        fileManager.enumerate(at: path, files: files) { elementPath in
             removeIfCondition(
                 path: elementPath,
                 condition: condition(elementPath)
@@ -100,16 +81,6 @@ public final class CleanerImpl: Cleaner {
     private func removeIfCondition(path: String, condition: @autoclosure () -> (Bool)) {
         guard condition() else { return }
         try? fileManager.removeItem(atPath: path)
-    }
-    
-    private func enumerate(at path: String, files: Bool, each: (String) -> ()) {
-        try? fileManager.contentsOfDirectory(atPath: path)
-            .forEach { element in
-                let elementPath = path.appendingPathComponent(element)
-                if files == fileManager.isFile(elementPath) {
-                    each(elementPath)
-                }
-            }
     }
     
 }

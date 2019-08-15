@@ -15,36 +15,7 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
         key: String,
         completion: @escaping (BuildCacheClientResult<Void>) -> ())
     {
-        let uploadURL = url(key: key)
-        uploadFile(
-            uploadURL: uploadURL,
-            fileURL: fileURL,
-            completion: completion
-        )
-    }
-    
-    public func download(
-        key: String,
-        completion: @escaping (BuildCacheClientResult<URL>) -> ())
-    {
-        let downloadURL = url(key: key)
-        downloadFile(
-            downloadURL: downloadURL,
-            completion: completion
-        )
-    }
-    
-    private func uploadFile(
-        uploadURL: URL,
-        fileURL: URL,
-        completion: @escaping (BuildCacheClientResult<Void>) -> ())
-    {
-        var request = URLRequest(
-            url: uploadURL,
-            cachePolicy: .useProtocolCachePolicy,
-            timeoutInterval: 60
-        )
-        request.httpMethod = "PUT"
+        let request = createRequest(for: .cache(key), httpMethod: .put)
         session.uploadTask(with: request, fromFile: fileURL) { _, _, error in
             guard let error = error else {
                 completion(BuildCacheClientResult<Void>.success(()))
@@ -54,15 +25,11 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
         }.resume()
     }
     
-    private func downloadFile(
-        downloadURL: URL,
+    public func download(
+        key: String,
         completion: @escaping (BuildCacheClientResult<URL>) -> ())
     {
-        let request = URLRequest(
-            url: downloadURL,
-            cachePolicy: .useProtocolCachePolicy,
-            timeoutInterval: 60
-        )
+        let request = createRequest(for: .cache(key))
         session.downloadTask(with: request) { localURL, response, error in
             guard let response = response as? HTTPURLResponse,
                 response.statusCode == 200,
@@ -76,10 +43,50 @@ public final class GradleBuildCacheClientImpl: GradleBuildCacheClient {
         }.resume()
     }
     
-    @inline(__always) private func url(key: String) -> URL {
-        let url = gradleHost
-            .appendingPathComponent("cache")
-            .appendingPathComponent(key)
-        return url
+    public func status(completion: @escaping (BuildCacheClientResult<Void>) -> ()) {
+        let request = createRequest(for: .status)
+        session.dataTask(with: request) { _, _, error in
+            guard let error = error else {
+                completion(BuildCacheClientResult<Void>.success(()))
+                return
+            }
+            completion(BuildCacheClientResult.failure(error))
+        }.resume()
+    }
+    
+    public func snapshot(completion: @escaping (BuildCacheClientResult<Void>) -> ()) {
+        let request = createRequest(for: .snapshot)
+        session.dataTask(with: request) { _, _, error in
+            guard let error = error else {
+                completion(BuildCacheClientResult<Void>.success(()))
+                return
+            }
+            completion(BuildCacheClientResult.failure(error))
+        }.resume()
+    }
+    
+    public func purge(completion: @escaping (BuildCacheClientResult<Void>) -> ()) {
+        let request = createRequest(for: .purge, httpMethod: .post)
+        session.dataTask(with: request) { _, _, error in
+            guard let error = error else {
+                completion(BuildCacheClientResult<Void>.success(()))
+                return
+            }
+            completion(BuildCacheClientResult.failure(error))
+        }.resume()
+    }
+    
+    private func createRequest(for gradleEndpoint: GradleEndpoint, httpMethod: HttpMethod = .get) -> URLRequest {
+        var request = URLRequest(
+            url: url(for: gradleEndpoint),
+            cachePolicy: .useProtocolCachePolicy,
+            timeoutInterval: 60
+        )
+        request.httpMethod = httpMethod.rawValue
+        return request
+    }
+    
+    @inline(__always) private func url(for gradleEndpoint: GradleEndpoint) -> URL {
+        return gradleEndpoint.appendEndpoint(to: gradleHost)
     }
 }

@@ -14,4 +14,6 @@ public protocol BuildProductCacheStorage {
         completion: @escaping () -> ()
     )
     
+    func clean(completion: @escaping () -> ())
+    
 }

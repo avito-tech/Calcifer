@@ -20,6 +20,7 @@ public final class CacheStorageFactoryStub: CacheStorageFactory {
     
     public func createMixedCacheStorage(
         localCacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt,
         gradleHost: String,
         shouldUpload: Bool)
         throws -> BuildProductCacheStorage
@@ -28,7 +29,8 @@ public final class CacheStorageFactoryStub: CacheStorageFactory {
     }
     
     public func createLocalBuildProductCacheStorage(
-        localCacheDirectoryPath: String)
+        localCacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt)
         -> BuildProductCacheStorage
     {
         return localBuildProductCacheStorage

@@ -19,12 +19,14 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
     
     public func createMixedCacheStorage(
         localCacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt,
         gradleHost: String,
         shouldUpload: Bool)
         throws -> BuildProductCacheStorage
     {
         let localStorage = createLocalBuildProductCacheStorage(
-            localCacheDirectoryPath: localCacheDirectoryPath
+            localCacheDirectoryPath: localCacheDirectoryPath,
+            maxAgeInDaysForLocalArtifact: maxAgeInDaysForLocalArtifact
         )
         let remoteStorage = try createRemoteBuildProductCacheStorage(
             gradleHost: gradleHost
@@ -37,12 +39,15 @@ public final class CacheStorageFactoryImpl: CacheStorageFactory {
         )
     }
     
-    public func createLocalBuildProductCacheStorage(localCacheDirectoryPath: String)
+    public func createLocalBuildProductCacheStorage(
+        localCacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt)
         -> BuildProductCacheStorage
     {
         let localStorage = LocalBuildProductCacheStorage(
             fileManager: fileManager,
-            cacheDirectoryPath: localCacheDirectoryPath
+            cacheDirectoryPath: localCacheDirectoryPath,
+            maxAgeInDaysForLocalArtifact: maxAgeInDaysForLocalArtifact
         )
         return localStorage
     }

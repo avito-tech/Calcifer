@@ -36,4 +36,8 @@ public final class BuildProductCacheStorageStub: BuildProductCacheStorage {
         completion()
     }
     
+    public func clean(completion: @escaping () -> ()) {
+        completion()
+    }
+    
 }

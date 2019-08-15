@@ -3,7 +3,7 @@ import Checksum
 import Toolkit
 
 public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
-    
+
     private let fileManager: FileManager
     private let localCacheStorage: BuildProductCacheStorage
     private let remoteCacheStorage: BuildProductCacheStorage
@@ -85,6 +85,10 @@ public final class MixedBuildProductCacheStorage: BuildProductCacheStorage {
                 completion(result)
             }
         }
+    }
+    
+    public func clean(completion: @escaping () -> ()) {
+        localCacheStorage.clean(completion: completion)
     }
     
 }

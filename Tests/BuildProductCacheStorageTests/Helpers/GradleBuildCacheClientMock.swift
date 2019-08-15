@@ -28,4 +28,16 @@ public final class GradleBuildCacheClientMock: GradleBuildCacheClient {
         completion(.success(()))
     }
     
+    public func purge(completion: @escaping (BuildCacheClientResult<Void>) -> ()) {
+        completion(.success(()))
+    }
+    
+    public func status(completion: @escaping (BuildCacheClientResult<Void>) -> ()) {
+        completion(.success(()))
+    }
+    
+    public func snapshot(completion: @escaping (BuildCacheClientResult<Void>) -> ()) {
+        completion(.success(()))
+    }
+    
 }

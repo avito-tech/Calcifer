@@ -1,4 +1,5 @@
 import Foundation
+import AtomicModels
 
 public protocol Debouncable {
     func debounce(_ closure: @escaping () -> ())
@@ -6,7 +7,7 @@ public protocol Debouncable {
 }
 
 public final class Debouncer: Debouncable {
-    private var lastFireTime = DispatchTime(uptimeNanoseconds: 0)
+    private var lastFireTime = AtomicValue(DispatchTime(uptimeNanoseconds: 0))
     private let queue: DispatchQueue
     private let delay: TimeInterval
     
@@ -16,14 +17,11 @@ public final class Debouncer: Debouncable {
     }
     
     public func debounce(_ closure: @escaping () -> ()) {
-        lastFireTime = DispatchTime.now()
+        lastFireTime.set(DispatchTime.now())
         queue.asyncAfter(deadline: .now() + delay) { [weak self] in
-            if let strongSelf = self {
-                let now = DispatchTime.now()
-                let when = strongSelf.lastFireTime + strongSelf.delay
-                if now >= when {
-                    closure()
-                }
+            guard let strongSelf = self else { return }
+            if DispatchTime.now() >= strongSelf.lastFireTime.currentValue() + strongSelf.delay {
+                closure()
             }
         }
     }

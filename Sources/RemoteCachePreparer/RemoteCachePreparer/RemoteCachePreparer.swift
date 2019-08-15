@@ -68,6 +68,7 @@ final class RemoteCachePreparer {
         let localCacheDirectoryPath = storageConfig.localCacheDirectory
         let cacheStorage = try cacheStorageFactory.createMixedCacheStorage(
             localCacheDirectoryPath: localCacheDirectoryPath,
+            maxAgeInDaysForLocalArtifact: storageConfig.maxAgeInDaysForLocalArtifact,
             gradleHost: gradleHost,
             shouldUpload: shouldUploadCache
         )

@@ -52,12 +52,14 @@ public final class BuildProductCacheStorageWarmer: Warmer {
             return
         }
         let localCacheDirectoryPath = storageConfig.localCacheDirectory
+        let maxAgeInDaysForLocalArtifact = storageConfig.maxAgeInDaysForLocalArtifact
         let performWarmup = { [weak self] in
             guard let strongSelf = self else { return }
             perform(
                 strongSelf.createOperation(
                     params: params,
                     localCacheDirectoryPath: localCacheDirectoryPath,
+                    maxAgeInDaysForLocalArtifact: maxAgeInDaysForLocalArtifact,
                     gradleHost: gradleHost
                 )
             )
@@ -77,6 +79,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
     private func createOperation(
         params: XcodeBuildEnvironmentParameters,
         localCacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt,
         gradleHost: String)
         -> Operation
     {
@@ -86,6 +89,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
                     try self?.fillProductCache(
                         params: params,
                         localCacheDirectoryPath: localCacheDirectoryPath,
+                        maxAgeInDaysForLocalArtifact: maxAgeInDaysForLocalArtifact,
                         gradleHost: gradleHost
                     )
                 }
@@ -98,6 +102,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
     private func fillProductCache(
         params: XcodeBuildEnvironmentParameters,
         localCacheDirectoryPath: String,
+        maxAgeInDaysForLocalArtifact: UInt,
         gradleHost: String)
         throws
     {
@@ -110,6 +115,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         let frameworkTargets = targetInfoFilter.frameworkTargetInfos(requiredTargets)
         let storage = try cacheStorageFactory.createMixedCacheStorage(
             localCacheDirectoryPath: localCacheDirectoryPath,
+            maxAgeInDaysForLocalArtifact: maxAgeInDaysForLocalArtifact,
             gradleHost: gradleHost,
             shouldUpload: false
         )

@@ -75,7 +75,7 @@ public final class ObtainConfigValueCommand: Command {
         do {
             _ = try XcodeBuildEnvironmentParameters()
         } catch let error {
-            debugPrint(error)
+            Logger.error(error.localizedDescription)
         }
         throw ArgumentsError.argumentIsMissing(Arguments.projectDirectory.rawValue)
     }

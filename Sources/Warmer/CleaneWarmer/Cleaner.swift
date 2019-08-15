@@ -5,7 +5,6 @@ public protocol Cleaner {
         logsDirectory: String,
         buildLogDirectory: String,
         checksumDirectory: String,
-        launchctlLogDirectory: String,
-        localCacheDirectory: String
+        launchctlLogDirectory: String
     )
 }

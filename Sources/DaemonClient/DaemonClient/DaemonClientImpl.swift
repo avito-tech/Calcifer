@@ -3,6 +3,7 @@ import Starscream
 import DaemonModels
 import ArgumentsParser
 import Toolkit
+import AtomicModels
 
 public final class DaemonClientImpl: DaemonClient {
     
@@ -22,7 +23,7 @@ public final class DaemonClientImpl: DaemonClient {
     
     public func sendToDaemon(commandRunConfig: CommandRunConfig) throws {
         let commandData = try commandRunConfig.encode()
-        var exitCode: Int32?
+        let exitCode = AtomicValue<Int32?>(nil)
         setupSocketCallbacks(
             onConnect: {
                 Logger.info("websocket is connected")
@@ -30,7 +31,7 @@ public final class DaemonClientImpl: DaemonClient {
                 self.socket.write(data: commandData)
             },
             onDisconnect: { error in
-                if let exitCode = exitCode {
+                if let exitCode = exitCode.currentValue() {
                     Logger.verbose("Work completed with exit code \(exitCode)")
                     if exitCode != 0 {
                         exit(exitCode)
@@ -61,7 +62,7 @@ public final class DaemonClientImpl: DaemonClient {
                 }
             },
             onExitCodeMessage: { exitCodeMessage in
-                exitCode = exitCodeMessage.code
+                exitCode.set(exitCodeMessage.code)
                 Logger.verbose("Client: Command \(commandRunConfig) completed with exit code \(exitCodeMessage.code)")
                 self.socket.disconnect()
             }
@@ -107,6 +108,7 @@ public final class DaemonClientImpl: DaemonClient {
     }
     
     private func redirect(_ standardStreamMessage: StandardStreamMessage) {
+        guard !standardStreamMessage.data.isEmpty else { return }
         let data = standardStreamMessage.data.addTrailingNewLine()
         switch standardStreamMessage.source {
         case .output:

@@ -55,6 +55,12 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
         }
     }
     
+    public func clean(completion: @escaping () -> ()) {
+        gradleBuildCacheClient.purge { _ in
+            completion()
+        }
+    }
+    
     private func processDownloadResult<ChecksumType: Checksum>(
         result: BuildCacheClientResult<URL>,
         cacheKey: BuildProductCacheKey<ChecksumType>,
@@ -87,7 +93,7 @@ public final class GradleRemoteBuildProductCacheStorage: BuildProductCacheStorag
         completion: @escaping (BuildProductCacheResult<ChecksumType>) -> ())
     {
         let unzipURL = url.deletingLastPathComponent()
-        var productName = cacheKey.productName
+        let productName = cacheKey.productName
             .deletingPathExtension()
             .appendingPathExtension(cacheKey.productType.fileExtension)
         let unzipResult = unzipURL

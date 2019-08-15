@@ -70,15 +70,20 @@ public final class XcodeProjectPatcher {
                 for buildPhase in target.buildPhases {
                     pbxproj.delete(object: buildPhase)
                 }
-                removeGroup(for: target, pbxproj: pbxproj, project: project)
-                if let product = target.product {
-                    if let productsGroup = project.productsGroup,
-                        let productName = product.name,
-                        let productGroup = productsGroup.group(named: productName)
-                    {
-                        pbxproj.delete(object: productGroup)
+                let subpecTargets = targets.filter { targetNameForBuild in
+                    targetNameForBuild.contains(targetName)
+                }
+                if subpecTargets.isEmpty {
+                    removeGroup(for: target, pbxproj: pbxproj, project: project)
+                    if let product = target.product {
+                        if let productsGroup = project.productsGroup,
+                            let productName = product.name,
+                            let productGroup = productsGroup.group(named: productName)
+                        {
+                            pbxproj.delete(object: productGroup)
+                        }
+                        pbxproj.delete(object: product)
                     }
-                    pbxproj.delete(object: product)
                 }
 
                 project.targets.remove(at: index)
@@ -90,7 +95,11 @@ public final class XcodeProjectPatcher {
         try generateWorkspaceSettingsFile(projectPath: outputPath)
     }
     
-    private func removeGroup(for target: PBXTarget, pbxproj: PBXProj, project: PBXProject) {
+    private func removeGroup(
+        for target: PBXTarget,
+        pbxproj: PBXProj,
+        project: PBXProject)
+    {
         let podsGroup = project.mainGroup.group(named: "Pods")
         let developmentPodsGroup = project.mainGroup.group(named: "Development Pods")
         if let targetGroup = podsGroup?.group(named: target.name) {

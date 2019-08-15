@@ -35,9 +35,19 @@ public extension FileManager {
         return !isDirectory.boolValue
     }
     
-    func enumerateFiles(at path: String, sorted: Bool = true, onFile: (String) -> ()) throws {
+    func enumerate(at path: String, files: Bool, each: (String) -> ()) {
+        try? contentsOfDirectory(atPath: path)
+            .forEach { element in
+                let elementPath = path.appendingPathComponent(element)
+                if files == isFile(elementPath) {
+                    each(elementPath)
+                }
+        }
+    }
+    
+    func enumerateFiles(at path: String, sorted: Bool = true, onFile: (String) throws -> ()) throws {
         if isFile(path) {
-            onFile(path)
+            try onFile(path)
         } else {
             guard let allElements = enumerator(atPath: path)?.allObjects as? [String] else {
                 return
@@ -49,7 +59,7 @@ public extension FileManager {
                 }
                 let elementPath = path.appendingPathComponent(element)
                 if isFile(elementPath) {
-                    onFile(elementPath)
+                    try onFile(elementPath)
                 }
             }
         }
@@ -78,11 +88,11 @@ public extension FileManager {
     }
     
     func accessDate(at path: String) throws -> Date {
-        let attributes = try attributesOfItem(atPath: path)
-        let accessDateKey = kCFURLContentAccessDateKey as FileAttributeKey
-        guard let date = attributes[accessDateKey] as? Date
+        let url = URL(fileURLWithPath: path)
+        let values = try url.resourceValues(forKeys: Set([URLResourceKey.contentAccessDateKey]))
+        guard let contentAccessDate = values.contentAccessDate
             else { throw FileManagerError.unableToObtainModificationDate(path: path) }
-        return date
+        return contentAccessDate
     }
     
 }
