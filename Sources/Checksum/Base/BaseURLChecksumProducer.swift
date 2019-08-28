@@ -32,9 +32,6 @@ public final class BaseURLChecksumProducer: URLChecksumProducer<BaseChecksum> {
             .map { URL(fileURLWithPath: $0) }
             .map { try obtainChecksum(for: $0) }
             .aggregate()
-        if filesChecksum == .zero {
-            throw ChecksumError.zeroChecksum(path: input.path)
-        }
         return filesChecksum
     }
     

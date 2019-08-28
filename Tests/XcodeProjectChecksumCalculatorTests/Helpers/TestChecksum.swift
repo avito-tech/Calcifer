@@ -18,12 +18,8 @@ final class TestChecksum: Checksum {
         hasher.combine(stringValue)
     }
     
-    static func + (left: TestChecksum, right: TestChecksum) throws -> TestChecksum {
-        return TestChecksum(left.stringValue + right.stringValue)
-    }
-    
-    static var zero: TestChecksum {
-        return TestChecksum("")
+    func combine(other: TestChecksum) -> TestChecksum {
+        return TestChecksum(self.stringValue + other.stringValue)
     }
     
     static func == (lhs: TestChecksum, rhs: TestChecksum) -> Bool {

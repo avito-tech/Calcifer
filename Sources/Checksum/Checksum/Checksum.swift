@@ -1,5 +1,7 @@
 import Foundation
 
-public protocol Checksum: CustomStringConvertible, Hashable, Combinable, Codable {
+public protocol Checksum: CustomStringConvertible, Hashable, Codable {
     var stringValue: String { get }
+    
+    func combine(other: Self) -> Self
 }

@@ -12,7 +12,18 @@ public extension Array where Element: ChecksumHolder {
 }
 
 public extension Array where Element: Checksum {
+    struct EmptyCollectionOfChecksums: Error, CustomStringConvertible {
+        public let description = "Cannot provide aggregated checksum for empty collection"
+    }
+    
     func aggregate() throws -> Element {
-        return try reduce(Element.zero, +)
+        guard !isEmpty, let first = self.first else {
+            throw EmptyCollectionOfChecksums()
+        }
+        var result = first
+        for element in dropFirst() {
+            result = result.combine(other: element)
+        }
+        return result
     }
 }
