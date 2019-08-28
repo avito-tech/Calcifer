@@ -19,11 +19,14 @@ release_build:
 .PHONY: release_build
 
 generate_project:
-	swift package generate-xcodeproj --xcconfig-overrides Config.xcconfig
+	swift package generate-xcodeproj --xcconfig-overrides Config.xcconfig --enable-code-coverage
 .PHONY: generate_project
 
-ship:
-	swift build -c release -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.13" --static-swift-stdlib
+open: generate_project
+	open *.xcodeproj
+.PHONY: open
+
+ship: release_build
 	./.build/x86_64-apple-macosx/release/Calcifer shipCurrentCalciferVersion
 .PHONY: ship
 
