@@ -15,12 +15,14 @@ import Toolkit
 final class XcodeProjUpdateModel {
     let xcodeProj: XcodeProj
     let sourceRoot: Path
+    let configurationName: String
     let projectPath: String
     
-    init(xcodeProj: XcodeProj, projectPath: String, sourceRoot: Path) {
+    init(xcodeProj: XcodeProj, projectPath: String, sourceRoot: Path, configurationName: String) {
         self.xcodeProj = xcodeProj
         self.projectPath = projectPath
         self.sourceRoot = sourceRoot
+        self.configurationName = configurationName
     }
     
     var name: String {

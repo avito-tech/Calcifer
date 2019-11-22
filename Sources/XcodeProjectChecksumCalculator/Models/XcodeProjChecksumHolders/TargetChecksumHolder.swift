@@ -70,10 +70,11 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     }
     
     override func calculateChecksum() throws -> ChecksumType {
-        return try children.values
+        var checksums = try children.values
             .sorted()
             .map { try $0.obtainChecksum() }
-            .aggregate()
+        checksums.append(try checksumProducer.checksum(string: name))
+        return try checksums.aggregate()
     }
     
     func reflectUpdate(updateModel: TargetUpdateModel<ChecksumType>) throws {
@@ -96,6 +97,7 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
                 TargetUpdateModel<ChecksumType>(
                     target: target,
                     sourceRoot: updateModel.sourceRoot,
+                    configurationName: updateModel.configurationName,
                     targetCache: updateModel.targetCache,
                     fileCache: updateModel.fileCache
                 )
@@ -123,11 +125,22 @@ class TargetChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<ChecksumT
     }
     
     private func updateFiles(updateModel: TargetUpdateModel<ChecksumType>) throws -> Bool {
-        let fileUrlDictionary = try updateModel.target
+        var fileUrlDictionary = try updateModel.target
             .fileElements()
             .map { url in
                 try fullPathProvider.fullPath(for: url, sourceRoot: updateModel.sourceRoot).url
             }.toDictionary { $0.path }
+        let frameworkFolder = updateModel.sourceRoot.absolute().string.appendingPathComponent(updateModel.targetName)
+        let frameworks = try FileManager.default.elements(at: frameworkFolder)
+            .filter({ $0.pathExtension() == "framework"})
+            .map({ URL(fileURLWithPath: $0, isDirectory: true) })
+            .toDictionary { $0.path }
+        fileUrlDictionary = fileUrlDictionary.merging(frameworks) { (current, _) in current }
+        let headers = try FileManager.default.files(at: frameworkFolder)
+            .filter({ $0.pathExtension() == "h"})
+            .map({ URL(fileURLWithPath: $0, isDirectory: true) })
+            .toDictionary { $0.path }
+        fileUrlDictionary = fileUrlDictionary.merging(headers) { (current, _) in current }
         return try fileUrlDictionary.update(
             childrenDictionary: files,
             update: { (fileChecksumHolder: FileChecksumHolder<ChecksumType>, updateModel: URL) in

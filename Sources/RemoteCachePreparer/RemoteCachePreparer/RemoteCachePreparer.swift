@@ -60,18 +60,27 @@ final class RemoteCachePreparer {
         try params.save(to: calciferPathProvider.calciferEnvironmentFilePath())
         
         let storageConfig = config.storageConfig
-        guard let gradleHost = storageConfig.gradleHost else {
-            Logger.error("Gradle host is not set")
-            return
-        }
+        
+        let cacheStorage: BuildProductCacheStorage
+        
         let shouldUploadCache = storageConfig.shouldUpload
         let localCacheDirectoryPath = storageConfig.localCacheDirectory
-        let cacheStorage = try cacheStorageFactory.createMixedCacheStorage(
-            localCacheDirectoryPath: localCacheDirectoryPath,
-            maxAgeInDaysForLocalArtifact: storageConfig.maxAgeInDaysForLocalArtifact,
-            gradleHost: gradleHost,
-            shouldUpload: shouldUploadCache
-        )
+        
+        if let gradleHost = storageConfig.gradleHost {
+            cacheStorage = try cacheStorageFactory.createMixedCacheStorage(
+                localCacheDirectoryPath: localCacheDirectoryPath,
+                maxAgeInDaysForLocalArtifact: storageConfig.maxAgeInDaysForLocalArtifact,
+                gradleHost: gradleHost,
+                shouldUpload: shouldUploadCache
+            )
+        } else {
+            Logger.info("Gradle host is not set")
+            cacheStorage = cacheStorageFactory.createLocalBuildProductCacheStorage(
+                localCacheDirectoryPath: localCacheDirectoryPath,
+                maxAgeInDaysForLocalArtifact: storageConfig.maxAgeInDaysForLocalArtifact
+            )
+        }
+
         let calciferChecksumFilePath = calciferPathProvider.calciferChecksumFilePath(for: Date())
         let requiredTargets = try TimeProfiler.measure("Obtain required targets") {
             try requiredTargetsProvider.obtainRequiredTargets(

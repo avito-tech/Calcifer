@@ -142,7 +142,7 @@ public final class XcodeBuildEnvironmentParameters: Codable {
     // "XCODE_PRODUCT_BUILD_VERSION": "10B61"
     public let xcodeProductBuildVersionParam: KeyValueParameter<String>
     public var xcodeProductBuildVersion: String { return xcodeProductBuildVersionParam.value }
-    // "COMMAND_MODE": "legacy"
+    // "COMMAND_MODE": "legacy" "unix2003"
     public let commandModeParam: KeyValueParameter<String>
     public var commandMode: String { return commandModeParam.value }
     
@@ -204,7 +204,7 @@ public final class XcodeBuildEnvironmentParameters: Codable {
         sdkNamesParam = try environment.getKeyValueParam("SDK_NAMES")
         swiftVersionParam = try environment.getKeyValueParam("SWIFT_VERSION")
         swiftOptimizationLevelParam = try environment.getKeyValueParam("SWIFT_OPTIMIZATION_LEVEL")
-        swiftCompilationModeParam = try environment.getKeyValueParam("SWIFT_COMPILATION_MODE")
+        swiftCompilationModeParam = try environment.getKeyValueParam("SWIFT_COMPILATION_MODE", defaultValue: "wholemodule")
         platformNameParam = try environment.getKeyValueParam("PLATFORM_NAME")
         effectivePlatformNameParam = try environment.getKeyValueParam("EFFECTIVE_PLATFORM_NAME")
         supportedPlatformsParam = try environment.getKeyValueParam("SUPPORTED_PLATFORMS")

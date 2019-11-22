@@ -50,6 +50,7 @@ public final class XcodeProjChecksumHolder<ChecksumType: Checksum>: BaseChecksum
                     proj: proj,
                     projectPath: updateModel.projectPath,
                     sourceRoot: updateModel.sourceRoot,
+                    configurationName: updateModel.configurationName,
                     projectCache: projectCache,
                     targetCache: targetCache,
                     fileCache: fileCache

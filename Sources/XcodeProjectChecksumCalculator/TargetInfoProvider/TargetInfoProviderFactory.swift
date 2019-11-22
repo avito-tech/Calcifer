@@ -30,6 +30,7 @@ public final class TargetInfoProviderFactory {
     
     public func targetChecksumProvider(
         projectPath: String,
+        configurationName: String,
         validateChecksumHolder: Bool)
         throws -> TargetInfoProvider<BaseChecksum>
     {
@@ -41,7 +42,7 @@ public final class TargetInfoProviderFactory {
             try xcodeProjCache.obtainXcodeProj(projectPath: projectPath)
         }
         let checksumHolder = try TimeProfiler.measure("Build checksum holders") {
-            try builder.build(xcodeProj: xcodeProj, projectPath: projectPath)
+            try builder.build(xcodeProj: xcodeProj, projectPath: projectPath, configurationName: configurationName)
         }
         let checksum = try TimeProfiler.measure("Obtain checksum") {
             try checksumCalculator.calculate(rootHolder: checksumHolder)

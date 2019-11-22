@@ -107,15 +107,20 @@ public final class SendCommandToDaemonCommand: Command {
     {
         if let environmentFilePath = arguments.get(self.environmentFilePathArgument) {
             return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
-        } else if let environmentParams = try? XcodeBuildEnvironmentParameters() {
+        }
+        do {
+            let environmentParams = try XcodeBuildEnvironmentParameters()
             let fileManager = FileManager.default
             let calciferPathProvider = CalciferPathProviderImpl(fileManager: fileManager)
             let environmentFilePath = calciferPathProvider.calciferEnvironmentFilePath()
             try environmentParams.save(to: environmentFilePath)
             return environmentParams
-        } else if fileManager.fileExists(atPath: environmentFilePath) {
-            return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
+        } catch {
+            Logger.debug("Failed parse XcodeBuildEnvironmentParameters \(error)")
+            if fileManager.fileExists(atPath: environmentFilePath) {
+                return try XcodeBuildEnvironmentParameters.decode(from: environmentFilePath)
+            }
+            throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
         }
-        throw ArgumentsError.argumentIsMissing(Arguments.environmentFilePath.rawValue)
     }
 }

@@ -46,6 +46,7 @@ final class ProjChecksumHolder<ChecksumType: Checksum>: BaseChecksumHolder<Check
                 ProjectUpdateModel(
                     project: project,
                     sourceRoot: updateModel.sourceRoot,
+                    configurationName: updateModel.configurationName,
                     targetCache: updateModel.targetCache,
                     fileCache: updateModel.fileCache
                 )

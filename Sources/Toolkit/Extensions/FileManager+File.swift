@@ -45,10 +45,13 @@ public extension FileManager {
         }
     }
     
-    func enumerateFiles(at path: String, sorted: Bool = true, onFile: (String) throws -> ()) throws {
+    func enumerateElements(at path: String, onlyFiles: Bool = true, sorted: Bool = true, onElement: (String) throws -> ()) throws {
         if isFile(path) {
-            try onFile(path)
+            try onElement(path)
         } else {
+            if !onlyFiles {
+                try onElement(path)
+            }
             guard let allElements = enumerator(atPath: path)?.allObjects as? [String] else {
                 return
             }
@@ -59,18 +62,24 @@ public extension FileManager {
                 }
                 let elementPath = path.appendingPathComponent(element)
                 if isFile(elementPath) {
-                    try onFile(elementPath)
+                    try onElement(elementPath)
+                } else if !onlyFiles {
+                    try onElement(elementPath)
                 }
             }
         }
     }
     
-    func files(at path: String) throws -> [String] {
+    func elements(at path: String, onlyFiles: Bool = false) throws -> [String] {
         let filePathes = ThreadSafeArray<String>()
-        try enumerateFiles(at: path, sorted: false) { filePath in
-            filePathes.append(filePath)
+        try enumerateElements(at: path, onlyFiles: onlyFiles, sorted: false) { filePath in
+          filePathes.append(filePath)
         }
         return filePathes.values.sorted()
+    }
+    
+    func files(at path: String) throws -> [String] {
+        return try elements(at: path, onlyFiles: true)
     }
     
     func fileSize(at path: String) throws -> UInt64 {

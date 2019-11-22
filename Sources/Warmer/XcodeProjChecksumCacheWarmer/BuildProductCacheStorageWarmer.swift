@@ -48,7 +48,7 @@ public final class BuildProductCacheStorageWarmer: Warmer {
         }
         let storageConfig = config.storageConfig
         guard let gradleHost = storageConfig.gradleHost else {
-            Logger.error("Gradle host is not set")
+            Logger.info("Gradle host is not set")
             return
         }
         let localCacheDirectoryPath = storageConfig.localCacheDirectory

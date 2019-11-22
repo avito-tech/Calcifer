@@ -12,9 +12,11 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
     
     enum Arguments: String, CommandArgument {
         case projectPath
+        case configurationName
     }
     
     private let projectPathArgument: OptionArgument<String>
+    private let configurationNameArgument: OptionArgument<String>
     
     public required init(parser: ArgumentParser) {
         let subparser = parser.add(subparser: command, overview: overview)
@@ -23,12 +25,21 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
             kind: String.self,
             usage: "Specify Pods project path"
         )
+        configurationNameArgument = subparser.add(
+            option: Arguments.configurationName.optionString,
+            kind: String.self,
+            usage: "Specify configuration name"
+        )
     }
     
     public func run(with arguments: ArgumentParser.Result, runner: CommandRunner) throws {
         let projectPath = try ArgumentsReader.validateNotNil(
             arguments.get(self.projectPathArgument),
             name: Arguments.projectPath.rawValue
+        )
+        let configurationName = try ArgumentsReader.validateNotNil(
+            arguments.get(self.configurationNameArgument),
+            name: Arguments.configurationName.rawValue
         )
         let fileManager = FileManager.default
         let checksumProducer = BaseURLChecksumProducer(fileManager: fileManager)
@@ -51,7 +62,8 @@ public final class CalculateXcodeProjectChecksumCommand: Command {
         }
         let checksumHolder = try builder.build(
             xcodeProj: xcodeProj,
-            projectPath: projectPath
+            projectPath: projectPath,
+            configurationName: configurationName
         )
         let codableChecksumNode = checksumHolder.node()
         let data = try codableChecksumNode.encode()

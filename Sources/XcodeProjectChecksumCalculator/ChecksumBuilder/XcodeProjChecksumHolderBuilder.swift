@@ -24,14 +24,15 @@ final class XcodeProjChecksumHolderBuilder<ChecksumCache: XcodeProjChecksumCache
         self.fullPathProvider = fullPathProvider
     }
     
-    func build(xcodeProj: XcodeProj, projectPath: String) throws -> XcodeProjChecksumHolder<ChecksumCache.ChecksumType> {
+    func build(xcodeProj: XcodeProj, projectPath: String, configurationName: String) throws -> XcodeProjChecksumHolder<ChecksumCache.ChecksumType> {
         
         let sourceRoot = Path(components: Array(Path(projectPath).components.dropLast()))
         let xcodeProjChecksumHolder = obtainXcodeProjChecksumHolder(for: projectPath)
         let xcodeProjUpdateModel = XcodeProjUpdateModel(
             xcodeProj: xcodeProj,
             projectPath: projectPath,
-            sourceRoot: sourceRoot
+            sourceRoot: sourceRoot,
+            configurationName: configurationName
         )
         try xcodeProjChecksumHolder.reflectUpdate(updateModel: xcodeProjUpdateModel)
         return xcodeProjChecksumHolder

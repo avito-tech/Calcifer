@@ -17,17 +17,20 @@ final class TargetUpdateModel<ChecksumType: Checksum> {
     
     let target: PBXTarget
     let sourceRoot: Path
+    let configurationName: String
     let targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>
     let fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>
     
     init(
         target: PBXTarget,
         sourceRoot: Path,
+        configurationName: String,
         targetCache: ThreadSafeDictionary<String, TargetChecksumHolder<ChecksumType>>,
         fileCache: ThreadSafeDictionary<String, FileChecksumHolder<ChecksumType>>)
     {
         self.target = target
         self.sourceRoot = sourceRoot
+        self.configurationName = configurationName
         self.targetCache = targetCache
         self.fileCache = fileCache
     }
@@ -63,7 +66,17 @@ final class TargetUpdateModel<ChecksumType: Checksum> {
     }
     
     var name: String {
-        return "\(targetName)-\(productName)-\(productType)"
+        return "\(targetName)-\(productName)-\(productType)-\(configurationName)"
+    }
+    
+    var buildSettings: BuildSettings? {
+        return target.buildConfigurationList?
+            .configuration(name: configurationName)?
+            .buildSettings
+    }
+    
+    var frameworksSearchPath: String? {
+        return buildSettings?["FRAMEWORK_SEARCH_PATHS"] as? String
     }
     
     private func isValidProductName(_ productName: String, type: TargetProductType) -> Bool {

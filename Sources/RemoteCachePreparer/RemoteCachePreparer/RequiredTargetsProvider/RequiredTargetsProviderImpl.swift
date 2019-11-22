@@ -29,6 +29,7 @@ public class RequiredTargetsProviderImpl: RequiredTargetsProvider {
         let calciferPodsTargetName = "Pods-\(params.targetName)-Calcifer"
         let targetInfoProvider = try createTargetInfoProvider(
             projectPath: projectPath,
+            configurationName: params.configuration,
             calciferChecksumFilePath: calciferChecksumFilePath,
             validateChecksumHolder: validateChecksumHolder
         )
@@ -59,12 +60,14 @@ public class RequiredTargetsProviderImpl: RequiredTargetsProvider {
     
     private func createTargetInfoProvider(
         projectPath: String,
+        configurationName: String,
         calciferChecksumFilePath: String,
         validateChecksumHolder: Bool)
         throws -> TargetInfoProvider<BaseChecksum>
     {
         let targetInfoProvider = try targetInfoProviderFactory.targetChecksumProvider(
             projectPath: projectPath,
+            configurationName: configurationName,
             validateChecksumHolder: validateChecksumHolder
         )
         targetInfoProvider.saveChecksum(
